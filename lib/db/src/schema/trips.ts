@@ -14,6 +14,7 @@ export const tripsTable = pgTable("trips", {
   photoCount: integer("photo_count").notNull().default(0),
   tags: text("tags").notNull().default("[]"),
   featured: boolean("featured").notNull().default(false),
+  googlePhotosUrl: text("google_photos_url"),
 });
 
 export const insertTripSchema = createInsertSchema(tripsTable).omit({ id: true });

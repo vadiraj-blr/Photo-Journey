@@ -18,12 +18,14 @@ interface TripRow {
   coverImageUrl: string;
   tags: string[];
   featured: boolean;
+  googlePhotosUrl?: string | null;
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1">
       <span className="text-xs font-mono uppercase tracking-widest text-white/40">{label}</span>
+      {hint && <span className="text-[11px] text-white/25 -mt-0.5">{hint}</span>}
       {children}
     </label>
   );
@@ -51,6 +53,7 @@ function EditModal({
     coverImageUrl: trip.coverImageUrl,
     tags: trip.tags.join(", "),
     featured: trip.featured,
+    googlePhotosUrl: trip.googlePhotosUrl ?? "",
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,11 +77,9 @@ function EditModal({
           year: Number(form.year),
           story: form.story,
           coverImageUrl: form.coverImageUrl,
-          tags: form.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter(Boolean),
+          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
           featured: form.featured,
+          googlePhotosUrl: form.googlePhotosUrl.trim() || null,
         }),
       });
       if (!res.ok) {
@@ -127,14 +128,8 @@ function EditModal({
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Month">
-              <select
-                className={inputCls}
-                value={form.month}
-                onChange={(e) => set("month", e.target.value)}
-              >
-                {MONTHS.map((m) => (
-                  <option key={m} value={m}>{m}</option>
-                ))}
+              <select className={inputCls} value={form.month} onChange={(e) => set("month", e.target.value)}>
+                {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
               </select>
             </Field>
             <Field label="Year">
@@ -151,6 +146,28 @@ function EditModal({
 
           <Field label="Cover Image URL">
             <input className={inputCls} value={form.coverImageUrl} onChange={(e) => set("coverImageUrl", e.target.value)} />
+          </Field>
+
+          <Field
+            label="Google Photos Album Link"
+            hint="Paste the shared album URL — photos will be fetched and displayed automatically (10–15 photos)"
+          >
+            <input
+              className={`${inputCls} ${form.googlePhotosUrl ? "border-amber-500/40" : ""}`}
+              placeholder="https://photos.app.goo.gl/... or https://photos.google.com/share/..."
+              value={form.googlePhotosUrl}
+              onChange={(e) => set("googlePhotosUrl", e.target.value)}
+            />
+            {form.googlePhotosUrl && (
+              <a
+                href={form.googlePhotosUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[11px] text-amber-500/70 hover:text-amber-400 mt-1"
+              >
+                Open album ↗
+              </a>
+            )}
           </Field>
 
           <Field label="Tags (comma-separated)">
@@ -230,7 +247,7 @@ export default function Admin() {
           <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-2">Admin</p>
           <h1 className="text-3xl font-serif font-bold">Manage Trips</h1>
           <p className="text-white/50 mt-2 text-sm">
-            Click any trip to edit its details. Changes are saved to the database immediately.
+            Click <strong className="text-white/70">Edit</strong> on any trip to update its details or paste a Google Photos album link to display your real photos.
           </p>
         </div>
 
@@ -256,6 +273,11 @@ export default function Admin() {
                     {trip.featured && (
                       <span className="text-[10px] font-mono uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
                         Featured
+                      </span>
+                    )}
+                    {trip.googlePhotosUrl && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full flex-shrink-0">
+                        Google Photos ✓
                       </span>
                     )}
                     {saved === trip.id && (

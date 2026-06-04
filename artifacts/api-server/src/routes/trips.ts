@@ -17,6 +17,7 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     photoCount: trip.photoCount,
     tags: JSON.parse(trip.tags || "[]"),
     featured: trip.featured,
+    googlePhotosUrl: trip.googlePhotosUrl ?? null,
   };
 }
 
@@ -39,6 +40,54 @@ router.get("/stats", async (_req, res) => {
     countryCount: countries.size,
     photoCount: photos.length,
   });
+});
+
+router.get("/:id/google-photos", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+
+  const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, id));
+  if (!trip) return res.status(404).json({ error: "Not found" });
+  if (!trip.googlePhotosUrl) return res.json({ photos: [] });
+
+  try {
+    const resp = await fetch(trip.googlePhotosUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "follow",
+    });
+
+    if (!resp.ok) {
+      return res.status(502).json({ error: `Google Photos returned ${resp.status}` });
+    }
+
+    const html = await resp.text();
+
+    // Extract lh3.googleusercontent.com photo URLs embedded in the page JSON
+    const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9_\-]*/g;
+    const rawMatches = html.match(urlPattern) ?? [];
+
+    // Deduplicate and filter out tiny thumbnails / profile pictures
+    const seen = new Set<string>();
+    const photos: string[] = [];
+    for (const url of rawMatches) {
+      if (seen.has(url)) continue;
+      seen.add(url);
+      // Skip very short hash-like tokens that are typically icons/avatars
+      if (url.split("/").pop()!.length < 20) continue;
+      // Request a consistent 1200px wide version
+      photos.push(`${url}=w1200`);
+      if (photos.length >= 15) break;
+    }
+
+    res.json({ photos, albumUrl: trip.googlePhotosUrl });
+  } catch (err) {
+    console.error("Google Photos fetch error:", err);
+    res.status(502).json({ error: "Failed to fetch Google Photos album" });
+  }
 });
 
 router.get("/:id", async (req, res) => {
@@ -67,7 +116,7 @@ router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 
-  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags"];
+  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags", "googlePhotosUrl"];
   const updates: Record<string, unknown> = {};
 
   for (const key of allowed) {
@@ -77,7 +126,7 @@ router.patch("/:id", async (req, res) => {
       } else if (key === "year") {
         updates.year = parseInt(req.body.year, 10);
       } else {
-        updates[key as keyof typeof updates] = req.body[key];
+        updates[key] = req.body[key];
       }
     }
   }
