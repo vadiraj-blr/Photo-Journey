@@ -199,7 +199,7 @@ export default function Trip() {
   // Always fetch Google Photos when a URL is set
   const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos);
 
-  if (isTripLoading || isPhotosLoading) {
+  if (isTripLoading) {
     return (
       <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center space-y-4">
         <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
@@ -268,6 +268,26 @@ export default function Trip() {
             </h1>
           </motion.div>
         </div>
+
+        {/* Scroll down arrow */}
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 1.2 }}
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50 hover:text-white transition-colors duration-300 cursor-pointer"
+          aria-label="Scroll down"
+        >
+          <span className="text-[10px] font-mono uppercase tracking-widest">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </motion.div>
+        </motion.button>
       </section>
 
       {/* Story Section */}
