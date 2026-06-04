@@ -66,18 +66,17 @@ router.get("/:id/google-photos", async (req, res) => {
 
     const html = await resp.text();
 
-    // Extract lh3.googleusercontent.com photo URLs embedded in the page JSON
-    const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/[A-Za-z0-9_\-]*/g;
+    // Extract /pw/ photo URLs — these are actual album photos (not icons/avatars)
+    // Must include / in character class to capture the full /pw/<hash> path
+    const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
     const rawMatches = html.match(urlPattern) ?? [];
 
-    // Deduplicate and filter out tiny thumbnails / profile pictures
+    // Deduplicate
     const seen = new Set<string>();
     const photos: string[] = [];
     for (const url of rawMatches) {
       if (seen.has(url)) continue;
       seen.add(url);
-      // Skip very short hash-like tokens that are typically icons/avatars
-      if (url.split("/").pop()!.length < 20) continue;
       // Request a consistent 1200px wide version
       photos.push(`${url}=w1200`);
       if (photos.length >= 15) break;
