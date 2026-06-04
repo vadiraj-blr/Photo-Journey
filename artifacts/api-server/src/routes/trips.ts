@@ -83,7 +83,6 @@ router.get("/:id/google-photos", async (req, res) => {
       seen.add(url);
       // Request a consistent 1200px wide version
       photos.push(`${url}=w1200`);
-      if (photos.length >= 15) break;
     }
 
     res.json({ photos, albumUrl: trip.googlePhotosUrl });

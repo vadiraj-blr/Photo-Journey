@@ -196,8 +196,8 @@ export default function Trip() {
   const tripData = trip as { googlePhotosUrl?: string | null; galleryPhotoUrls?: string[] } | undefined;
   const hasGooglePhotos = !!tripData?.googlePhotosUrl;
   const pinnedGallery: string[] = tripData?.galleryPhotoUrls ?? [];
-  // Only auto-fetch Google Photos when no pinned gallery is set
-  const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos && pinnedGallery.length === 0);
+  // Always fetch Google Photos when a URL is set
+  const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos);
 
   if (isTripLoading || isPhotosLoading) {
     return (
@@ -218,17 +218,17 @@ export default function Trip() {
 
   const googlePhotosUrl = (trip as { googlePhotosUrl?: string | null }).googlePhotosUrl;
 
-  // Priority: pinned gallery > auto-fetched Google Photos > DB photos
+  // Priority: Google Photos (all) > pinned gallery > DB photos
+  const showGooglePhotos = hasGooglePhotos;
   const hasPinnedGallery = pinnedGallery.length > 0;
-  const showPinnedGallery = hasPinnedGallery;
-  const showGooglePhotos = !hasPinnedGallery && hasGooglePhotos;
-  const showDbPhotos = !hasPinnedGallery && !hasGooglePhotos && dbPhotos && dbPhotos.length > 0;
+  const showPinnedGallery = !hasGooglePhotos && hasPinnedGallery;
+  const showDbPhotos = !hasGooglePhotos && !hasPinnedGallery && dbPhotos && dbPhotos.length > 0;
 
   // Build flat list for lightbox
-  const lightboxPhotos: { url: string }[] = hasPinnedGallery
-    ? pinnedGallery.map((url) => ({ url }))
-    : showGooglePhotos
+  const lightboxPhotos: { url: string }[] = showGooglePhotos
     ? googlePhotos
+    : hasPinnedGallery
+    ? pinnedGallery.map((url) => ({ url }))
     : showDbPhotos
     ? dbPhotos.map((p) => ({ url: p.imageUrl }))
     : [];
@@ -293,12 +293,6 @@ export default function Trip() {
           <div className="flex items-center gap-4 mb-10">
             <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
             <div className="flex-1 h-px bg-white/10" />
-            {googlePhotosUrl && (
-              <a href={googlePhotosUrl} target="_blank" rel="noopener noreferrer"
-                className="text-xs font-mono uppercase tracking-widest text-amber-500/70 hover:text-amber-400 transition-colors">
-                View Full Album ↗
-              </a>
-            )}
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {pinnedGallery.map((url, i) => {
@@ -330,22 +324,12 @@ export default function Trip() {
         </section>
       )}
 
-      {/* Google Photos Gallery (auto-fetched, only when no pinned gallery) */}
+      {/* Google Photos Gallery */}
       {showGooglePhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
             <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
             <div className="flex-1 h-px bg-white/10" />
-            {googlePhotosUrl && (
-              <a
-                href={googlePhotosUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-mono uppercase tracking-widest text-amber-500/70 hover:text-amber-400 transition-colors"
-              >
-                View Full Album ↗
-              </a>
-            )}
           </div>
 
           {gLoading ? (
@@ -383,17 +367,7 @@ export default function Trip() {
             </div>
           ) : (
             <div className="text-center py-24">
-              <p className="text-white/30 text-sm mb-4">Could not load photos from Google Photos.</p>
-              {googlePhotosUrl && (
-                <a
-                  href={googlePhotosUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block px-6 py-3 rounded-xl border border-amber-500/40 text-amber-500 text-sm hover:bg-amber-500/10 transition-colors"
-                >
-                  Open Album on Google Photos ↗
-                </a>
-              )}
+              <p className="text-white/30 text-sm">Could not load photos from this album.</p>
             </div>
           )}
         </section>
