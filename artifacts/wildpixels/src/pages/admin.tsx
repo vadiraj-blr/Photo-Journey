@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useListTrips } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -33,6 +33,100 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 
 const inputCls =
   "bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-white/25 focus:outline-none focus:border-amber-500/60 transition-colors text-sm";
+
+function CoverPhotoPicker({
+  tripId,
+  currentCover,
+  onSelect,
+}: {
+  tripId: number;
+  currentCover: string;
+  onSelect: (url: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    if (photos.length > 0) { setOpen(true); return; }
+    setLoading(true);
+    setError(null);
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    fetch(`${base}/api/trips/${tripId}/google-photos`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.photos?.length) {
+          setPhotos(data.photos);
+          setOpen(true);
+        } else {
+          setError("No photos found in the album yet.");
+        }
+      })
+      .catch(() => setError("Could not load album."))
+      .finally(() => setLoading(false));
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={load}
+        disabled={loading}
+        className="self-start text-xs font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+      >
+        {loading ? "Loading photos…" : "Pick from Google Photos album"}
+      </button>
+      {error && <p className="text-red-400 text-xs">{error}</p>}
+
+      {open && photos.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <p className="text-[11px] text-white/35">Click a photo to set it as the cover</p>
+          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
+            {photos.map((url, i) => {
+              // Use small thumb for picker, strip existing size param first
+              const base = url.replace(/=w\d+$/, "");
+              const thumb = `${base}=w300`;
+              const isSelected = currentCover === url;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => { onSelect(url); setOpen(false); }}
+                  className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+                    isSelected
+                      ? "border-amber-500 scale-95"
+                      : "border-transparent hover:border-white/40"
+                  }`}
+                  title={`Photo ${i + 1}`}
+                >
+                  <img
+                    src={thumb}
+                    alt={`Photo ${i + 1}`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {isSelected && (
+                    <div className="absolute inset-0 bg-amber-500/20 flex items-center justify-center">
+                      <span className="text-white text-xl font-bold drop-shadow">✓</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="self-start text-xs text-white/30 hover:text-white/60 transition-colors"
+          >
+            Close picker
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function EditModal({
   trip,
@@ -144,13 +238,38 @@ function EditModal({
             </Field>
           </div>
 
-          <Field label="Cover Image URL">
-            <input className={inputCls} value={form.coverImageUrl} onChange={(e) => set("coverImageUrl", e.target.value)} />
-          </Field>
+          {/* Cover image section */}
+          <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
+            <div className="flex items-start gap-3">
+              {form.coverImageUrl && (
+                <img
+                  src={form.coverImageUrl.replace(/=w\d+$/, "") + "=w120"}
+                  alt="Cover preview"
+                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
+              <Field label="Cover Image URL">
+                <input
+                  className={inputCls}
+                  value={form.coverImageUrl}
+                  onChange={(e) => set("coverImageUrl", e.target.value)}
+                />
+              </Field>
+            </div>
+
+            {trip.googlePhotosUrl && (
+              <CoverPhotoPicker
+                tripId={trip.id}
+                currentCover={form.coverImageUrl}
+                onSelect={(url) => set("coverImageUrl", url)}
+              />
+            )}
+          </div>
 
           <Field
             label="Google Photos Album Link"
-            hint="Paste the shared album URL — photos will be fetched and displayed automatically (10–15 photos)"
+            hint="Paste the shared album URL — photos display automatically on the trip page (10–15 photos)"
           >
             <input
               className={`${inputCls} ${form.googlePhotosUrl ? "border-amber-500/40" : ""}`}
@@ -247,7 +366,7 @@ export default function Admin() {
           <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-2">Admin</p>
           <h1 className="text-3xl font-serif font-bold">Manage Trips</h1>
           <p className="text-white/50 mt-2 text-sm">
-            Click <strong className="text-white/70">Edit</strong> on any trip to update its details or paste a Google Photos album link to display your real photos.
+            Click <strong className="text-white/70">Edit</strong> on any trip to update details, paste a Google Photos album link, or pick a cover photo from the album.
           </p>
         </div>
 
