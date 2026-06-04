@@ -1,7 +1,8 @@
 import { useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
-import { useGetTrip, getGetTripQueryKey, useListPhotos, getListPhotosQueryKey } from "@workspace/api-client-react";
+import { useGetTrip, getGetTripQueryKey, useListPhotos, getListPhotosQueryKey, getListTripsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface GooglePhoto {
   url: string;
@@ -178,15 +179,26 @@ export default function Trip() {
   const { id } = useParams();
   const tripId = Number(id);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const queryClient = useQueryClient();
+
+  // Use already-cached list data as instant placeholder so the hero shows
+  // immediately without any spinner when navigating from the trip grid.
+  const placeholderData = () => {
+    const cached = queryClient.getQueryData<{ id: number; [k: string]: unknown }[]>(
+      getListTripsQueryKey()
+    );
+    return cached?.find((t) => t.id === tripId) as typeof trip | undefined;
+  };
 
   const { data: trip, isLoading: isTripLoading } = useGetTrip(tripId, {
     query: {
       enabled: !!tripId,
       queryKey: getGetTripQueryKey(tripId),
+      placeholderData,
     },
   });
 
-  const { data: dbPhotos, isLoading: isPhotosLoading } = useListPhotos({ tripId }, {
+  const { data: dbPhotos } = useListPhotos({ tripId }, {
     query: {
       enabled: !!tripId,
       queryKey: getListPhotosQueryKey({ tripId }),
@@ -199,7 +211,8 @@ export default function Trip() {
   // Always fetch Google Photos when a URL is set
   const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos);
 
-  if (isTripLoading) {
+  // Only block on loading when there's no cached placeholder to show
+  if (isTripLoading && !trip) {
     return (
       <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center space-y-4">
         <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
