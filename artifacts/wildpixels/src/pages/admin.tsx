@@ -24,39 +24,24 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
 
   const [form, setForm] = useState({
     heroImageUrl: "",
+    heroImageSourceTripId: null as number | null,
     tripsOnHomepage: "0",
     heroTagline: "Enter the Wild.",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
-  const [pickerPhotos, setPickerPhotos] = useState<string[]>([]);
-  const [pickerLoading, setPickerLoading] = useState(false);
-  const [pickerTripId, setPickerTripId] = useState<number | null>(null);
 
   useEffect(() => {
     if (settings) {
       setForm({
         heroImageUrl: settings.heroImageUrl ?? "",
+        heroImageSourceTripId: settings.heroImageSourceTripId ?? null,
         tripsOnHomepage: String(settings.tripsOnHomepage ?? 0),
         heroTagline: settings.heroTagline ?? "Enter the Wild.",
       });
     }
   }, [settings]);
-
-  const loadPickerPhotos = async (tripId: number) => {
-    setPickerLoading(true);
-    setPickerTripId(tripId);
-    setPickerPhotos([]);
-    try {
-      const data = await fetch(`${base}/api/trips/${tripId}/google-photos`).then((r) => r.json());
-      if (data.photos?.length) setPickerPhotos(data.photos);
-    } finally {
-      setPickerLoading(false);
-      setShowPicker(true);
-    }
-  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -67,6 +52,7 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           heroImageUrl: form.heroImageUrl,
+          heroImageSourceTripId: form.heroImageSourceTripId,
           tripsOnHomepage: Number(form.tripsOnHomepage),
           heroTagline: form.heroTagline,
         }),
@@ -83,6 +69,7 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
   };
 
   const tripsWithPhotos = trips.filter((t) => t.googlePhotosUrl);
+  const selectedTrip = tripsWithPhotos.find((t) => t.id === form.heroImageSourceTripId);
 
   if (isLoading) return null;
 
@@ -91,7 +78,7 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
       <div>
         <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-1">Landing Page</p>
         <h2 className="text-xl font-serif font-bold text-white">Customise Homepage</h2>
-        <p className="text-white/40 text-sm mt-1">Choose the hero background photo and how many trips to show.</p>
+        <p className="text-white/40 text-sm mt-1">Choose the hero slideshow album and how many trips to show.</p>
       </div>
 
       {/* Hero tagline */}
@@ -105,80 +92,74 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
         />
       </div>
 
-      {/* Hero image */}
+      {/* Hero slideshow source */}
       <div className="flex flex-col gap-3">
-        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Hero Background Photo</span>
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Hero Slideshow Album</span>
 
-        <div className="flex items-start gap-3">
-          {form.heroImageUrl && (
-            <img
-              src={form.heroImageUrl.replace(/=w\d+$/, "") + "=w120"}
-              alt="Hero preview"
-              className="w-20 h-14 rounded-lg object-cover flex-shrink-0 border border-white/10"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-          )}
-          <input
-            className={`${inputCls} flex-1`}
-            placeholder="Paste an image URL, or pick from a trip's Google Photos below"
-            value={form.heroImageUrl}
-            onChange={(e) => setForm((f) => ({ ...f, heroImageUrl: e.target.value }))}
-          />
-        </div>
-
-        {tripsWithPhotos.length > 0 && (
+        {tripsWithPhotos.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <p className="text-[11px] text-white/30">Pick from a trip's Google Photos album:</p>
+            <p className="text-[11px] text-white/30">
+              Photos cycle every 3 s. Pick which trip's album to use as the hero background:
+            </p>
             <div className="flex flex-wrap gap-2">
-              {tripsWithPhotos.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => loadPickerPhotos(t.id)}
-                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                    pickerTripId === t.id && showPicker
-                      ? "border-amber-500 text-amber-400 bg-amber-500/10"
-                      : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
-                  }`}
-                >
-                  {t.title}
-                </button>
-              ))}
+              {tripsWithPhotos.map((t) => {
+                const isActive = form.heroImageSourceTripId === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        heroImageSourceTripId: isActive ? null : t.id,
+                        heroImageUrl: isActive ? f.heroImageUrl : "",
+                      }))
+                    }
+                    className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                      isActive
+                        ? "border-amber-500 text-amber-400 bg-amber-500/15 font-semibold"
+                        : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
+                    }`}
+                  >
+                    {isActive && <span className="text-amber-400">▶</span>}
+                    {t.title}
+                  </button>
+                );
+              })}
             </div>
-            {pickerLoading && <p className="text-[11px] text-white/30">Loading photos…</p>}
-
-            {showPicker && pickerPhotos.length > 0 && (
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-52 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
-                {pickerPhotos.map((url, i) => {
-                  const thumb = url.replace(/=w\d+$/, "") + "=w200";
-                  const isSelected = form.heroImageUrl === url;
-                  return (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => { setForm((f) => ({ ...f, heroImageUrl: url })); setShowPicker(false); }}
-                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
-                        isSelected ? "border-amber-500" : "border-transparent hover:border-white/40"
-                      }`}
-                    >
-                      <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
-                      {isSelected && (
-                        <div className="absolute inset-0 bg-amber-500/30 flex items-center justify-center">
-                          <span className="text-white font-bold drop-shadow">✓</span>
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+            {selectedTrip && (
+              <p className="text-[11px] text-amber-500/70">
+                Slideshow will use all photos from "{selectedTrip.title}".
+              </p>
             )}
           </div>
+        ) : (
+          <p className="text-[11px] text-white/25">
+            Add a Google Photos album to any trip above to use it as the hero slideshow.
+          </p>
         )}
 
-        {tripsWithPhotos.length === 0 && (
-          <p className="text-[11px] text-white/25">
-            Add a Google Photos album to any trip above to pick hero photos from it.
-          </p>
+        {/* Fallback static URL (shown only when no album is selected) */}
+        {!form.heroImageSourceTripId && (
+          <div className="flex flex-col gap-1">
+            <p className="text-[11px] text-white/30">Or use a single static image URL as fallback:</p>
+            <div className="flex items-start gap-3">
+              {form.heroImageUrl && (
+                <img
+                  src={form.heroImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
+                  alt="Hero preview"
+                  className="w-20 h-14 rounded-lg object-cover flex-shrink-0 border border-white/10"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                />
+              )}
+              <input
+                className={`${inputCls} flex-1`}
+                placeholder="Paste a static image URL…"
+                value={form.heroImageUrl}
+                onChange={(e) => setForm((f) => ({ ...f, heroImageUrl: e.target.value }))}
+              />
+            </div>
+          </div>
         )}
       </div>
 

@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { useGetFeaturedTrips, useListTrips, useGetTripStats } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -19,26 +20,74 @@ function useLandingSettings() {
   });
 }
 
+function useHeroSlideshow(tripId: number | null | undefined) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (!tripId) { setPhotos([]); return; }
+    fetch(`${base}/api/trips/${tripId}/google-photos`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.photos && Array.isArray(data.photos) && data.photos.length > 0) {
+          setPhotos(data.photos);
+          setIndex(0);
+        }
+      })
+      .catch(() => {});
+  }, [tripId, base]);
+
+  useEffect(() => {
+    if (photos.length < 2) return;
+    const id = setInterval(() => setIndex((i) => (i + 1) % photos.length), 3000);
+    return () => clearInterval(id);
+  }, [photos.length]);
+
+  return { photos, index };
+}
+
 export default function Home() {
   const { data: featuredTrips } = useGetFeaturedTrips();
   const { data: allTrips } = useListTrips();
   const { data: stats } = useGetTripStats();
   const { data: settings } = useLandingSettings();
 
-  // Hero image: settings override → first featured trip → first trip
-  const fallbackTrip = featuredTrips?.[0] || allTrips?.[0];
-  const heroImageUrl = settings?.heroImageUrl || fallbackTrip?.coverImageUrl || "";
   const heroTagline = settings?.heroTagline || "Enter the Wild.";
-
-  // Trip grid: 0 = show all, otherwise slice to that count
   const limit = settings?.tripsOnHomepage ?? 0;
   const displayedTrips = limit > 0 ? (allTrips ?? []).slice(0, limit) : (allTrips ?? []);
+
+  const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroImageSourceTripId);
+
+  // Determine hero source: slideshow album > static URL > trip cover fallback
+  const hasSlideshowAlbum = slideshowPhotos.length > 0;
+  const fallbackTrip = featuredTrips?.[0] || allTrips?.[0];
+  const staticHeroUrl = settings?.heroImageUrl || fallbackTrip?.coverImageUrl || "";
 
   return (
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative w-full h-[100dvh] flex items-center justify-center overflow-hidden bg-black">
-        {heroImageUrl && (
+
+        {hasSlideshowAlbum ? (
+          <AnimatePresence mode="sync">
+            <motion.div
+              key={slideshowIndex}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+              className="absolute inset-0"
+            >
+              <div className="absolute inset-0 bg-black/40 z-10" />
+              <img
+                src={slideshowPhotos[slideshowIndex].replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1920"}
+                alt="Hero"
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+          </AnimatePresence>
+        ) : staticHeroUrl ? (
           <motion.div
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -47,12 +96,12 @@ export default function Home() {
           >
             <div className="absolute inset-0 bg-black/40 z-10" />
             <img
-              src={heroImageUrl}
+              src={staticHeroUrl}
               alt="Hero"
               className="w-full h-full object-cover"
             />
           </motion.div>
-        )}
+        ) : null}
 
         <div className="relative z-20 text-center px-6">
           <motion.h1
