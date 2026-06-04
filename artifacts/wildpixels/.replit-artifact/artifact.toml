@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Wildpixels"
+version = "1.0.0"
+id = "artifacts/wildpixels"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21923
+
+[services.development]
+run = "pnpm --filter @workspace/wildpixels run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wildpixels", "run", "build" ]
+publicDir = "artifacts/wildpixels/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21923"
+BASE_PATH = "/"

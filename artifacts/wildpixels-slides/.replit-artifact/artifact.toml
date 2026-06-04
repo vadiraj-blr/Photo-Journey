@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/wildpixels-slides/"
+title = "Wildpixels – Portfolio Deck"
+version = "1.0.0"
+id = "artifacts/wildpixels-slides"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/wildpixels-slides/" ]
+localPort = 24712
+
+[services.development]
+run = "pnpm --filter @workspace/wildpixels-slides run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wildpixels-slides", "run", "build" ]
+publicDir = "artifacts/wildpixels-slides/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24712"
+BASE_PATH = "/wildpixels-slides/"

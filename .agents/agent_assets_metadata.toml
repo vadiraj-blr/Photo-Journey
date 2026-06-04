@@ -1,0 +1,32 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "hJjW-1RAyo74_YNrnle1G"
+uri = "file://artifacts/wildpixels/public/images/hero-1.png"
+type = "image"
+title = "Elephant in Serengeti at golden hour"
+
+[[generated]]
+id = "myOK61R95KYTZyy8uu1Ei"
+uri = "file://artifacts/wildpixels/public/images/hero-2.png"
+type = "image"
+title = "Misty mountains in Patagonia"
+
+[[generated]]
+id = "QhqNZpw3nS4UqCho2tPQT"
+uri = "file://artifacts/wildpixels/public/images/hero-3.png"
+type = "image"
+title = "Leopard in the jungle"
+
+[[generated]]
+id = "H7tbsgnBcJhlQCEgmVb4B"
+uri = "file://artifacts/wildpixels/public/images/about-portrait.png"
+type = "image"
+title = "Photographer in wilderness"
+
+[[generated]]
+id = "332cd-M2R2s4sfVWo2ncS"
+uri = "file://artifacts/wildpixels/public/images/texture-1.png"
+type = "image"
+title = "Abstract golden light nature"
