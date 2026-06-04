@@ -287,6 +287,37 @@ export default function Trip() {
         </section>
       )}
 
+      {/* Travel Tips Section */}
+      {trip.travelTips && (
+        <section className="max-w-[800px] mx-auto px-6 pb-24 md:pb-32">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 1 }}
+            className="border border-white/10 rounded-2xl overflow-hidden"
+          >
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/3">
+              <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 13l4.553 2.276A1 1 0 0021 21.382V10.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 7" />
+              </svg>
+              <h2 className="text-xs font-mono uppercase tracking-widest text-white/50">Travel Tips</h2>
+            </div>
+            <div className="px-6 py-5">
+              <ul className="flex flex-col gap-2.5">
+                {trip.travelTips.split("\n").filter((l) => l.trim()).map((line, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-stone-300 leading-relaxed">
+                    <span className="text-primary mt-[3px] flex-shrink-0 text-xs">▸</span>
+                    <span>{line.replace(/^[-•*▸]\s*/, "")}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
       {/* Pinned Gallery (curated from admin) */}
       {showPinnedGallery && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">

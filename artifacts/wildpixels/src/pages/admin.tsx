@@ -333,7 +333,7 @@ function TripFormFields({
 }: {
   form: {
     title: string; location: string; country: string; month: string;
-    year: string; story: string; coverImageUrl: string; tags: string;
+    year: string; story: string; travelTips: string; coverImageUrl: string; tags: string;
     featured: boolean; googlePhotosUrl: string; galleryPhotoUrls: string[];
   };
   set: (field: string, value: string | boolean) => void;
@@ -464,6 +464,18 @@ function TripFormFields({
         />
       </Field>
 
+      <Field
+        label="Travel Tips"
+        hint="Best season, how to reach, accommodation, photography advice, etc."
+      >
+        <textarea
+          className={`${inputCls} resize-y min-h-[120px]`}
+          placeholder={"Best time: Oct–Mar\nHow to get there: Fly to Jaipur, then 3h drive\nStay: Forest rest houses near the gate\nTips: Early morning safari gives best sightings"}
+          value={form.travelTips}
+          onChange={(e) => set("travelTips", e.target.value)}
+        />
+      </Field>
+
       <label className="flex items-center gap-3 cursor-pointer">
         <div
           onClick={() => set("featured", !form.featured)}
@@ -486,7 +498,7 @@ function AddTripModal({
 }) {
   const [form, setForm] = useState({
     title: "", location: "", country: "", month: "January",
-    year: String(new Date().getFullYear()), story: "",
+    year: String(new Date().getFullYear()), story: "", travelTips: "",
     coverImageUrl: "", tags: "", featured: false, googlePhotosUrl: "",
     galleryPhotoUrls: [] as string[],
   });
@@ -516,6 +528,7 @@ function AddTripModal({
           month: form.month,
           year: Number(form.year),
           story: form.story.trim() || null,
+          travelTips: form.travelTips.trim() || null,
           coverImageUrl: form.coverImageUrl.trim() || null,
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
           featured: form.featured,
@@ -588,6 +601,7 @@ function EditModal({
     month: trip.month,
     year: String(trip.year),
     story: trip.story ?? "",
+    travelTips: (trip as typeof trip & { travelTips?: string | null }).travelTips ?? "",
     coverImageUrl: trip.coverImageUrl,
     tags: trip.tags.join(", "),
     featured: trip.featured,
@@ -618,6 +632,7 @@ function EditModal({
           month: form.month,
           year: Number(form.year),
           story: form.story,
+          travelTips: form.travelTips.trim() || null,
           coverImageUrl: form.coverImageUrl,
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
           featured: form.featured,

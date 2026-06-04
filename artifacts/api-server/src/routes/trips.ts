@@ -13,6 +13,7 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     month: trip.month,
     year: trip.year,
     story: trip.story ?? null,
+    travelTips: (trip as typeof trip & { travelTips?: string | null }).travelTips ?? null,
     coverImageUrl: trip.coverImageUrl,
     photoCount: trip.photoCount,
     tags: JSON.parse(trip.tags || "[]"),
@@ -151,7 +152,7 @@ router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 
-  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags", "googlePhotosUrl", "galleryPhotoUrls"];
+  const allowed = ["title", "location", "country", "month", "year", "story", "travelTips", "coverImageUrl", "featured", "tags", "googlePhotosUrl", "galleryPhotoUrls"];
   const updates: Record<string, unknown> = {};
 
   for (const key of allowed) {
