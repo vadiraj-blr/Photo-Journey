@@ -63,4 +63,37 @@ router.get("/:id", async (req, res) => {
   });
 });
 
+router.patch("/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+
+  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags"];
+  const updates: Record<string, unknown> = {};
+
+  for (const key of allowed) {
+    if (key in req.body) {
+      if (key === "tags") {
+        updates.tags = JSON.stringify(req.body.tags);
+      } else if (key === "year") {
+        updates.year = parseInt(req.body.year, 10);
+      } else {
+        updates[key as keyof typeof updates] = req.body[key];
+      }
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "No valid fields to update" });
+  }
+
+  const [updated] = await db
+    .update(tripsTable)
+    .set(updates as Parameters<typeof db.update>[0] extends { set: (v: infer V) => unknown } ? V : never)
+    .where(eq(tripsTable.id, id))
+    .returning();
+
+  if (!updated) return res.status(404).json({ error: "Not found" });
+  res.json(parseTrip(updated));
+});
+
 export default router;
