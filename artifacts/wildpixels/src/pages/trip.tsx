@@ -181,6 +181,11 @@ export default function Trip() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
+  // Always start at the top of the page when entering a trip
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [tripId]);
+
   // Use already-cached list data as instant placeholder so the hero shows
   // immediately without any spinner when navigating from the trip grid.
   const placeholderData = () => {
