@@ -246,6 +246,7 @@ interface TripRow {
   tags: string[];
   featured: boolean;
   googlePhotosUrl?: string | null;
+  galleryPhotoUrls?: string[];
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -261,14 +262,18 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 const inputCls =
   "bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-white/25 focus:outline-none focus:border-amber-500/60 transition-colors text-sm";
 
-function CoverPhotoPicker({
+function TripPhotoPicker({
   tripId,
   currentCover,
-  onSelect,
+  galleryUrls,
+  onSetCover,
+  onSetGallery,
 }: {
   tripId: number;
   currentCover: string;
-  onSelect: (url: string) => void;
+  galleryUrls: string[];
+  onSetCover: (url: string) => void;
+  onSetGallery: (urls: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -283,15 +288,19 @@ function CoverPhotoPicker({
     fetch(`${base}/api/trips/${tripId}/google-photos`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.photos?.length) {
-          setPhotos(data.photos);
-          setOpen(true);
-        } else {
-          setError("No photos found in the album yet.");
-        }
+        if (data.photos?.length) { setPhotos(data.photos); setOpen(true); }
+        else setError("No photos found in the album yet.");
       })
       .catch(() => setError("Could not load album."))
       .finally(() => setLoading(false));
+  };
+
+  const toggleGallery = (url: string) => {
+    if (galleryUrls.includes(url)) {
+      onSetGallery(galleryUrls.filter((u) => u !== url));
+    } else {
+      onSetGallery([...galleryUrls, url]);
+    }
   };
 
   return (
@@ -307,48 +316,87 @@ function CoverPhotoPicker({
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
       {open && photos.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <p className="text-[11px] text-white/35">Click a photo to set it as the cover</p>
-          <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
+        <div className="flex flex-col gap-3">
+          {/* Legend */}
+          <div className="flex items-center gap-4 text-[11px] text-white/35">
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-amber-500/80 inline-block" /> Thumbnail (cover)
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-3 h-3 rounded-sm bg-sky-500/80 inline-block" /> Gallery photo
+            </span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
             {photos.map((url, i) => {
-              // Use small thumb for picker, strip existing size param first
-              const base = url.replace(/=w\d+$/, "");
-              const thumb = `${base}=w300`;
-              const isSelected = currentCover === url;
+              const base2 = url.replace(/=w\d+(-h\d+)?(-no)?$/, "");
+              const thumb = `${base2}=w300`;
+              const isCover = currentCover === url;
+              const inGallery = galleryUrls.includes(url);
+
               return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => { onSelect(url); setOpen(false); }}
-                  className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
-                    isSelected
-                      ? "border-amber-500 scale-95"
-                      : "border-transparent hover:border-white/40"
-                  }`}
-                  title={`Photo ${i + 1}`}
-                >
-                  <img
-                    src={thumb}
-                    alt={`Photo ${i + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  {isSelected && (
-                    <div className="absolute inset-0 bg-amber-500/20 flex items-center justify-center">
-                      <span className="text-white text-xl font-bold drop-shadow">✓</span>
+                <div key={i} className="relative aspect-square overflow-hidden rounded-lg group">
+                  <img src={thumb} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+
+                  {/* Badges */}
+                  {isCover && (
+                    <div className="absolute top-1 left-1 bg-amber-500 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-black leading-none">
+                      Cover
                     </div>
                   )}
-                </button>
+                  {inGallery && (
+                    <div className={`absolute top-1 ${isCover ? "left-12" : "left-1"} bg-sky-500 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white leading-none`}>
+                      Gallery
+                    </div>
+                  )}
+
+                  {/* Action buttons on hover */}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                    <button
+                      type="button"
+                      onClick={() => onSetCover(url)}
+                      className={`w-full text-[10px] font-semibold py-1 rounded-md transition-colors ${
+                        isCover
+                          ? "bg-amber-500 text-black"
+                          : "bg-white/20 text-white hover:bg-amber-500/70 hover:text-black"
+                      }`}
+                    >
+                      {isCover ? "✓ Cover" : "Set Cover"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleGallery(url)}
+                      className={`w-full text-[10px] font-semibold py-1 rounded-md transition-colors ${
+                        inGallery
+                          ? "bg-sky-500 text-white"
+                          : "bg-white/20 text-white hover:bg-sky-500/70 hover:text-white"
+                      }`}
+                    >
+                      {inGallery ? "✓ Gallery" : "+ Gallery"}
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="self-start text-xs text-white/30 hover:text-white/60 transition-colors"
-          >
-            Close picker
-          </button>
+
+          <div className="flex items-center justify-between">
+            <p className="text-[11px] text-white/35">
+              {galleryUrls.length === 0
+                ? "No gallery photos selected — all album photos will show"
+                : `${galleryUrls.length} gallery photo${galleryUrls.length !== 1 ? "s" : ""} selected`}
+            </p>
+            <div className="flex items-center gap-3">
+              {galleryUrls.length > 0 && (
+                <button type="button" onClick={() => onSetGallery([])} className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors">
+                  Clear selection
+                </button>
+              )}
+              <button type="button" onClick={() => setOpen(false)} className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -358,14 +406,16 @@ function CoverPhotoPicker({
 function TripFormFields({
   form,
   set,
+  setGallery,
   tripId,
 }: {
   form: {
     title: string; location: string; country: string; month: string;
     year: string; story: string; coverImageUrl: string; tags: string;
-    featured: boolean; googlePhotosUrl: string;
+    featured: boolean; googlePhotosUrl: string; galleryPhotoUrls: string[];
   };
   set: (field: string, value: string | boolean) => void;
+  setGallery: (urls: string[]) => void;
   tripId?: number;
 }) {
   return (
@@ -401,37 +451,9 @@ function TripFormFields({
         </Field>
       </div>
 
-      <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
-        <div className="flex items-start gap-3">
-          {form.coverImageUrl && (
-            <img
-              src={form.coverImageUrl.replace(/=w\d+$/, "") + "=w120"}
-              alt="Cover preview"
-              className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-          )}
-          <Field label="Cover Image URL">
-            <input
-              className={inputCls}
-              value={form.coverImageUrl}
-              placeholder="Paste an image URL"
-              onChange={(e) => set("coverImageUrl", e.target.value)}
-            />
-          </Field>
-        </div>
-        {tripId && form.googlePhotosUrl && (
-          <CoverPhotoPicker
-            tripId={tripId}
-            currentCover={form.coverImageUrl}
-            onSelect={(url) => set("coverImageUrl", url)}
-          />
-        )}
-      </div>
-
       <Field
         label="Google Photos Album Link"
-        hint="Paste the shared album URL — photos display automatically on the trip page"
+        hint="Paste the shared album URL then use the picker below to assign photos"
       >
         <input
           className={`${inputCls} ${form.googlePhotosUrl ? "border-amber-500/40" : ""}`}
@@ -446,6 +468,62 @@ function TripFormFields({
           </a>
         )}
       </Field>
+
+      {/* Photo picker — cover + gallery selection */}
+      {tripId && form.googlePhotosUrl && (
+        <div className="flex flex-col gap-2 p-4 rounded-xl border border-white/8 bg-white/2">
+          <div className="flex items-start gap-3 mb-1">
+            {form.coverImageUrl && (
+              <img
+                src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
+                alt="Cover"
+                className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-amber-500/40"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            )}
+            <div className="flex-1 flex flex-col gap-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-white/40">Cover Image URL</span>
+              <input
+                className={inputCls}
+                value={form.coverImageUrl}
+                placeholder="Paste or pick from album below"
+                onChange={(e) => set("coverImageUrl", e.target.value)}
+              />
+            </div>
+          </div>
+          <TripPhotoPicker
+            tripId={tripId}
+            currentCover={form.coverImageUrl}
+            galleryUrls={form.galleryPhotoUrls}
+            onSetCover={(url) => set("coverImageUrl", url)}
+            onSetGallery={setGallery}
+          />
+        </div>
+      )}
+
+      {/* Fallback: no google photos yet — just show cover URL input */}
+      {!(tripId && form.googlePhotosUrl) && (
+        <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
+          <div className="flex items-start gap-3">
+            {form.coverImageUrl && (
+              <img
+                src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
+                alt="Cover preview"
+                className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+              />
+            )}
+            <Field label="Cover Image URL">
+              <input
+                className={inputCls}
+                value={form.coverImageUrl}
+                placeholder="Paste an image URL"
+                onChange={(e) => set("coverImageUrl", e.target.value)}
+              />
+            </Field>
+          </div>
+        </div>
+      )}
 
       <Field label="Tags (comma-separated)">
         <input
@@ -488,12 +566,14 @@ function AddTripModal({
     title: "", location: "", country: "", month: "January",
     year: String(new Date().getFullYear()), story: "",
     coverImageUrl: "", tags: "", featured: false, googlePhotosUrl: "",
+    galleryPhotoUrls: [] as string[],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = (field: string, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
+  const setGallery = (urls: string[]) => setForm((f) => ({ ...f, galleryPhotoUrls: urls }));
 
   const handleCreate = async () => {
     if (!form.title.trim() || !form.location.trim() || !form.country.trim()) {
@@ -518,6 +598,7 @@ function AddTripModal({
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
           featured: form.featured,
           googlePhotosUrl: form.googlePhotosUrl.trim() || null,
+          galleryPhotoUrls: form.galleryPhotoUrls,
         }),
       });
       if (!res.ok) {
@@ -544,7 +625,7 @@ function AddTripModal({
           <button onClick={onClose} className="text-white/40 hover:text-white transition-colors text-2xl leading-none" aria-label="Close">×</button>
         </div>
         <div className="p-6 flex flex-col gap-5">
-          <TripFormFields form={form} set={set} />
+          <TripFormFields form={form} set={set} setGallery={setGallery} />
           {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
           <div className="flex gap-3 pt-1">
             <button
@@ -589,6 +670,7 @@ function EditModal({
     tags: trip.tags.join(", "),
     featured: trip.featured,
     googlePhotosUrl: trip.googlePhotosUrl ?? "",
+    galleryPhotoUrls: trip.galleryPhotoUrls ?? [],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -597,6 +679,7 @@ function EditModal({
 
   const set = (field: string, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
+  const setGallery = (urls: string[]) => setForm((f) => ({ ...f, galleryPhotoUrls: urls }));
 
   const handleSave = async () => {
     setSaving(true);
@@ -617,6 +700,7 @@ function EditModal({
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
           featured: form.featured,
           googlePhotosUrl: form.googlePhotosUrl.trim() || null,
+          galleryPhotoUrls: form.galleryPhotoUrls,
         }),
       });
       if (!res.ok) {
@@ -664,7 +748,7 @@ function EditModal({
         </div>
 
         <div className="p-6 flex flex-col gap-5">
-          <TripFormFields form={form} set={set} tripId={trip.id} />
+          <TripFormFields form={form} set={set} setGallery={setGallery} tripId={trip.id} />
 
           {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
 

@@ -18,6 +18,7 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     tags: JSON.parse(trip.tags || "[]"),
     featured: trip.featured,
     googlePhotosUrl: trip.googlePhotosUrl ?? null,
+    galleryPhotoUrls: JSON.parse(trip.galleryPhotoUrls || "[]") as string[],
   };
 }
 
@@ -148,13 +149,13 @@ router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 
-  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags", "googlePhotosUrl"];
+  const allowed = ["title", "location", "country", "month", "year", "story", "coverImageUrl", "featured", "tags", "googlePhotosUrl", "galleryPhotoUrls"];
   const updates: Record<string, unknown> = {};
 
   for (const key of allowed) {
     if (key in req.body) {
-      if (key === "tags") {
-        updates.tags = JSON.stringify(req.body.tags);
+      if (key === "tags" || key === "galleryPhotoUrls") {
+        updates[key === "tags" ? "tags" : "galleryPhotoUrls"] = JSON.stringify(req.body[key]);
       } else if (key === "year") {
         updates.year = parseInt(req.body.year, 10);
       } else {

@@ -193,8 +193,11 @@ export default function Trip() {
     },
   });
 
-  const hasGooglePhotos = !!(trip as { googlePhotosUrl?: string | null } | undefined)?.googlePhotosUrl;
-  const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos);
+  const tripData = trip as { googlePhotosUrl?: string | null; galleryPhotoUrls?: string[] } | undefined;
+  const hasGooglePhotos = !!tripData?.googlePhotosUrl;
+  const pinnedGallery: string[] = tripData?.galleryPhotoUrls ?? [];
+  // Only auto-fetch Google Photos when no pinned gallery is set
+  const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos && pinnedGallery.length === 0);
 
   if (isTripLoading || isPhotosLoading) {
     return (
@@ -215,11 +218,16 @@ export default function Trip() {
 
   const googlePhotosUrl = (trip as { googlePhotosUrl?: string | null }).googlePhotosUrl;
 
-  const showGooglePhotos = hasGooglePhotos;
-  const showDbPhotos = !hasGooglePhotos && dbPhotos && dbPhotos.length > 0;
+  // Priority: pinned gallery > auto-fetched Google Photos > DB photos
+  const hasPinnedGallery = pinnedGallery.length > 0;
+  const showPinnedGallery = hasPinnedGallery;
+  const showGooglePhotos = !hasPinnedGallery && hasGooglePhotos;
+  const showDbPhotos = !hasPinnedGallery && !hasGooglePhotos && dbPhotos && dbPhotos.length > 0;
 
   // Build flat list for lightbox
-  const lightboxPhotos: { url: string }[] = showGooglePhotos
+  const lightboxPhotos: { url: string }[] = hasPinnedGallery
+    ? pinnedGallery.map((url) => ({ url }))
+    : showGooglePhotos
     ? googlePhotos
     : showDbPhotos
     ? dbPhotos.map((p) => ({ url: p.imageUrl }))
@@ -279,7 +287,50 @@ export default function Trip() {
         </section>
       )}
 
-      {/* Google Photos Gallery */}
+      {/* Pinned Gallery (curated from admin) */}
+      {showPinnedGallery && (
+        <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
+          <div className="flex items-center gap-4 mb-10">
+            <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-white/10" />
+            {googlePhotosUrl && (
+              <a href={googlePhotosUrl} target="_blank" rel="noopener noreferrer"
+                className="text-xs font-mono uppercase tracking-widest text-amber-500/70 hover:text-amber-400 transition-colors">
+                View Full Album ↗
+              </a>
+            )}
+          </div>
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            {pinnedGallery.map((url, i) => {
+              const displayUrl = url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1200";
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, delay: (i % 3) * 0.1 }}
+                  className="break-inside-avoid mb-6 relative group overflow-hidden cursor-pointer"
+                  onClick={() => setLightboxIndex(i)}
+                >
+                  <img src={displayUrl} alt={`Photo ${i + 1}`}
+                    className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
+                    loading="lazy" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-500 flex items-center justify-center">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Google Photos Gallery (auto-fetched, only when no pinned gallery) */}
       {showGooglePhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
