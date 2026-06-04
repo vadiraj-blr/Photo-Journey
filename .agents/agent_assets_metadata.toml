@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "hJjW-1RAyo74_YNrnle1G"
@@ -30,3 +29,33 @@ id = "332cd-M2R2s4sfVWo2ncS"
 uri = "file://artifacts/wildpixels/public/images/texture-1.png"
 type = "image"
 title = "Abstract golden light nature"
+
+[[outputs]]
+id = "3A-j6YWBkVOf93XcgBQ6j"
+uri = "file://artifacts/wildpixels-video/public/images/lion-dark.jpg"
+type = "image"
+title = "majestic lion in dark dramatic lighting, wildlife photography"
+
+[[outputs]]
+id = "ZpzY0Ke79__fl2YSdpThY"
+uri = "file://artifacts/wildpixels-video/public/images/savannah.jpg"
+type = "image"
+title = "dark moody dramatic african savannah landscape photography"
+
+[[outputs]]
+id = "eoOwby4QkkNBzGRlK1L5_"
+uri = "file://artifacts/wildpixels-video/public/images/jaguar.jpg"
+type = "image"
+title = "dramatic leopard or jaguar big cat close up dark cinematic lighting"
+
+[[outputs]]
+id = "Lp2FiMJwB70DY-KPm1IZk"
+uri = "file://artifacts/wildpixels-video/public/images/patagonia.jpg"
+type = "image"
+title = "dramatic patagonia mountains ice field dark cinematic lighting"
+
+[[outputs]]
+id = "Z8RytdmixxQS6wEtMizgX"
+uri = "file://artifacts/wildpixels-video/public/images/texture.jpg"
+type = "image"
+title = "dark abstract texture cinematic studio lighting"

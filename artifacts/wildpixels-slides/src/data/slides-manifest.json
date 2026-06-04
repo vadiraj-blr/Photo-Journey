@@ -1,1 +1,82 @@
-[]
+[
+  {
+    "id": "a1b2c3d4-0001-4000-8000-000000000001",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide01Cover.tsx",
+    "title": "Cover",
+    "description": "Wildpixels — cinematic dark cover with hero wildlife image",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0002-4000-8000-000000000002",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide02About.tsx",
+    "title": "Behind the Lens",
+    "description": "Vadiraj's photographer bio with split-image layout and portfolio stats",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0003-4000-8000-000000000003",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide03Featured.tsx",
+    "title": "Five Defining Journeys",
+    "description": "Grid of 5 featured trip images with location and date",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0004-4000-8000-000000000004",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide04Serengeti.tsx",
+    "title": "The Great Migration",
+    "description": "Serengeti trip story — full-bleed cinematic image with trip details",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0005-4000-8000-000000000005",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide05Patagonia.tsx",
+    "title": "Patagonia Ice Fields",
+    "description": "Patagonia trip story — split layout with large image and story text",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0006-4000-8000-000000000006",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide06Jaguars.tsx",
+    "title": "Pantanal Jaguars",
+    "description": "Pantanal jaguar expedition — dark split layout with stats",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0007-4000-8000-000000000007",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide07GlobalMap.tsx",
+    "title": "20 Trips Across the Globe",
+    "description": "Portfolio overview — all 20 trips organized by region with stats",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0008-4000-8000-000000000008",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide08Process.tsx",
+    "title": "From Idea to Image",
+    "description": "The 4-step photography process — Research, Journey, Patience, The Frame",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0009-4000-8000-000000000009",
+    "position": 9,
+    "filepath": "src/pages/slides/Slide09Gallery.tsx",
+    "title": "Portfolio Highlights",
+    "description": "Masonry-style gallery grid of highlight images",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0010-4000-8000-000000000010",
+    "position": 10,
+    "filepath": "src/pages/slides/Slide10Contact.tsx",
+    "title": "Let's Work Together",
+    "description": "Closing contact slide with dark cinematic background",
+    "speakerNotes": ""
+  }
+]
