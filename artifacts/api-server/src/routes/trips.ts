@@ -36,9 +36,11 @@ router.get("/stats", async (_req, res) => {
   const trips = await db.select().from(tripsTable);
   const photos = await db.select().from(photosTable);
   const countries = new Set(trips.map((t) => t.country));
+  const places = new Set(trips.map((t) => t.location));
   res.json({
     tripCount: trips.length,
     countryCount: countries.size,
+    placeCount: places.size,
     photoCount: photos.length,
   });
 });
