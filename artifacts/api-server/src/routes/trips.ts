@@ -54,6 +54,15 @@ router.get("/:id/google-photos", async (req, res) => {
   if (!trip) return res.status(404).json({ error: "Not found" });
   if (!trip.googlePhotosUrl) return res.json({ photos: [] });
 
+  // Helper: parse cached URLs from DB column (may not exist on old rows)
+  const getCached = (): string[] => {
+    try {
+      const raw = (trip as typeof trip & { cachedGooglePhotoUrls?: string }).cachedGooglePhotoUrls ?? "[]";
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  };
+
   try {
     const resp = await fetch(trip.googlePhotosUrl, {
       headers: {
@@ -65,13 +74,15 @@ router.get("/:id/google-photos", async (req, res) => {
     });
 
     if (!resp.ok) {
-      return res.status(502).json({ error: `Google Photos returned ${resp.status}` });
+      // Google blocked the scrape — serve whatever we cached last time
+      const cached = getCached();
+      console.warn(`Google Photos returned ${resp.status} for trip ${id}; serving ${cached.length} cached photos`);
+      return res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
     }
 
     const html = await resp.text();
 
     // Extract /pw/ photo URLs — these are actual album photos (not icons/avatars)
-    // Must include / in character class to capture the full /pw/<hash> path
     const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
     const rawMatches = html.match(urlPattern) ?? [];
 
@@ -81,14 +92,22 @@ router.get("/:id/google-photos", async (req, res) => {
     for (const url of rawMatches) {
       if (seen.has(url)) continue;
       seen.add(url);
-      // Request a consistent 1200px wide version
       photos.push(`${url}=w1200`);
+    }
+
+    // Persist to cache so future scrape failures fall back to these
+    if (photos.length > 0) {
+      await db
+        .update(tripsTable)
+        .set({ cachedGooglePhotoUrls: JSON.stringify(photos) } as Partial<typeof tripsTable.$inferInsert>)
+        .where(eq(tripsTable.id, id));
     }
 
     res.json({ photos, albumUrl: trip.googlePhotosUrl });
   } catch (err) {
     console.error("Google Photos fetch error:", err);
-    res.status(502).json({ error: "Failed to fetch Google Photos album" });
+    const cached = getCached();
+    return res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
   }
 });
 

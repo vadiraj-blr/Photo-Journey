@@ -16,6 +16,7 @@ export const tripsTable = pgTable("trips", {
   featured: boolean("featured").notNull().default(false),
   googlePhotosUrl: text("google_photos_url"),
   galleryPhotoUrls: text("gallery_photo_urls").notNull().default("[]"),
+  cachedGooglePhotoUrls: text("cached_google_photo_urls").notNull().default("[]"),
   travelTips: text("travel_tips"),
 });
 

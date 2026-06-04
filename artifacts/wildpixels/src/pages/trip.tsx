@@ -236,14 +236,18 @@ export default function Trip() {
 
   const googlePhotosUrl = (trip as { googlePhotosUrl?: string | null }).googlePhotosUrl;
 
-  // Priority: Google Photos (all) > pinned gallery > DB photos
-  const showGooglePhotos = hasGooglePhotos;
+  // Priority: Google Photos (loaded) > pinned gallery > DB photos
+  // Only show Google Photos section if still loading OR photos actually arrived
+  const googlePhotosReady = !gLoading && googlePhotos.length > 0;
+  const googlePhotosLoading = hasGooglePhotos && gLoading;
+  const showGooglePhotos = googlePhotosLoading || googlePhotosReady;
   const hasPinnedGallery = pinnedGallery.length > 0;
-  const showPinnedGallery = !hasGooglePhotos && hasPinnedGallery;
-  const showDbPhotos = !hasGooglePhotos && !hasPinnedGallery && dbPhotos && dbPhotos.length > 0;
+  // Fall back to pinned gallery / DB photos when Google Photos failed / empty
+  const showPinnedGallery = !showGooglePhotos && hasPinnedGallery;
+  const showDbPhotos = !showGooglePhotos && !hasPinnedGallery && dbPhotos && dbPhotos.length > 0;
 
   // Build flat list for lightbox
-  const lightboxPhotos: { url: string }[] = showGooglePhotos
+  const lightboxPhotos: { url: string }[] = googlePhotosReady
     ? googlePhotos
     : hasPinnedGallery
     ? pinnedGallery.map((url) => ({ url }))
