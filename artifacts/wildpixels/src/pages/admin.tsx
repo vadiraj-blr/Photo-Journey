@@ -268,8 +268,8 @@ export default function Admin() {
                     {trip.location}, {trip.country} · {trip.month} {trip.year}
                   </div>
                 </div>
-                <span className="text-white/25 group-hover:text-amber-500 transition-colors text-sm flex-shrink-0">
-                  Edit →
+                <span className="flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-black text-xs font-bold uppercase tracking-wider">
+                  Edit
                 </span>
               </button>
             ))}

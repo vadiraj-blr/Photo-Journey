@@ -8,6 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex gap-8">
           <Link href="/" className="hover:text-primary transition-colors duration-500">Portfolio</Link>
           <Link href="/about" className="hover:text-primary transition-colors duration-500">About Vadiraj</Link>
+          <Link href="/admin" className="hover:text-primary transition-colors duration-500">Admin</Link>
         </div>
       </nav>
       <main className="w-full">
