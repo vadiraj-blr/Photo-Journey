@@ -1,9 +1,20 @@
 import { motion } from "framer-motion";
-import { useGetTripStats, useGetHighlightPhotos } from "@workspace/api-client-react";
+import { useGetTripStats } from "@workspace/api-client-react";
+import { useQuery } from "@tanstack/react-query";
+
+function useHighlightPhotos() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return useQuery<{ highlightPhotoUrls: string[] }>({
+    queryKey: ["highlight-settings"],
+    queryFn: () => fetch(`${base}/api/settings`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
+}
 
 export default function About() {
   const { data: stats } = useGetTripStats();
-  const { data: highlightPhotos } = useGetHighlightPhotos();
+  const { data: settings } = useHighlightPhotos();
+  const highlights: string[] = settings?.highlightPhotoUrls ?? [];
 
   return (
     <div className="w-full bg-black min-h-screen pt-32 pb-24 text-stone-100">
@@ -60,7 +71,7 @@ export default function About() {
 
       </div>
 
-      {highlightPhotos && highlightPhotos.length > 0 && (
+      {highlights.length > 0 && (
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 mt-32">
           <motion.h2 
             initial={{ opacity: 0 }}
@@ -70,23 +81,26 @@ export default function About() {
           >
             Curated Highlights
           </motion.h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {highlightPhotos.slice(0, 3).map((photo, i) => (
-              <motion.div
-                key={photo.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: i * 0.2 }}
-                className="aspect-[4/5]"
-              >
-                <img 
-                  src={photo.imageUrl} 
-                  alt={photo.caption || "Highlight photo"}
-                  className="w-full h-full object-cover"
-                />
-              </motion.div>
-            ))}
+          <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+            {highlights.map((url, i) => {
+              const displayUrl = url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1200";
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, delay: (i % 3) * 0.15 }}
+                  className="break-inside-avoid mb-6 overflow-hidden"
+                >
+                  <img 
+                    src={displayUrl}
+                    alt={`Highlight ${i + 1}`}
+                    className="w-full object-cover"
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}

@@ -6,7 +6,7 @@ const router = Router();
 
 async function getSettings() {
   const result = await db.execute(
-    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url FROM landing_settings WHERE id = 1`
+    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url, highlight_album_url, highlight_photo_urls FROM landing_settings WHERE id = 1`
   );
   const r = result.rows[0] as Record<string, unknown> | undefined;
   return {
@@ -15,6 +15,8 @@ async function getSettings() {
     tripsOnHomepage: (r?.trips_on_homepage as number) ?? 0,
     heroTagline: (r?.hero_tagline as string) ?? "Enter the Wild.",
     heroAlbumUrl: (r?.hero_album_url as string | null) ?? null,
+    highlightAlbumUrl: (r?.highlight_album_url as string | null) ?? null,
+    highlightPhotoUrls: JSON.parse((r?.highlight_photo_urls as string) || "[]") as string[],
   };
 }
 
@@ -63,6 +65,19 @@ router.get("/hero-photos", async (_req, res) => {
   }
 });
 
+router.get("/highlight-photos", async (_req, res) => {
+  try {
+    const settings = await getSettings();
+    if (!settings.highlightAlbumUrl) return res.json({ photos: [] });
+    const photos = await fetchPhotosFromUrl(settings.highlightAlbumUrl);
+    res.set("Cache-Control", "public, max-age=300");
+    res.json({ photos });
+  } catch (err) {
+    console.error("Highlight photos fetch error:", err);
+    res.status(502).json({ error: "Failed to fetch highlight album" });
+  }
+});
+
 router.patch("/", async (req, res) => {
   try {
     const body = req.body as Record<string, unknown>;
@@ -84,6 +99,14 @@ router.patch("/", async (req, res) => {
     if ("heroAlbumUrl" in body) {
       const v = (body.heroAlbumUrl as string)?.trim() || null;
       await db.execute(sql`UPDATE landing_settings SET hero_album_url = ${v} WHERE id = 1`);
+    }
+    if ("highlightAlbumUrl" in body) {
+      const v = (body.highlightAlbumUrl as string)?.trim() || null;
+      await db.execute(sql`UPDATE landing_settings SET highlight_album_url = ${v} WHERE id = 1`);
+    }
+    if ("highlightPhotoUrls" in body) {
+      const v = JSON.stringify(body.highlightPhotoUrls ?? []);
+      await db.execute(sql`UPDATE landing_settings SET highlight_photo_urls = ${v} WHERE id = 1`);
     }
 
     res.json(await getSettings());

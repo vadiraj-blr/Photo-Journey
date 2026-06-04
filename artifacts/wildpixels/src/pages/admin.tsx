@@ -7,6 +7,9 @@ interface LandingSettings {
   heroImageSourceTripId: number | null;
   tripsOnHomepage: number;
   heroTagline: string;
+  heroAlbumUrl?: string | null;
+  highlightAlbumUrl?: string | null;
+  highlightPhotoUrls?: string[];
 }
 
 function useLandingSettings() {
@@ -26,20 +29,64 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
     heroAlbumUrl: "",
     heroTagline: "Enter the Wild.",
     tripsOnHomepage: "0",
+    highlightAlbumUrl: "",
+    highlightPhotoUrls: [] as string[],
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Highlight picker state
+  const [hlPhotos, setHlPhotos] = useState<string[]>([]);
+  const [hlLoading, setHlLoading] = useState(false);
+  const [hlError, setHlError] = useState<string | null>(null);
+  const [hlOpen, setHlOpen] = useState(false);
+
   useEffect(() => {
     if (settings) {
       setForm({
-        heroAlbumUrl: (settings as typeof settings & { heroAlbumUrl?: string }).heroAlbumUrl ?? "",
+        heroAlbumUrl: settings.heroAlbumUrl ?? "",
         heroTagline: settings.heroTagline ?? "Enter the Wild.",
         tripsOnHomepage: String(settings.tripsOnHomepage ?? 0),
+        highlightAlbumUrl: settings.highlightAlbumUrl ?? "",
+        highlightPhotoUrls: settings.highlightPhotoUrls ?? [],
       });
     }
   }, [settings]);
+
+  const loadHighlightPhotos = async () => {
+    if (!form.highlightAlbumUrl.trim()) return;
+    setHlLoading(true);
+    setHlError(null);
+    try {
+      // Save album URL first, then fetch photos
+      await fetch(`${base}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ highlightAlbumUrl: form.highlightAlbumUrl.trim() }),
+      });
+      const r = await fetch(`${base}/api/settings/highlight-photos`).then((x) => x.json());
+      if (r.photos && Array.isArray(r.photos)) {
+        setHlPhotos(r.photos);
+        setHlOpen(true);
+      } else {
+        setHlError("No photos found. Make sure it's a public shared album.");
+      }
+    } catch {
+      setHlError("Could not load photos.");
+    } finally {
+      setHlLoading(false);
+    }
+  };
+
+  const toggleHighlight = (url: string) => {
+    setForm((f) => ({
+      ...f,
+      highlightPhotoUrls: f.highlightPhotoUrls.includes(url)
+        ? f.highlightPhotoUrls.filter((u) => u !== url)
+        : [...f.highlightPhotoUrls, url],
+    }));
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -52,11 +99,14 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
           heroAlbumUrl: form.heroAlbumUrl.trim() || null,
           heroTagline: form.heroTagline,
           tripsOnHomepage: Number(form.tripsOnHomepage),
+          highlightAlbumUrl: form.highlightAlbumUrl.trim() || null,
+          highlightPhotoUrls: form.highlightPhotoUrls,
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
       queryClient.invalidateQueries({ queryKey: ["hero-photos"] });
+      queryClient.invalidateQueries({ queryKey: ["highlight-settings"] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e: unknown) {
@@ -101,6 +151,63 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
         />
         {form.heroAlbumUrl && (
           <p className="text-[11px] text-amber-500/70">Album set — save to apply.</p>
+        )}
+      </div>
+
+      {/* Curated Highlights picker */}
+      <div className="flex flex-col gap-2 p-4 rounded-xl border border-white/8 bg-white/2">
+        <div className="flex flex-col gap-1 mb-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/50">Curated Highlights (About Page)</span>
+          <p className="text-[11px] text-white/30">Paste a Google Photos shared album, load it, then click photos to select the ones shown in the "Curated Highlights" section.</p>
+        </div>
+        <input
+          className={inputCls}
+          placeholder="https://photos.google.com/share/…"
+          value={form.highlightAlbumUrl}
+          onChange={(e) => setForm((f) => ({ ...f, highlightAlbumUrl: e.target.value }))}
+        />
+        <button
+          type="button"
+          onClick={loadHighlightPhotos}
+          disabled={hlLoading || !form.highlightAlbumUrl.trim()}
+          className="self-start text-xs font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+        >
+          {hlLoading ? "Loading…" : "Load photos"}
+        </button>
+        {hlError && <p className="text-red-400 text-xs">{hlError}</p>}
+
+        {hlOpen && hlPhotos.length > 0 && (
+          <div className="flex flex-col gap-2 mt-1">
+            <div className="flex items-center justify-between text-[11px] text-white/35">
+              <span>{form.highlightPhotoUrls.length} photo{form.highlightPhotoUrls.length !== 1 ? "s" : ""} selected</span>
+              {form.highlightPhotoUrls.length > 0 && (
+                <button type="button" onClick={() => setForm((f) => ({ ...f, highlightPhotoUrls: [] }))}
+                  className="text-red-400/60 hover:text-red-400 transition-colors">Clear all</button>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
+              {hlPhotos.map((url, i) => {
+                const thumb = url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w300";
+                const selected = form.highlightPhotoUrls.includes(url);
+                return (
+                  <div key={i}
+                    className={`relative aspect-square overflow-hidden rounded-lg cursor-pointer ring-2 transition-all duration-150 ${selected ? "ring-amber-500" : "ring-transparent hover:ring-white/30"}`}
+                    onClick={() => toggleHighlight(url)}
+                  >
+                    <img src={thumb} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                    {selected && (
+                      <div className="absolute inset-0 bg-amber-500/25 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-black text-xs font-bold">
+                          {form.highlightPhotoUrls.indexOf(url) + 1}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-white/25">Click to select / deselect. Numbers show display order. Save Settings below to apply.</p>
+          </div>
         )}
       </div>
 
