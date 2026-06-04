@@ -117,7 +117,6 @@ export default function Home() {
             transition={{ duration: 1, delay: 1 }}
             className="mt-8 flex justify-center gap-12 text-sm tracking-widest text-primary font-mono uppercase"
           >
-            <span>{stats?.tripCount ?? allTrips?.length ?? "—"} Trips</span>
             <span>{(stats as typeof stats & { placeCount?: number })?.placeCount ?? "—"} Places</span>
             <span>{stats?.photoCount ?? "—"} Photos</span>
           </motion.div>
