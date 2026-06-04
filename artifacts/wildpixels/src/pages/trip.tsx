@@ -1,11 +1,216 @@
 import { useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useGetTrip, getGetTripQueryKey, useListPhotos, getListPhotosQueryKey, getListTripsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface GooglePhoto {
   url: string;
+}
+
+interface Comment {
+  id: number;
+  name: string;
+  body: string;
+  createdAt: string;
+}
+
+function useReactions(tripId: number) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const [counts, setCounts] = useState({ likes: 0, dislikes: 0 });
+  const STORAGE_KEY = `trip_reaction_${tripId}`;
+  const [voted, setVoted] = useState<"like" | "dislike" | null>(() => {
+    try { return (localStorage.getItem(STORAGE_KEY) as "like" | "dislike" | null) ?? null; } catch { return null; }
+  });
+
+  useEffect(() => {
+    if (!tripId) return;
+    fetch(`${base}/api/trips/${tripId}/reactions`)
+      .then(r => r.json())
+      .then(data => setCounts({ likes: data.likes ?? 0, dislikes: data.dislikes ?? 0 }))
+      .catch(() => {});
+  }, [tripId]);
+
+  const react = async (type: "like" | "dislike") => {
+    let action: string;
+    if (voted === type) {
+      // toggle off
+      action = type === "like" ? "unlike" : "undislike";
+      setVoted(null);
+      try { localStorage.removeItem(STORAGE_KEY); } catch {}
+    } else {
+      // undo previous vote first if exists
+      if (voted) {
+        await fetch(`${base}/api/trips/${tripId}/reactions`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: voted === "like" ? "unlike" : "undislike" }),
+        });
+      }
+      action = type;
+      setVoted(type);
+      try { localStorage.setItem(STORAGE_KEY, type); } catch {}
+    }
+    const res = await fetch(`${base}/api/trips/${tripId}/reactions`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: action }),
+    });
+    const data = await res.json();
+    setCounts({ likes: data.likes ?? 0, dislikes: data.dislikes ?? 0 });
+  };
+
+  return { counts, voted, react };
+}
+
+function useComments(tripId: number) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(() => {
+    if (!tripId) return;
+    fetch(`${base}/api/trips/${tripId}/comments`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setComments(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [tripId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const post = async (name: string, body: string): Promise<{ ok: boolean; error?: string }> => {
+    const res = await fetch(`${base}/api/trips/${tripId}/comments`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, body }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data.error ?? "Failed to post comment." };
+    setComments(prev => [data, ...prev]);
+    return { ok: true };
+  };
+
+  return { comments, loading, post };
+}
+
+function CommentsSection({ tripId }: { tripId: number }) {
+  const { counts, voted, react } = useReactions(tripId);
+  const { comments, loading: commentsLoading, post } = useComments(tripId);
+  const [name, setName] = useState("");
+  const [body, setBody] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(false);
+    if (!name.trim() || !body.trim()) { setError("Name and comment are required."); return; }
+    setSubmitting(true);
+    const result = await post(name.trim(), body.trim());
+    setSubmitting(false);
+    if (result.ok) { setBody(""); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
+    else setError(result.error ?? "Something went wrong.");
+  };
+
+  const inputCls = "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-stone-200 placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors";
+
+  return (
+    <section className="max-w-[800px] mx-auto px-6 py-16 md:py-24">
+      {/* Reactions */}
+      <div className="flex items-center gap-6 mb-14">
+        <div className="flex items-center gap-4 mb-0">
+          <p className="text-xs font-mono uppercase tracking-widest text-white/30">Reactions</p>
+          <div className="h-px w-8 bg-white/10" />
+        </div>
+        <button
+          onClick={() => react("like")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${voted === "like" ? "border-primary bg-primary/20 text-primary" : "border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"}`}
+        >
+          <svg className="w-4 h-4" fill={voted === "like" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+          </svg>
+          <span>{counts.likes}</span>
+        </button>
+        <button
+          onClick={() => react("dislike")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${voted === "dislike" ? "border-red-400/60 bg-red-400/10 text-red-400" : "border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"}`}
+        >
+          <svg className="w-4 h-4 rotate-180" fill={voted === "dislike" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+          </svg>
+          <span>{counts.dislikes}</span>
+        </button>
+      </div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-4 mb-10">
+        <p className="text-xs font-mono uppercase tracking-widest text-white/30">Comments</p>
+        <div className="flex-1 h-px bg-white/10" />
+        <span className="text-xs text-white/20">{comments.length}</span>
+      </div>
+
+      {/* Comment form */}
+      <form onSubmit={handleSubmit} className="mb-12 space-y-3">
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          placeholder="Your name"
+          maxLength={80}
+          className={inputCls}
+        />
+        <textarea
+          ref={textareaRef}
+          value={body}
+          onChange={e => setBody(e.target.value)}
+          placeholder="Share your thoughts about this expedition…"
+          rows={4}
+          maxLength={1000}
+          className={`${inputCls} resize-none`}
+        />
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-xs text-white/25">{body.length}/1000</div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="px-5 py-2 bg-primary text-black text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-primary/90 disabled:opacity-50 transition-all"
+          >
+            {submitting ? "Posting…" : "Post Comment"}
+          </button>
+        </div>
+        {error && <p className="text-red-400 text-xs">{error}</p>}
+        {success && <p className="text-primary text-xs">Comment posted!</p>}
+      </form>
+
+      {/* Comments list */}
+      {commentsLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="w-6 h-6 border-t border-primary rounded-full animate-spin" />
+        </div>
+      ) : comments.length === 0 ? (
+        <p className="text-center text-white/20 text-sm py-10">Be the first to leave a comment.</p>
+      ) : (
+        <div className="space-y-6">
+          {comments.map(c => (
+            <motion.div
+              key={c.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="border border-white/8 rounded-xl px-5 py-4 bg-white/3"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-stone-200">{c.name}</span>
+                <span className="text-xs text-white/25">
+                  {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                </span>
+              </div>
+              <p className="text-sm text-stone-400 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
 
 function useGooglePhotos(tripId: number, hasGooglePhotosUrl: boolean) {
@@ -497,6 +702,9 @@ export default function Trip() {
           </motion.div>
         </section>
       )}
+
+      {/* Comments & Reactions */}
+      <CommentsSection tripId={tripId} />
 
     </div>
   );
