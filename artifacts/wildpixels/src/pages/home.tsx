@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 interface LandingSettings {
   heroImageUrl: string;
   heroImageSourceTripId: number | null;
+  heroAlbumUrl: string | null;
   tripsOnHomepage: number;
   heroTagline: string;
 }
@@ -20,23 +21,21 @@ function useLandingSettings() {
   });
 }
 
-function useHeroSlideshow(tripId: number | null | undefined) {
+function useHeroSlideshow(heroAlbumUrl: string | null | undefined) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-  const [photos, setPhotos] = useState<string[]>([]);
+  const { data } = useQuery<{ photos: string[] }>({
+    queryKey: ["hero-photos"],
+    queryFn: () => fetch(`${base}/api/settings/hero-photos`).then((r) => r.json()),
+    enabled: !!heroAlbumUrl,
+    staleTime: 300_000,
+  });
+
+  const photos = data?.photos ?? [];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (!tripId) { setPhotos([]); return; }
-    fetch(`${base}/api/trips/${tripId}/google-photos`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.photos && Array.isArray(data.photos) && data.photos.length > 0) {
-          setPhotos(data.photos);
-          setIndex(0);
-        }
-      })
-      .catch(() => {});
-  }, [tripId, base]);
+    setIndex(0);
+  }, [photos.length]);
 
   useEffect(() => {
     if (photos.length < 2) return;
@@ -57,9 +56,9 @@ export default function Home() {
   const limit = settings?.tripsOnHomepage ?? 0;
   const displayedTrips = limit > 0 ? (allTrips ?? []).slice(0, limit) : (allTrips ?? []);
 
-  const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroImageSourceTripId);
+  const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroAlbumUrl);
 
-  // Determine hero source: slideshow album > static URL > trip cover fallback
+  // Determine hero source: dedicated hero album > trip cover fallback
   const hasSlideshowAlbum = slideshowPhotos.length > 0;
   const fallbackTrip = featuredTrips?.[0] || allTrips?.[0];
   const staticHeroUrl = settings?.heroImageUrl || fallbackTrip?.coverImageUrl || "";

@@ -6,7 +6,7 @@ const router = Router();
 
 async function getSettings() {
   const result = await db.execute(
-    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline FROM landing_settings WHERE id = 1`
+    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url FROM landing_settings WHERE id = 1`
   );
   const r = result.rows[0] as Record<string, unknown> | undefined;
   return {
@@ -14,7 +14,31 @@ async function getSettings() {
     heroImageSourceTripId: (r?.hero_image_source_trip_id as number | null) ?? null,
     tripsOnHomepage: (r?.trips_on_homepage as number) ?? 0,
     heroTagline: (r?.hero_tagline as string) ?? "Enter the Wild.",
+    heroAlbumUrl: (r?.hero_album_url as string | null) ?? null,
   };
+}
+
+async function fetchPhotosFromUrl(albumUrl: string): Promise<string[]> {
+  const resp = await fetch(albumUrl, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      Accept: "text/html,application/xhtml+xml",
+    },
+    redirect: "follow",
+  });
+  if (!resp.ok) throw new Error(`Fetch returned ${resp.status}`);
+  const html = await resp.text();
+  const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
+  const rawMatches = html.match(urlPattern) ?? [];
+  const seen = new Set<string>();
+  const photos: string[] = [];
+  for (const url of rawMatches) {
+    if (seen.has(url)) continue;
+    seen.add(url);
+    photos.push(`${url}=w1920`);
+  }
+  return photos;
 }
 
 router.get("/", async (_req, res) => {
@@ -23,6 +47,19 @@ router.get("/", async (_req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to load settings" });
+  }
+});
+
+router.get("/hero-photos", async (_req, res) => {
+  try {
+    const settings = await getSettings();
+    if (!settings.heroAlbumUrl) return res.json({ photos: [] });
+    const photos = await fetchPhotosFromUrl(settings.heroAlbumUrl);
+    res.set("Cache-Control", "public, max-age=300");
+    res.json({ photos });
+  } catch (err) {
+    console.error("Hero photos fetch error:", err);
+    res.status(502).json({ error: "Failed to fetch hero album" });
   }
 });
 
@@ -43,6 +80,10 @@ router.patch("/", async (req, res) => {
     }
     if ("heroTagline" in body) {
       await db.execute(sql`UPDATE landing_settings SET hero_tagline = ${body.heroTagline as string} WHERE id = 1`);
+    }
+    if ("heroAlbumUrl" in body) {
+      const v = (body.heroAlbumUrl as string)?.trim() || null;
+      await db.execute(sql`UPDATE landing_settings SET hero_album_url = ${v} WHERE id = 1`);
     }
 
     res.json(await getSettings());

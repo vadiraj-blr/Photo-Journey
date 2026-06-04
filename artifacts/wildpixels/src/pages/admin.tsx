@@ -23,10 +23,9 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const [form, setForm] = useState({
-    heroImageUrl: "",
-    heroImageSourceTripId: null as number | null,
-    tripsOnHomepage: "0",
+    heroAlbumUrl: "",
     heroTagline: "Enter the Wild.",
+    tripsOnHomepage: "0",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -35,10 +34,9 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
   useEffect(() => {
     if (settings) {
       setForm({
-        heroImageUrl: settings.heroImageUrl ?? "",
-        heroImageSourceTripId: settings.heroImageSourceTripId ?? null,
-        tripsOnHomepage: String(settings.tripsOnHomepage ?? 0),
+        heroAlbumUrl: (settings as typeof settings & { heroAlbumUrl?: string }).heroAlbumUrl ?? "",
         heroTagline: settings.heroTagline ?? "Enter the Wild.",
+        tripsOnHomepage: String(settings.tripsOnHomepage ?? 0),
       });
     }
   }, [settings]);
@@ -51,14 +49,14 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          heroImageUrl: form.heroImageUrl,
-          heroImageSourceTripId: form.heroImageSourceTripId,
-          tripsOnHomepage: Number(form.tripsOnHomepage),
+          heroAlbumUrl: form.heroAlbumUrl.trim() || null,
           heroTagline: form.heroTagline,
+          tripsOnHomepage: Number(form.tripsOnHomepage),
         }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["hero-photos"] });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (e: unknown) {
@@ -68,9 +66,6 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
     }
   };
 
-  const tripsWithPhotos = trips.filter((t) => t.googlePhotosUrl);
-  const selectedTrip = tripsWithPhotos.find((t) => t.id === form.heroImageSourceTripId);
-
   if (isLoading) return null;
 
   return (
@@ -78,7 +73,7 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
       <div>
         <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-1">Landing Page</p>
         <h2 className="text-xl font-serif font-bold text-white">Customise Homepage</h2>
-        <p className="text-white/40 text-sm mt-1">Choose the hero slideshow album and how many trips to show.</p>
+        <p className="text-white/40 text-sm mt-1">Set the hero slideshow album and how many trips to show.</p>
       </div>
 
       {/* Hero tagline */}
@@ -92,74 +87,20 @@ function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
         />
       </div>
 
-      {/* Hero slideshow source */}
-      <div className="flex flex-col gap-3">
+      {/* Hero slideshow album URL */}
+      <div className="flex flex-col gap-2">
         <span className="text-xs font-mono uppercase tracking-widest text-white/40">Hero Slideshow Album</span>
-
-        {tripsWithPhotos.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-[11px] text-white/30">
-              Photos cycle every 3 s. Pick which trip's album to use as the hero background:
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {tripsWithPhotos.map((t) => {
-                const isActive = form.heroImageSourceTripId === t.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() =>
-                      setForm((f) => ({
-                        ...f,
-                        heroImageSourceTripId: isActive ? null : t.id,
-                        heroImageUrl: isActive ? f.heroImageUrl : "",
-                      }))
-                    }
-                    className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
-                      isActive
-                        ? "border-amber-500 text-amber-400 bg-amber-500/15 font-semibold"
-                        : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
-                    }`}
-                  >
-                    {isActive && <span className="text-amber-400">▶</span>}
-                    {t.title}
-                  </button>
-                );
-              })}
-            </div>
-            {selectedTrip && (
-              <p className="text-[11px] text-amber-500/70">
-                Slideshow will use all photos from "{selectedTrip.title}".
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-[11px] text-white/25">
-            Add a Google Photos album to any trip above to use it as the hero slideshow.
-          </p>
-        )}
-
-        {/* Fallback static URL (shown only when no album is selected) */}
-        {!form.heroImageSourceTripId && (
-          <div className="flex flex-col gap-1">
-            <p className="text-[11px] text-white/30">Or use a single static image URL as fallback:</p>
-            <div className="flex items-start gap-3">
-              {form.heroImageUrl && (
-                <img
-                  src={form.heroImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
-                  alt="Hero preview"
-                  className="w-20 h-14 rounded-lg object-cover flex-shrink-0 border border-white/10"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              )}
-              <input
-                className={`${inputCls} flex-1`}
-                placeholder="Paste a static image URL…"
-                value={form.heroImageUrl}
-                onChange={(e) => setForm((f) => ({ ...f, heroImageUrl: e.target.value }))}
-              />
-            </div>
-          </div>
+        <p className="text-[11px] text-white/30">
+          Paste your Google Photos album URL. All photos in that album will cycle every 3 s on the homepage hero.
+        </p>
+        <input
+          className={inputCls}
+          placeholder="https://photos.google.com/share/…"
+          value={form.heroAlbumUrl}
+          onChange={(e) => setForm((f) => ({ ...f, heroAlbumUrl: e.target.value }))}
+        />
+        {form.heroAlbumUrl && (
+          <p className="text-[11px] text-amber-500/70">Album set — save to apply.</p>
         )}
       </div>
 
