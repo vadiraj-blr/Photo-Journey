@@ -355,14 +355,228 @@ function CoverPhotoPicker({
   );
 }
 
+function TripFormFields({
+  form,
+  set,
+  tripId,
+}: {
+  form: {
+    title: string; location: string; country: string; month: string;
+    year: string; story: string; coverImageUrl: string; tags: string;
+    featured: boolean; googlePhotosUrl: string;
+  };
+  set: (field: string, value: string | boolean) => void;
+  tripId?: number;
+}) {
+  return (
+    <>
+      <Field label="Title">
+        <input className={inputCls} value={form.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Ranthambore Tiger Reserve" />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Location">
+          <input className={inputCls} value={form.location} onChange={(e) => set("location", e.target.value)} placeholder="e.g. Ranthambore" />
+        </Field>
+        <Field label="Country">
+          <input className={inputCls} value={form.country} onChange={(e) => set("country", e.target.value)} placeholder="e.g. India" />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Month">
+          <select className={inputCls} value={form.month} onChange={(e) => set("month", e.target.value)}>
+            {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </Field>
+        <Field label="Year">
+          <input
+            className={inputCls}
+            type="number"
+            min={2000}
+            max={2099}
+            value={form.year}
+            onChange={(e) => set("year", e.target.value)}
+          />
+        </Field>
+      </div>
+
+      <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
+        <div className="flex items-start gap-3">
+          {form.coverImageUrl && (
+            <img
+              src={form.coverImageUrl.replace(/=w\d+$/, "") + "=w120"}
+              alt="Cover preview"
+              className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <Field label="Cover Image URL">
+            <input
+              className={inputCls}
+              value={form.coverImageUrl}
+              placeholder="Paste an image URL"
+              onChange={(e) => set("coverImageUrl", e.target.value)}
+            />
+          </Field>
+        </div>
+        {tripId && form.googlePhotosUrl && (
+          <CoverPhotoPicker
+            tripId={tripId}
+            currentCover={form.coverImageUrl}
+            onSelect={(url) => set("coverImageUrl", url)}
+          />
+        )}
+      </div>
+
+      <Field
+        label="Google Photos Album Link"
+        hint="Paste the shared album URL — photos display automatically on the trip page"
+      >
+        <input
+          className={`${inputCls} ${form.googlePhotosUrl ? "border-amber-500/40" : ""}`}
+          placeholder="https://photos.app.goo.gl/..."
+          value={form.googlePhotosUrl}
+          onChange={(e) => set("googlePhotosUrl", e.target.value)}
+        />
+        {form.googlePhotosUrl && (
+          <a href={form.googlePhotosUrl} target="_blank" rel="noopener noreferrer"
+            className="text-[11px] text-amber-500/70 hover:text-amber-400 mt-1">
+            Open album ↗
+          </a>
+        )}
+      </Field>
+
+      <Field label="Tags (comma-separated)">
+        <input
+          className={inputCls}
+          placeholder="wildlife, landscape, birds"
+          value={form.tags}
+          onChange={(e) => set("tags", e.target.value)}
+        />
+      </Field>
+
+      <Field label="Story / Description">
+        <textarea
+          className={`${inputCls} resize-y min-h-[100px]`}
+          value={form.story}
+          onChange={(e) => set("story", e.target.value)}
+        />
+      </Field>
+
+      <label className="flex items-center gap-3 cursor-pointer">
+        <div
+          onClick={() => set("featured", !form.featured)}
+          className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${form.featured ? "bg-amber-500" : "bg-white/15"}`}
+        >
+          <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.featured ? "translate-x-5" : "translate-x-1"}`} />
+        </div>
+        <span className="text-sm text-white/70">Featured on homepage</span>
+      </label>
+    </>
+  );
+}
+
+function AddTripModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [form, setForm] = useState({
+    title: "", location: "", country: "", month: "January",
+    year: String(new Date().getFullYear()), story: "",
+    coverImageUrl: "", tags: "", featured: false, googlePhotosUrl: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const set = (field: string, value: string | boolean) =>
+    setForm((f) => ({ ...f, [field]: value }));
+
+  const handleCreate = async () => {
+    if (!form.title.trim() || !form.location.trim() || !form.country.trim()) {
+      setError("Title, location and country are required.");
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      const res = await fetch(`${base}/api/trips`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          location: form.location.trim(),
+          country: form.country.trim(),
+          month: form.month,
+          year: Number(form.year),
+          story: form.story.trim() || null,
+          coverImageUrl: form.coverImageUrl.trim() || null,
+          tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          featured: form.featured,
+          googlePhotosUrl: form.googlePhotosUrl.trim() || null,
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
+      onCreated();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Create failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="bg-[#141414] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-[#141414] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-white">Add New Trip</h2>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors text-2xl leading-none" aria-label="Close">×</button>
+        </div>
+        <div className="p-6 flex flex-col gap-5">
+          <TripFormFields form={form} set={set} />
+          {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+          <div className="flex gap-3 pt-1">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 rounded-xl border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={saving}
+              className="flex-1 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold transition-colors text-sm disabled:opacity-50"
+            >
+              {saving ? "Creating…" : "Create Trip"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EditModal({
   trip,
   onClose,
   onSaved,
+  onDeleted,
 }: {
   trip: TripRow;
   onClose: () => void;
   onSaved: () => void;
+  onDeleted: () => void;
 }) {
   const [form, setForm] = useState({
     title: trip.title,
@@ -378,8 +592,10 @@ function EditModal({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  const set = (field: keyof typeof form, value: string | boolean) =>
+  const set = (field: string, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
 
   const handleSave = async () => {
@@ -416,6 +632,26 @@ function EditModal({
     }
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError(null);
+    try {
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      const res = await fetch(`${base}/api/trips/${trip.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? `HTTP ${res.status}`);
+      }
+      onDeleted();
+      onClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Delete failed");
+      setConfirmDelete(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
@@ -424,139 +660,18 @@ function EditModal({
       <div className="bg-[#141414] border border-white/10 rounded-2xl w-full max-w-lg max-h-[90dvh] overflow-y-auto shadow-2xl">
         <div className="sticky top-0 bg-[#141414] border-b border-white/10 px-6 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold text-white">Edit Trip</h2>
-          <button
-            onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors text-2xl leading-none"
-            aria-label="Close"
-          >
-            ×
-          </button>
+          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors text-2xl leading-none" aria-label="Close">×</button>
         </div>
 
         <div className="p-6 flex flex-col gap-5">
-          <Field label="Title">
-            <input className={inputCls} value={form.title} onChange={(e) => set("title", e.target.value)} />
-          </Field>
+          <TripFormFields form={form} set={set} tripId={trip.id} />
 
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Location">
-              <input className={inputCls} value={form.location} onChange={(e) => set("location", e.target.value)} />
-            </Field>
-            <Field label="Country">
-              <input className={inputCls} value={form.country} onChange={(e) => set("country", e.target.value)} />
-            </Field>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Month">
-              <select className={inputCls} value={form.month} onChange={(e) => set("month", e.target.value)}>
-                {MONTHS.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </Field>
-            <Field label="Year">
-              <input
-                className={inputCls}
-                type="number"
-                min={2000}
-                max={2099}
-                value={form.year}
-                onChange={(e) => set("year", e.target.value)}
-              />
-            </Field>
-          </div>
-
-          {/* Cover image section */}
-          <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
-            <div className="flex items-start gap-3">
-              {form.coverImageUrl && (
-                <img
-                  src={form.coverImageUrl.replace(/=w\d+$/, "") + "=w120"}
-                  alt="Cover preview"
-                  className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              )}
-              <Field label="Cover Image URL">
-                <input
-                  className={inputCls}
-                  value={form.coverImageUrl}
-                  onChange={(e) => set("coverImageUrl", e.target.value)}
-                />
-              </Field>
-            </div>
-
-            {trip.googlePhotosUrl && (
-              <CoverPhotoPicker
-                tripId={trip.id}
-                currentCover={form.coverImageUrl}
-                onSelect={(url) => set("coverImageUrl", url)}
-              />
-            )}
-          </div>
-
-          <Field
-            label="Google Photos Album Link"
-            hint="Paste the shared album URL — photos display automatically on the trip page (10–15 photos)"
-          >
-            <input
-              className={`${inputCls} ${form.googlePhotosUrl ? "border-amber-500/40" : ""}`}
-              placeholder="https://photos.app.goo.gl/... or https://photos.google.com/share/..."
-              value={form.googlePhotosUrl}
-              onChange={(e) => set("googlePhotosUrl", e.target.value)}
-            />
-            {form.googlePhotosUrl && (
-              <a
-                href={form.googlePhotosUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[11px] text-amber-500/70 hover:text-amber-400 mt-1"
-              >
-                Open album ↗
-              </a>
-            )}
-          </Field>
-
-          <Field label="Tags (comma-separated)">
-            <input
-              className={inputCls}
-              placeholder="wildlife, landscape, birds"
-              value={form.tags}
-              onChange={(e) => set("tags", e.target.value)}
-            />
-          </Field>
-
-          <Field label="Story / Description">
-            <textarea
-              className={`${inputCls} resize-y min-h-[100px]`}
-              value={form.story}
-              onChange={(e) => set("story", e.target.value)}
-            />
-          </Field>
-
-          <label className="flex items-center gap-3 cursor-pointer">
-            <div
-              onClick={() => set("featured", !form.featured)}
-              className={`w-10 h-6 rounded-full transition-colors relative flex-shrink-0 ${
-                form.featured ? "bg-amber-500" : "bg-white/15"
-              }`}
-            >
-              <div
-                className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                  form.featured ? "translate-x-5" : "translate-x-1"
-                }`}
-              />
-            </div>
-            <span className="text-sm text-white/70">Featured on homepage</span>
-          </label>
-
-          {error && (
-            <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
 
           <div className="flex gap-3 pt-1">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm"
+              className="px-4 py-2.5 rounded-xl border border-white/15 text-white/60 hover:text-white hover:border-white/30 transition-colors text-sm"
             >
               Cancel
             </button>
@@ -568,6 +683,43 @@ function EditModal({
               {saving ? "Saving…" : "Save Changes"}
             </button>
           </div>
+
+          {/* Delete zone */}
+          <div className="border-t border-white/8 pt-4 mt-1">
+            {!confirmDelete ? (
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(true)}
+                className="text-xs font-mono uppercase tracking-wider text-red-400/60 hover:text-red-400 transition-colors"
+              >
+                Delete this trip…
+              </button>
+            ) : (
+              <div className="bg-red-950/40 border border-red-500/30 rounded-xl p-4 flex flex-col gap-3">
+                <p className="text-sm text-red-300 font-medium">
+                  Permanently delete <strong>"{trip.title}"</strong>?
+                </p>
+                <p className="text-xs text-red-400/60">This will also remove all associated photos and cannot be undone.</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmDelete(false)}
+                    className="flex-1 px-3 py-2 rounded-lg border border-white/15 text-white/50 hover:text-white text-xs transition-colors"
+                  >
+                    Keep it
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex-1 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {deleting ? "Deleting…" : "Yes, delete"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -578,10 +730,13 @@ export default function Admin() {
   const { data: trips, isLoading } = useListTrips();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<TripRow | null>(null);
+  const [adding, setAdding] = useState(false);
   const [saved, setSaved] = useState<number | null>(null);
 
+  const refresh = () => queryClient.invalidateQueries();
+
   const handleSaved = (id: number) => {
-    queryClient.invalidateQueries();
+    refresh();
     setSaved(id);
     setTimeout(() => setSaved(null), 2500);
   };
@@ -599,20 +754,31 @@ export default function Admin() {
         {/* Landing Page Settings */}
         <LandingSettingsPanel trips={typedTrips} />
 
-        {/* Section header */}
-        <div className="mb-6">
-          <p className="text-xs font-mono uppercase tracking-widest text-white/40 mb-1">Trips</p>
-          <h2 className="text-xl font-serif font-bold text-white">Manage Trips</h2>
-          <p className="text-white/40 mt-1 text-sm">
-            Click <strong className="text-white/60">Edit</strong> on any trip to update details, set a Google Photos album, or pick a cover photo.
-          </p>
+        {/* Section header + Add button */}
+        <div className="mb-6 flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-white/40 mb-1">Trips</p>
+            <h2 className="text-xl font-serif font-bold text-white">Manage Trips</h2>
+            <p className="text-white/40 mt-1 text-sm">
+              Click <strong className="text-white/60">Edit</strong> to update, or <strong className="text-white/60">Add Trip</strong> to create a new one.
+            </p>
+          </div>
+          <button
+            onClick={() => setAdding(true)}
+            className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/8 hover:bg-white/12 border border-white/15 hover:border-amber-500/40 text-white text-sm font-medium transition-all"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Trip
+          </button>
         </div>
 
         {isLoading ? (
           <div className="text-white/40 text-sm">Loading trips…</div>
         ) : (
           <div className="flex flex-col gap-3">
-            {(trips as TripRow[] | undefined)?.map((trip) => (
+            {typedTrips.map((trip) => (
               <button
                 key={trip.id}
                 onClick={() => setEditing(trip)}
@@ -628,28 +794,20 @@ export default function Admin() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-white truncate">{trip.title}</span>
                     {trip.featured && (
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
-                        Featured
-                      </span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full flex-shrink-0">Featured</span>
                     )}
                     {trip.googlePhotosUrl && (
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full flex-shrink-0">
-                        Google Photos ✓
-                      </span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Google Photos ✓</span>
                     )}
                     {saved === trip.id && (
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full flex-shrink-0">
-                        Saved ✓
-                      </span>
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-green-400 bg-green-400/10 px-2 py-0.5 rounded-full flex-shrink-0">Saved ✓</span>
                     )}
                   </div>
                   <div className="text-sm text-white/45 mt-0.5 truncate">
                     {trip.location}, {trip.country} · {trip.month} {trip.year}
                   </div>
                 </div>
-                <span className="flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-black text-xs font-bold uppercase tracking-wider">
-                  Edit
-                </span>
+                <span className="flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 text-black text-xs font-bold uppercase tracking-wider">Edit</span>
               </button>
             ))}
           </div>
@@ -661,6 +819,14 @@ export default function Admin() {
           trip={editing}
           onClose={() => setEditing(null)}
           onSaved={() => handleSaved(editing.id)}
+          onDeleted={() => { refresh(); setEditing(null); }}
+        />
+      )}
+
+      {adding && (
+        <AddTripModal
+          onClose={() => setAdding(false)}
+          onCreated={() => { refresh(); setAdding(false); }}
         />
       )}
     </div>

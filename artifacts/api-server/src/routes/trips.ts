@@ -111,6 +111,39 @@ router.get("/:id", async (req, res) => {
   });
 });
 
+router.post("/", async (req, res) => {
+  const { title, location, country, month, year, story, coverImageUrl, tags, featured, googlePhotosUrl } = req.body;
+  if (!title || !location || !country || !month || !year) {
+    return res.status(400).json({ error: "title, location, country, month and year are required" });
+  }
+  const [created] = await db
+    .insert(tripsTable)
+    .values({
+      title,
+      location,
+      country,
+      month,
+      year: parseInt(year, 10),
+      story: story ?? null,
+      coverImageUrl: coverImageUrl || "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
+      photoCount: 0,
+      tags: JSON.stringify(tags ?? []),
+      featured: featured ?? false,
+      googlePhotosUrl: googlePhotosUrl ?? null,
+    })
+    .returning();
+  res.status(201).json(parseTrip(created));
+});
+
+router.delete("/:id", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  await db.delete(photosTable).where(eq(photosTable.tripId, id));
+  const [deleted] = await db.delete(tripsTable).where(eq(tripsTable.id, id)).returning();
+  if (!deleted) return res.status(404).json({ error: "Not found" });
+  res.json({ success: true });
+});
+
 router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
