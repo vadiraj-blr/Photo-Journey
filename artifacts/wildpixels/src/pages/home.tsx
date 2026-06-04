@@ -69,9 +69,9 @@ export default function Home() {
             transition={{ duration: 1, delay: 1 }}
             className="mt-8 flex justify-center gap-12 text-sm tracking-widest text-primary font-mono uppercase"
           >
-            <span>{stats?.tripCount || 0} Trips</span>
-            <span>{stats?.countryCount || 0} Countries</span>
-            <span>{stats?.photoCount || 0} Photos</span>
+            <span>{stats?.tripCount ?? allTrips?.length ?? "—"} Trips</span>
+            <span>{stats?.countryCount ?? "—"} Countries</span>
+            <span>{stats?.photoCount ?? "—"} Photos</span>
           </motion.div>
         </div>
       </section>
