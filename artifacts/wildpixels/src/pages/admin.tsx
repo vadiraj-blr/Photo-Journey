@@ -1,6 +1,233 @@
 import { useState, useEffect } from "react";
 import { useListTrips } from "@workspace/api-client-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
+
+interface LandingSettings {
+  heroImageUrl: string;
+  heroImageSourceTripId: number | null;
+  tripsOnHomepage: number;
+  heroTagline: string;
+}
+
+function useLandingSettings() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return useQuery<LandingSettings>({
+    queryKey: ["landing-settings"],
+    queryFn: () => fetch(`${base}/api/settings`).then((r) => r.json()),
+  });
+}
+
+function LandingSettingsPanel({ trips }: { trips: TripRow[] }) {
+  const { data: settings, isLoading } = useLandingSettings();
+  const queryClient = useQueryClient();
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const [form, setForm] = useState({
+    heroImageUrl: "",
+    tripsOnHomepage: "0",
+    heroTagline: "Enter the Wild.",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerPhotos, setPickerPhotos] = useState<string[]>([]);
+  const [pickerLoading, setPickerLoading] = useState(false);
+  const [pickerTripId, setPickerTripId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        heroImageUrl: settings.heroImageUrl ?? "",
+        tripsOnHomepage: String(settings.tripsOnHomepage ?? 0),
+        heroTagline: settings.heroTagline ?? "Enter the Wild.",
+      });
+    }
+  }, [settings]);
+
+  const loadPickerPhotos = async (tripId: number) => {
+    setPickerLoading(true);
+    setPickerTripId(tripId);
+    setPickerPhotos([]);
+    try {
+      const data = await fetch(`${base}/api/trips/${tripId}/google-photos`).then((r) => r.json());
+      if (data.photos?.length) setPickerPhotos(data.photos);
+    } finally {
+      setPickerLoading(false);
+      setShowPicker(true);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          heroImageUrl: form.heroImageUrl,
+          tripsOnHomepage: Number(form.tripsOnHomepage),
+          heroTagline: form.heroTagline,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tripsWithPhotos = trips.filter((t) => t.googlePhotosUrl);
+
+  if (isLoading) return null;
+
+  return (
+    <div className="mb-12 rounded-2xl border border-amber-500/20 bg-amber-500/4 p-6 flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-1">Landing Page</p>
+        <h2 className="text-xl font-serif font-bold text-white">Customise Homepage</h2>
+        <p className="text-white/40 text-sm mt-1">Choose the hero background photo and how many trips to show.</p>
+      </div>
+
+      {/* Hero tagline */}
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Hero Tagline</span>
+        <input
+          className={inputCls}
+          value={form.heroTagline}
+          onChange={(e) => setForm((f) => ({ ...f, heroTagline: e.target.value }))}
+          placeholder="Enter the Wild."
+        />
+      </div>
+
+      {/* Hero image */}
+      <div className="flex flex-col gap-3">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Hero Background Photo</span>
+
+        <div className="flex items-start gap-3">
+          {form.heroImageUrl && (
+            <img
+              src={form.heroImageUrl.replace(/=w\d+$/, "") + "=w120"}
+              alt="Hero preview"
+              className="w-20 h-14 rounded-lg object-cover flex-shrink-0 border border-white/10"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <input
+            className={`${inputCls} flex-1`}
+            placeholder="Paste an image URL, or pick from a trip's Google Photos below"
+            value={form.heroImageUrl}
+            onChange={(e) => setForm((f) => ({ ...f, heroImageUrl: e.target.value }))}
+          />
+        </div>
+
+        {tripsWithPhotos.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="text-[11px] text-white/30">Pick from a trip's Google Photos album:</p>
+            <div className="flex flex-wrap gap-2">
+              {tripsWithPhotos.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => loadPickerPhotos(t.id)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                    pickerTripId === t.id && showPicker
+                      ? "border-amber-500 text-amber-400 bg-amber-500/10"
+                      : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
+                  }`}
+                >
+                  {t.title}
+                </button>
+              ))}
+            </div>
+            {pickerLoading && <p className="text-[11px] text-white/30">Loading photos…</p>}
+
+            {showPicker && pickerPhotos.length > 0 && (
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 max-h-52 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
+                {pickerPhotos.map((url, i) => {
+                  const thumb = url.replace(/=w\d+$/, "") + "=w200";
+                  const isSelected = form.heroImageUrl === url;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => { setForm((f) => ({ ...f, heroImageUrl: url })); setShowPicker(false); }}
+                      className={`relative aspect-square overflow-hidden rounded-lg border-2 transition-all ${
+                        isSelected ? "border-amber-500" : "border-transparent hover:border-white/40"
+                      }`}
+                    >
+                      <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-amber-500/30 flex items-center justify-center">
+                          <span className="text-white font-bold drop-shadow">✓</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {tripsWithPhotos.length === 0 && (
+          <p className="text-[11px] text-white/25">
+            Add a Google Photos album to any trip above to pick hero photos from it.
+          </p>
+        )}
+      </div>
+
+      {/* Trips count */}
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Number of Trips Shown</span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {[["0", "All trips"], ["3", "3"], ["6", "6"], ["9", "9"], ["12", "12"]].map(([val, label]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, tripsOnHomepage: val }))}
+              className={`px-4 py-2 rounded-lg border text-sm transition-colors ${
+                form.tripsOnHomepage === val
+                  ? "border-amber-500 bg-amber-500/15 text-amber-400 font-semibold"
+                  : "border-white/15 text-white/50 hover:border-white/30 hover:text-white"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          <span className="text-white/25 text-xs">or type a number:</span>
+          <input
+            type="number"
+            min={0}
+            max={100}
+            className={`${inputCls} w-20`}
+            value={form.tripsOnHomepage}
+            onChange={(e) => setForm((f) => ({ ...f, tripsOnHomepage: e.target.value }))}
+          />
+        </div>
+        <p className="text-[11px] text-white/25">
+          {form.tripsOnHomepage === "0" ? "All trips will be shown." : `Only the first ${form.tripsOnHomepage} trips (ordered by year) will appear on the homepage.`}
+        </p>
+      </div>
+
+      {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+
+      <button
+        type="button"
+        onClick={handleSave}
+        disabled={saving}
+        className="self-start px-6 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-semibold text-sm transition-colors disabled:opacity-50"
+      >
+        {saving ? "Saving…" : saved ? "Saved ✓" : "Save Homepage Settings"}
+      </button>
+    </div>
+  );
+}
 
 const MONTHS = [
   "January","February","March","April","May","June",
@@ -359,14 +586,25 @@ export default function Admin() {
     setTimeout(() => setSaved(null), 2500);
   };
 
+  const typedTrips = (trips as TripRow[] | undefined) ?? [];
+
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white px-4 py-12">
       <div className="max-w-4xl mx-auto">
         <div className="mb-10">
           <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-2">Admin</p>
-          <h1 className="text-3xl font-serif font-bold">Manage Trips</h1>
-          <p className="text-white/50 mt-2 text-sm">
-            Click <strong className="text-white/70">Edit</strong> on any trip to update details, paste a Google Photos album link, or pick a cover photo from the album.
+          <h1 className="text-3xl font-serif font-bold">Wildpixels Admin</h1>
+        </div>
+
+        {/* Landing Page Settings */}
+        <LandingSettingsPanel trips={typedTrips} />
+
+        {/* Section header */}
+        <div className="mb-6">
+          <p className="text-xs font-mono uppercase tracking-widest text-white/40 mb-1">Trips</p>
+          <h2 className="text-xl font-serif font-bold text-white">Manage Trips</h2>
+          <p className="text-white/40 mt-1 text-sm">
+            Click <strong className="text-white/60">Edit</strong> on any trip to update details, set a Google Photos album, or pick a cover photo.
           </p>
         </div>
 
