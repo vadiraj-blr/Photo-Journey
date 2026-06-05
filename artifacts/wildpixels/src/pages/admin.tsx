@@ -13,6 +13,7 @@ interface LandingSettings {
   aboutTitle?: string;
   aboutPortraitUrl?: string;
   aboutBio?: string;
+  aboutAlbumUrl?: string;
 }
 
 function useLandingSettings() {
@@ -907,6 +908,9 @@ function AboutSettingsPanel() {
         aboutPortraitUrl: settings.aboutPortraitUrl ?? "/images/about-portrait.png",
         aboutBio: settings.aboutBio ?? "",
       });
+      if (settings.aboutAlbumUrl) {
+        setAlbumUrl(settings.aboutAlbumUrl);
+      }
     }
   }, [settings]);
 
@@ -915,6 +919,13 @@ function AboutSettingsPanel() {
     setAlbumLoading(true);
     setAlbumError(null);
     try {
+      // Persist the album URL immediately so it's remembered
+      await fetch(`${base}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ aboutAlbumUrl: albumUrl.trim() }),
+      });
+      queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
       const r = await fetch(`${base}/api/settings/album-photos?url=${encodeURIComponent(albumUrl.trim())}`).then((x) => x.json());
       if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
         setAlbumPhotos(r.photos);
@@ -936,7 +947,7 @@ function AboutSettingsPanel() {
       const res = await fetch(`${base}/api/settings`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, aboutAlbumUrl: albumUrl.trim() }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
