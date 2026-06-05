@@ -893,6 +893,13 @@ function AboutSettingsPanel() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Portrait album picker state
+  const [albumUrl, setAlbumUrl] = useState("");
+  const [albumPhotos, setAlbumPhotos] = useState<string[]>([]);
+  const [albumLoading, setAlbumLoading] = useState(false);
+  const [albumError, setAlbumError] = useState<string | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
   useEffect(() => {
     if (settings) {
       setForm({
@@ -902,6 +909,25 @@ function AboutSettingsPanel() {
       });
     }
   }, [settings]);
+
+  const loadAlbumPhotos = async () => {
+    if (!albumUrl.trim()) return;
+    setAlbumLoading(true);
+    setAlbumError(null);
+    try {
+      const r = await fetch(`${base}/api/settings/album-photos?url=${encodeURIComponent(albumUrl.trim())}`).then((x) => x.json());
+      if (r.photos && Array.isArray(r.photos) && r.photos.length > 0) {
+        setAlbumPhotos(r.photos);
+        setPickerOpen(true);
+      } else {
+        setAlbumError("No photos found. Make sure it's a public shared album.");
+      }
+    } catch {
+      setAlbumError("Could not load photos.");
+    } finally {
+      setAlbumLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -934,26 +960,106 @@ function AboutSettingsPanel() {
         <p className="text-white/40 text-sm mt-1">Update your bio, portrait photo, and page heading.</p>
       </div>
 
-      {/* Portrait preview + URL */}
-      <div className="flex items-start gap-4">
+      {/* Portrait section */}
+      <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/3">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Portrait Photo</span>
+
+        {/* Current portrait preview */}
         {form.aboutPortraitUrl && (
-          <img
-            src={form.aboutPortraitUrl}
-            alt="Portrait preview"
-            className="w-20 h-24 rounded-xl object-cover flex-shrink-0 border border-white/10"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
+          <div className="flex items-center gap-3">
+            <img
+              src={form.aboutPortraitUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w400"}
+              alt="Portrait preview"
+              className="w-16 h-20 rounded-lg object-cover flex-shrink-0 border border-white/10"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-white/30 font-mono truncate">{form.aboutPortraitUrl}</p>
+              <p className="text-[11px] text-white/20 mt-0.5">Currently selected portrait</p>
+            </div>
+          </div>
         )}
-        <div className="flex flex-col gap-1 flex-1">
-          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Portrait Image URL</span>
+
+        {/* Album picker */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] text-white/30">Paste a Google Photos shared album URL to choose your portrait:</span>
+          <div className="flex gap-2">
+            <input
+              className={`${inputCls} flex-1`}
+              value={albumUrl}
+              onChange={(e) => { setAlbumUrl(e.target.value); setPickerOpen(false); setAlbumPhotos([]); setAlbumError(null); }}
+              placeholder="https://photos.app.goo.gl/..."
+            />
+            <button
+              type="button"
+              onClick={loadAlbumPhotos}
+              disabled={albumLoading || !albumUrl.trim()}
+              className="flex-shrink-0 px-4 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-500/30 text-sky-300 text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-40"
+            >
+              {albumLoading ? "Loading…" : "Load Photos"}
+            </button>
+          </div>
+          {albumError && <p className="text-xs text-red-400">{albumError}</p>}
+        </div>
+
+        {/* Or paste direct URL */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[11px] text-white/30">Or paste a direct image URL:</span>
           <input
             className={inputCls}
             value={form.aboutPortraitUrl}
             onChange={(e) => setForm((f) => ({ ...f, aboutPortraitUrl: e.target.value }))}
-            placeholder="/images/about-portrait.png or https://..."
+            placeholder="/images/about-portrait.png or https://lh3.googleusercontent.com/..."
           />
-          <span className="text-[11px] text-white/25">Paste a direct image URL (lh3.googleusercontent.com works too)</span>
         </div>
+
+        {/* Photo grid */}
+        {pickerOpen && albumPhotos.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-white/40">{albumPhotos.length} photos — click one to use as portrait</span>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className="text-xs text-white/30 hover:text-white/60 transition-colors"
+              >
+                Close ✕
+              </button>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[400px] overflow-y-auto pr-1">
+              {albumPhotos.map((url, i) => {
+                const thumb = url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w400-h400-c";
+                const selected = form.aboutPortraitUrl === url;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      setForm((f) => ({ ...f, aboutPortraitUrl: url }));
+                      setPickerOpen(false);
+                    }}
+                    className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                      selected
+                        ? "border-sky-400 ring-2 ring-sky-400/40"
+                        : "border-transparent hover:border-sky-400/50"
+                    }`}
+                  >
+                    <img
+                      src={thumb}
+                      alt={`Photo ${i + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    {selected && (
+                      <div className="absolute inset-0 bg-sky-400/20 flex items-center justify-center">
+                        <span className="text-sky-300 text-lg">✓</span>
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Heading */}

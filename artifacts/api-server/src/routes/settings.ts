@@ -81,6 +81,19 @@ router.get("/highlight-photos", async (_req, res) => {
   }
 });
 
+router.get("/album-photos", async (req, res) => {
+  try {
+    const url = (req.query.url as string)?.trim();
+    if (!url) return res.json({ photos: [] });
+    const photos = await fetchPhotosFromUrl(url);
+    res.set("Cache-Control", "public, max-age=300");
+    res.json({ photos });
+  } catch (err) {
+    console.error("Album photos fetch error:", err);
+    res.status(502).json({ error: "Failed to fetch album" });
+  }
+});
+
 router.patch("/", async (req, res) => {
   try {
     const body = req.body as Record<string, unknown>;
