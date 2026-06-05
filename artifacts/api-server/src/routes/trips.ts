@@ -35,14 +35,31 @@ router.get("/featured", async (_req, res) => {
 
 router.get("/stats", async (_req, res) => {
   const trips = await db.select().from(tripsTable);
-  const photos = await db.select().from(photosTable);
+  const dbPhotos = await db.select().from(photosTable);
   const countries = new Set(trips.map((t) => t.country));
   const places = new Set(trips.map((t) => t.location));
+
+  // Count photos from all sources per trip: Google cache > pinned gallery > DB photos
+  const dbPhotosByTrip = new Map<number, number>();
+  for (const p of dbPhotos) {
+    dbPhotosByTrip.set(p.tripId, (dbPhotosByTrip.get(p.tripId) ?? 0) + 1);
+  }
+
+  let photoCount = 0;
+  for (const trip of trips) {
+    const t = trip as typeof trip & { cachedGooglePhotoUrls?: string };
+    const cached: string[] = (() => { try { return JSON.parse(t.cachedGooglePhotoUrls ?? "[]"); } catch { return []; } })();
+    const pinned: string[] = (() => { try { return JSON.parse(trip.galleryPhotoUrls ?? "[]"); } catch { return []; } })();
+    if (cached.length > 0) photoCount += cached.length;
+    else if (pinned.length > 0) photoCount += pinned.length;
+    else photoCount += dbPhotosByTrip.get(trip.id) ?? 0;
+  }
+
   res.json({
     tripCount: trips.length,
     countryCount: countries.size,
     placeCount: places.size,
-    photoCount: photos.length,
+    photoCount,
   });
 });
 
@@ -95,11 +112,14 @@ router.get("/:id/google-photos", async (req, res) => {
       photos.push(`${url}=w1200`);
     }
 
-    // Persist to cache so future scrape failures fall back to these
+    // Persist to cache and sync photo_count so future scrape failures fall back to these
     if (photos.length > 0) {
       await db
         .update(tripsTable)
-        .set({ cachedGooglePhotoUrls: JSON.stringify(photos) } as Partial<typeof tripsTable.$inferInsert>)
+        .set({
+          cachedGooglePhotoUrls: JSON.stringify(photos),
+          photoCount: photos.length,
+        } as Partial<typeof tripsTable.$inferInsert>)
         .where(eq(tripsTable.id, id));
     }
 
