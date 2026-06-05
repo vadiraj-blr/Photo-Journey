@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useGetTripStats, useListTrips } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
@@ -7,6 +8,9 @@ interface AboutSettings {
   aboutTitle: string;
   aboutPortraitUrl: string;
   aboutBio: string;
+  contactEmail: string;
+  contactPhone: string;
+  contactLocation: string;
 }
 
 interface TripRow {
@@ -25,7 +29,6 @@ function useAboutSettings() {
   });
 }
 
-// Seeded pseudo-random for consistent layout
 function seededRand(seed: number) {
   const x = Math.sin(seed + 1) * 10000;
   return x - Math.floor(x);
@@ -53,6 +56,150 @@ const OPACITY_CLASSES = [
   "text-white/45",
 ];
 
+function ContactForm({ toEmail }: { toEmail: string }) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [focused, setFocused] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${base}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
+      setDone(true);
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send message.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const fieldCls = "w-full bg-transparent text-sm text-stone-200 placeholder:text-white/20 focus:outline-none";
+
+  if (done) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-2xl border border-emerald-500/25 bg-emerald-500/8 p-10 text-center"
+      >
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+          <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p className="text-emerald-300 font-medium mb-1">Message sent!</p>
+        <p className="text-white/30 text-sm">{toEmail ? `Your message is on its way to Vadiraj.` : "Your message has been received."}</p>
+        <button
+          onClick={() => setDone(false)}
+          className="mt-6 text-xs text-white/30 hover:text-white/60 transition-colors underline underline-offset-2"
+        >
+          Send another message
+        </button>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.form
+      onSubmit={handleSubmit}
+      className={`rounded-2xl border transition-all duration-300 overflow-hidden ${focused
+        ? "border-amber-500/25 shadow-[0_0_40px_rgba(245,158,11,0.06)]"
+        : "border-white/8"} bg-white/3`}
+    >
+      {/* Name + Email row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/6">
+        <div className="px-5 py-4">
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Your Name</label>
+          <input
+            required
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Vadiraj Kulkarni"
+            className={fieldCls}
+          />
+        </div>
+        <div className="px-5 py-4">
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Your Email</label>
+          <input
+            required
+            type="email"
+            value={form.email}
+            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="you@example.com"
+            className={fieldCls}
+          />
+        </div>
+      </div>
+
+      {/* Subject */}
+      <div className="border-t border-white/6 px-5 py-4">
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Subject</label>
+        <input
+          value={form.subject}
+          onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Licensing enquiry / Collaboration / Just saying hi…"
+          className={fieldCls}
+        />
+      </div>
+
+      {/* Message */}
+      <div className="border-t border-white/6 px-5 py-4">
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Message</label>
+        <textarea
+          required
+          rows={5}
+          maxLength={2000}
+          value={form.message}
+          onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholder="Tell me about your project, or just share what moved you…"
+          className={`${fieldCls} resize-none leading-relaxed`}
+        />
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-white/6 px-5 py-4 flex items-center justify-between gap-4">
+        <span className="text-[11px] text-white/20 font-mono">{form.message.length}/2000</span>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200"
+        >
+          {submitting ? "Sending…" : "Send Message"}
+          {!submitting && (
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          )}
+        </button>
+      </div>
+
+      {error && (
+        <div className="border-t border-red-500/20 bg-red-500/8 px-5 py-3 text-xs text-red-400">{error}</div>
+      )}
+    </motion.form>
+  );
+}
+
 export default function About() {
   const { data: stats } = useGetTripStats();
   const { data: settings } = useAboutSettings();
@@ -63,8 +210,10 @@ export default function About() {
   const aboutTitle = settings?.aboutTitle ?? "The Lens.";
   const portraitUrl = settings?.aboutPortraitUrl ?? "/images/about-portrait.png";
   const bioRaw = settings?.aboutBio ?? "";
+  const contactEmail = settings?.contactEmail ?? "";
+  const contactPhone = settings?.contactPhone ?? "";
+  const contactLocation = settings?.contactLocation ?? "";
 
-  // Collect unique locations from trips
   const placeWords: string[] = [];
   const seen = new Set<string>();
   for (const trip of trips) {
@@ -81,12 +230,13 @@ export default function About() {
         "From the mist-shrouded peaks of Patagonia to the golden savannas of the Serengeti, his visual diary captures moments of profound silence and fierce power. This portfolio is a curated collection of a personal legend.",
       ];
 
+  const hasContact = contactEmail || contactPhone || contactLocation;
+
   return (
     <div className="w-full bg-black min-h-screen pt-32 pb-24 text-stone-100">
 
       {/* Hero: Portrait + Bio */}
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center">
-
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -107,13 +257,9 @@ export default function About() {
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
           className="space-y-8"
         >
-          <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-primary">
-            {aboutTitle}
-          </h1>
+          <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-primary">{aboutTitle}</h1>
           <div className="space-y-6 text-lg text-muted-foreground font-sans font-light leading-relaxed max-w-lg">
-            {paragraphs.map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
+            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
           </div>
           <div className="pt-8 border-t border-border grid grid-cols-3 gap-8">
             <div className="space-y-2">
@@ -130,16 +276,13 @@ export default function About() {
             </div>
           </div>
         </motion.div>
-
       </div>
 
       {/* Places Word Map */}
       {placeWords.length > 0 && (
         <div className="mt-32 relative overflow-hidden">
-          {/* Fade edges */}
           <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
           <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -149,7 +292,6 @@ export default function About() {
           >
             <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/25">Places Witnessed</p>
           </motion.div>
-
           <div className="px-8 md:px-16 flex flex-wrap justify-center items-baseline gap-x-6 gap-y-4 max-w-[1100px] mx-auto">
             {placeWords.map((place, i) => {
               const r1 = seededRand(i * 3);
@@ -172,6 +314,91 @@ export default function About() {
           </div>
         </div>
       )}
+
+      {/* Contact Section */}
+      <div className="max-w-[900px] mx-auto px-6 md:px-12 mt-32">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="mb-12"
+        >
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-500/70 mb-3">Get in Touch</p>
+          <h2 className="text-4xl md:text-5xl font-serif text-stone-100 mb-4">Let's Connect.</h2>
+          <p className="text-white/40 font-light max-w-lg">
+            Whether you're interested in licensing an image, planning a collaboration, or simply want to share what moved you — I'd love to hear from you.
+          </p>
+        </motion.div>
+
+        {/* Contact details */}
+        {hasContact && (
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
+          >
+            {contactEmail && (
+              <a
+                href={`mailto:${contactEmail}`}
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300"
+              >
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/25 transition-colors">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Email</p>
+                  <p className="text-sm text-stone-300 group-hover:text-amber-300 transition-colors break-all">{contactEmail}</p>
+                </div>
+              </a>
+            )}
+            {contactPhone && (
+              <a
+                href={`tel:${contactPhone.replace(/\s/g, "")}`}
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300"
+              >
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/25 transition-colors">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Phone</p>
+                  <p className="text-sm text-stone-300 group-hover:text-amber-300 transition-colors">{contactPhone}</p>
+                </div>
+              </a>
+            )}
+            {contactLocation && (
+              <div className="flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Based in</p>
+                  <p className="text-sm text-stone-300">{contactLocation}</p>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Contact form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.15 }}
+        >
+          <ContactForm toEmail={contactEmail} />
+        </motion.div>
+      </div>
 
       {/* Curated Highlights */}
       {highlights.length > 0 && (
@@ -196,18 +423,13 @@ export default function About() {
                   transition={{ duration: 0.8, delay: (i % 3) * 0.15 }}
                   className="break-inside-avoid mb-6 overflow-hidden"
                 >
-                  <img
-                    src={displayUrl}
-                    alt={`Highlight ${i + 1}`}
-                    className="w-full object-cover"
-                  />
+                  <img src={displayUrl} alt={`Highlight ${i + 1}`} className="w-full object-cover" />
                 </motion.div>
               );
             })}
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -6,7 +6,7 @@ const router = Router();
 
 async function getSettings() {
   const result = await db.execute(
-    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url, highlight_album_url, highlight_photo_urls, about_title, about_portrait_url, about_bio, about_album_url FROM landing_settings WHERE id = 1`
+    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url, highlight_album_url, highlight_photo_urls, about_title, about_portrait_url, about_bio, about_album_url, contact_email, contact_phone, contact_location FROM landing_settings WHERE id = 1`
   );
   const r = result.rows[0] as Record<string, unknown> | undefined;
   return {
@@ -21,6 +21,9 @@ async function getSettings() {
     aboutPortraitUrl: (r?.about_portrait_url as string) ?? "/images/about-portrait.png",
     aboutBio: (r?.about_bio as string) ?? "",
     aboutAlbumUrl: (r?.about_album_url as string) ?? "",
+    contactEmail: (r?.contact_email as string) ?? "",
+    contactPhone: (r?.contact_phone as string) ?? "",
+    contactLocation: (r?.contact_location as string) ?? "",
   };
 }
 
@@ -137,6 +140,15 @@ router.patch("/", async (req, res) => {
     if ("aboutAlbumUrl" in body) {
       const v = (body.aboutAlbumUrl as string)?.trim() || "";
       await db.execute(sql`UPDATE landing_settings SET about_album_url = ${v} WHERE id = 1`);
+    }
+    if ("contactEmail" in body) {
+      await db.execute(sql`UPDATE landing_settings SET contact_email = ${(body.contactEmail as string)?.trim() || ""} WHERE id = 1`);
+    }
+    if ("contactPhone" in body) {
+      await db.execute(sql`UPDATE landing_settings SET contact_phone = ${(body.contactPhone as string)?.trim() || ""} WHERE id = 1`);
+    }
+    if ("contactLocation" in body) {
+      await db.execute(sql`UPDATE landing_settings SET contact_location = ${(body.contactLocation as string)?.trim() || ""} WHERE id = 1`);
     }
 
     res.json(await getSettings());

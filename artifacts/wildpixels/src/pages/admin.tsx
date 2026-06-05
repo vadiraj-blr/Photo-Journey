@@ -14,6 +14,9 @@ interface LandingSettings {
   aboutPortraitUrl?: string;
   aboutBio?: string;
   aboutAlbumUrl?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  contactLocation?: string;
 }
 
 function useLandingSettings() {
@@ -1112,6 +1115,123 @@ function AboutSettingsPanel() {
   );
 }
 
+function ContactSettingsPanel() {
+  const { data: settings, isLoading } = useLandingSettings();
+  const queryClient = useQueryClient();
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const [form, setForm] = useState({
+    contactEmail: "",
+    contactPhone: "",
+    contactLocation: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        contactEmail: settings.contactEmail ?? "",
+        contactPhone: settings.contactPhone ?? "",
+        contactLocation: settings.contactLocation ?? "",
+      });
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["about-settings"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) return null;
+
+  return (
+    <div className="mb-12 rounded-2xl border border-emerald-500/20 bg-emerald-500/4 p-6 flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-mono uppercase tracking-widest text-emerald-400 mb-1">Contact Details</p>
+        <h2 className="text-xl font-serif font-bold text-white">Edit Contact Info</h2>
+        <p className="text-white/40 text-sm mt-1">These appear on the About page. Email is also used to receive contact form submissions.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Email Address</span>
+          <input
+            className={inputCls}
+            type="email"
+            value={form.contactEmail}
+            onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
+            placeholder="vadiraj@example.com"
+          />
+          <span className="text-[11px] text-white/20">Contact form submissions will be sent here</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Phone Number</span>
+          <input
+            className={inputCls}
+            type="tel"
+            value={form.contactPhone}
+            onChange={(e) => setForm((f) => ({ ...f, contactPhone: e.target.value }))}
+            placeholder="+91 98765 43210"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Location</span>
+        <input
+          className={inputCls}
+          value={form.contactLocation}
+          onChange={(e) => setForm((f) => ({ ...f, contactLocation: e.target.value }))}
+          placeholder="Bengaluru, India"
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-bold transition-colors disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save Contact Info"}
+        </button>
+        {saved && <span className="text-xs text-emerald-400 font-mono">Saved ✓</span>}
+        {error && <span className="text-xs text-red-400">{error}</span>}
+      </div>
+
+      <div className="rounded-xl border border-amber-500/15 bg-amber-500/5 p-4 flex gap-3">
+        <svg className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-amber-300 font-medium">To enable email delivery</p>
+          <p className="text-[11px] text-white/30 leading-relaxed">
+            Add <code className="text-amber-400/70">GMAIL_USER</code> and <code className="text-amber-400/70">GMAIL_APP_PASSWORD</code> as secrets in your Replit project. Use a Gmail App Password (not your regular password). Contact form messages are always saved in the database regardless.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { data: trips, isLoading } = useListTrips();
   const queryClient = useQueryClient();
@@ -1142,6 +1262,9 @@ export default function Admin() {
 
         {/* About Page Settings */}
         <AboutSettingsPanel />
+
+        {/* Contact Details */}
+        <ContactSettingsPanel />
 
         {/* Section header + Add button */}
         <div className="mb-6 flex items-end justify-between gap-4">
