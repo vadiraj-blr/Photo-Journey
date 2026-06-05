@@ -10,6 +10,9 @@ interface LandingSettings {
   heroAlbumUrl?: string | null;
   highlightAlbumUrl?: string | null;
   highlightPhotoUrls?: string[];
+  aboutTitle?: string;
+  aboutPortraitUrl?: string;
+  aboutBio?: string;
 }
 
 function useLandingSettings() {
@@ -876,6 +879,122 @@ function EditModal({
   );
 }
 
+function AboutSettingsPanel() {
+  const { data: settings, isLoading } = useLandingSettings();
+  const queryClient = useQueryClient();
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  const [form, setForm] = useState({
+    aboutTitle: "The Lens.",
+    aboutPortraitUrl: "/images/about-portrait.png",
+    aboutBio: "",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setForm({
+        aboutTitle: settings.aboutTitle ?? "The Lens.",
+        aboutPortraitUrl: settings.aboutPortraitUrl ?? "/images/about-portrait.png",
+        aboutBio: settings.aboutBio ?? "",
+      });
+    }
+  }, [settings]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`${base}/api/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      queryClient.invalidateQueries({ queryKey: ["landing-settings"] });
+      queryClient.invalidateQueries({ queryKey: ["about-settings"] });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) return null;
+
+  return (
+    <div className="mb-12 rounded-2xl border border-sky-500/20 bg-sky-500/4 p-6 flex flex-col gap-6">
+      <div>
+        <p className="text-xs font-mono uppercase tracking-widest text-sky-400 mb-1">About Page</p>
+        <h2 className="text-xl font-serif font-bold text-white">Edit About Page</h2>
+        <p className="text-white/40 text-sm mt-1">Update your bio, portrait photo, and page heading.</p>
+      </div>
+
+      {/* Portrait preview + URL */}
+      <div className="flex items-start gap-4">
+        {form.aboutPortraitUrl && (
+          <img
+            src={form.aboutPortraitUrl}
+            alt="Portrait preview"
+            className="w-20 h-24 rounded-xl object-cover flex-shrink-0 border border-white/10"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
+        <div className="flex flex-col gap-1 flex-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Portrait Image URL</span>
+          <input
+            className={inputCls}
+            value={form.aboutPortraitUrl}
+            onChange={(e) => setForm((f) => ({ ...f, aboutPortraitUrl: e.target.value }))}
+            placeholder="/images/about-portrait.png or https://..."
+          />
+          <span className="text-[11px] text-white/25">Paste a direct image URL (lh3.googleusercontent.com works too)</span>
+        </div>
+      </div>
+
+      {/* Heading */}
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Page Heading</span>
+        <input
+          className={inputCls}
+          value={form.aboutTitle}
+          onChange={(e) => setForm((f) => ({ ...f, aboutTitle: e.target.value }))}
+          placeholder="The Lens."
+        />
+      </div>
+
+      {/* Bio */}
+      <div className="flex flex-col gap-1">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/40">Bio</span>
+        <span className="text-[11px] text-white/25">Each paragraph on a new line. Blank lines create paragraph breaks.</span>
+        <textarea
+          className={`${inputCls} resize-y min-h-[160px]`}
+          value={form.aboutBio}
+          onChange={(e) => setForm((f) => ({ ...f, aboutBio: e.target.value }))}
+          placeholder="Write your bio here. Use a blank line to start a new paragraph."
+        />
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-black text-sm font-bold transition-colors disabled:opacity-50"
+        >
+          {saving ? "Saving…" : "Save About Page"}
+        </button>
+        {saved && <span className="text-xs text-sky-400 font-mono">Saved ✓</span>}
+        {error && <span className="text-xs text-red-400">{error}</span>}
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { data: trips, isLoading } = useListTrips();
   const queryClient = useQueryClient();
@@ -903,6 +1022,9 @@ export default function Admin() {
 
         {/* Landing Page Settings */}
         <LandingSettingsPanel trips={typedTrips} />
+
+        {/* About Page Settings */}
+        <AboutSettingsPanel />
 
         {/* Section header + Add button */}
         <div className="mb-6 flex items-end justify-between gap-4">
