@@ -71,8 +71,18 @@ router.get("/:id/google-photos", async (req, res) => {
   if (!trip) return res.status(404).json({ error: "Not found" });
   if (!trip.googlePhotosUrl) return res.json({ photos: [] });
 
+  // ?refresh=true clears the cache so the next fetch is forced fresh
+  const forceRefresh = req.query.refresh === "true";
+  if (forceRefresh) {
+    await db
+      .update(tripsTable)
+      .set({ cachedGooglePhotoUrls: "[]" } as Partial<typeof tripsTable.$inferInsert>)
+      .where(eq(tripsTable.id, id));
+  }
+
   // Helper: parse cached URLs from DB column (may not exist on old rows)
   const getCached = (): string[] => {
+    if (forceRefresh) return []; // ignore cache on forced refresh
     try {
       const raw = (trip as typeof trip & { cachedGooglePhotoUrls?: string }).cachedGooglePhotoUrls ?? "[]";
       const parsed = JSON.parse(raw);

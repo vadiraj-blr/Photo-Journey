@@ -309,18 +309,29 @@ function TripPhotoPicker({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = () => {
-    if (photos.length > 0) { setOpen(true); return; }
+  const load = (forceRefresh = false) => {
+    if (!forceRefresh && photos.length > 0) { setOpen(true); return; }
     setLoading(true);
     setError(null);
     const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    fetch(`${base}/api/trips/${tripId}/google-photos`)
+    const url = forceRefresh
+      ? `${base}/api/trips/${tripId}/google-photos?refresh=true`
+      : `${base}/api/trips/${tripId}/google-photos`;
+    fetch(url)
       .then((r) => r.json())
       .then((data) => {
-        if (data.photos?.length) { setPhotos(data.photos); setOpen(true); }
-        else setError("No photos found in the album yet.");
+        if (data.photos?.length) {
+          setPhotos(data.photos);
+          setOpen(true);
+          setError(null);
+        } else {
+          setPhotos([]);
+          setError(forceRefresh
+            ? `Album couldn't be loaded (Google may be blocking this URL). Try again later or pin photos manually.`
+            : "No photos found in this album yet. Try 'Refresh Photos' to force a new fetch.");
+        }
       })
-      .catch(() => setError("Could not load album."))
+      .catch(() => setError("Could not reach the album."))
       .finally(() => setLoading(false));
   };
 
@@ -334,14 +345,25 @@ function TripPhotoPicker({
 
   return (
     <div className="flex flex-col gap-2">
-      <button
-        type="button"
-        onClick={load}
-        disabled={loading}
-        className="self-start text-xs font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-      >
-        {loading ? "Loading photos…" : "Pick from Google Photos album"}
-      </button>
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={() => load(false)}
+          disabled={loading}
+          className="self-start text-xs font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+        >
+          {loading ? "Loading photos…" : "Pick from Google Photos album"}
+        </button>
+        <button
+          type="button"
+          onClick={() => load(true)}
+          disabled={loading}
+          title="Force a fresh fetch from Google Photos, clearing any cached results"
+          className="self-start text-xs font-mono uppercase tracking-wider text-white/35 border border-white/10 hover:border-white/25 hover:text-white/60 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+        >
+          ↻ Refresh Photos
+        </button>
+      </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
       {open && photos.length > 0 && (
