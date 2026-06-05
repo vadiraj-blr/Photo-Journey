@@ -91,6 +91,25 @@ function useComments(tripId: number) {
   return { comments, loading, post };
 }
 
+function getInitials(name: string) {
+  return name.trim().split(/\s+/).map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
+const AVATAR_COLORS = [
+  "from-amber-600 to-amber-800",
+  "from-stone-500 to-stone-700",
+  "from-teal-600 to-teal-800",
+  "from-rose-700 to-rose-900",
+  "from-indigo-600 to-indigo-800",
+  "from-emerald-600 to-emerald-800",
+];
+
+function avatarColor(name: string) {
+  let hash = 0;
+  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) & 0xffff;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+
 function CommentsSection({ tripId }: { tripId: number }) {
   const { counts, voted, react } = useReactions(tripId);
   const { comments, loading: commentsLoading, post } = useComments(tripId);
@@ -100,6 +119,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [focused, setFocused] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,98 +133,147 @@ function CommentsSection({ tripId }: { tripId: number }) {
     else setError(result.error ?? "Something went wrong.");
   };
 
-  const inputCls = "w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-stone-200 placeholder:text-white/20 focus:outline-none focus:border-primary/50 transition-colors";
-
   return (
     <section className="max-w-[800px] mx-auto px-6 py-16 md:py-24">
-      {/* Reactions */}
-      <div className="flex items-center gap-6 mb-14">
-        <div className="flex items-center gap-4 mb-0">
-          <p className="text-xs font-mono uppercase tracking-widest text-white/30">Reactions</p>
-          <div className="h-px w-8 bg-white/10" />
-        </div>
+
+      {/* Reactions bar */}
+      <div className="flex items-center gap-3 mb-14 p-4 rounded-2xl bg-white/3 border border-white/8">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-white/25 mr-1">React</span>
         <button
           onClick={() => react("like")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${voted === "like" ? "border-primary bg-primary/20 text-primary" : "border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${voted === "like"
+            ? "border-amber-500/50 bg-amber-500/15 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+            : "border-white/8 bg-white/3 text-white/40 hover:border-white/20 hover:text-white/70"}`}
         >
           <svg className="w-4 h-4" fill={voted === "like" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
           </svg>
-          <span>{counts.likes}</span>
+          <span className="font-semibold">{counts.likes}</span>
         </button>
         <button
           onClick={() => react("dislike")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium transition-all duration-200 ${voted === "dislike" ? "border-red-400/60 bg-red-400/10 text-red-400" : "border-white/10 text-white/50 hover:border-white/30 hover:text-white/80"}`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${voted === "dislike"
+            ? "border-red-500/40 bg-red-500/10 text-red-400"
+            : "border-white/8 bg-white/3 text-white/40 hover:border-white/20 hover:text-white/70"}`}
         >
           <svg className="w-4 h-4 rotate-180" fill={voted === "dislike" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
           </svg>
-          <span>{counts.dislikes}</span>
+          <span className="font-semibold">{counts.dislikes}</span>
         </button>
       </div>
 
-      {/* Divider */}
-      <div className="flex items-center gap-4 mb-10">
-        <p className="text-xs font-mono uppercase tracking-widest text-white/30">Comments</p>
-        <div className="flex-1 h-px bg-white/10" />
-        <span className="text-xs text-white/20">{comments.length}</span>
+      {/* Section header */}
+      <div className="flex items-center gap-4 mb-8">
+        <p className="text-xs font-mono uppercase tracking-widest text-white/30">Field Notes</p>
+        <div className="flex-1 h-px bg-white/8" />
+        {comments.length > 0 && (
+          <span className="text-[10px] font-mono text-white/20 bg-white/5 px-2 py-0.5 rounded-full">{comments.length}</span>
+        )}
       </div>
 
       {/* Comment form */}
-      <form onSubmit={handleSubmit} className="mb-12 space-y-3">
-        <input
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Your name"
-          maxLength={80}
-          className={inputCls}
-        />
-        <textarea
-          ref={textareaRef}
-          value={body}
-          onChange={e => setBody(e.target.value)}
-          placeholder="Share your thoughts about this expedition…"
-          rows={4}
-          maxLength={1000}
-          className={`${inputCls} resize-none`}
-        />
-        <div className="flex items-center justify-between gap-4">
-          <div className="text-xs text-white/25">{body.length}/1000</div>
+      <motion.form
+        onSubmit={handleSubmit}
+        className={`mb-12 rounded-2xl border transition-all duration-300 overflow-hidden ${focused
+          ? "border-amber-500/25 bg-[#111] shadow-[0_0_40px_rgba(245,158,11,0.06)]"
+          : "border-white/8 bg-white/3"}`}
+      >
+        {/* Name row */}
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/6">
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white flex-shrink-0 transition-all ${name.trim() ? avatarColor(name) : "from-white/10 to-white/5"}`}>
+            {name.trim() ? getInitials(name) : (
+              <svg className="w-3.5 h-3.5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            )}
+          </div>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Your name"
+            maxLength={80}
+            className="flex-1 bg-transparent text-sm text-stone-200 placeholder:text-white/20 focus:outline-none"
+          />
+        </div>
+
+        {/* Message area */}
+        <div className="px-4 py-3">
+          <textarea
+            ref={textareaRef}
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            placeholder="Share your thoughts about this expedition…"
+            rows={4}
+            maxLength={1000}
+            className="w-full bg-transparent text-sm text-stone-300 placeholder:text-white/15 focus:outline-none resize-none leading-relaxed"
+          />
+        </div>
+
+        {/* Footer row */}
+        <div className="flex items-center justify-between gap-4 px-4 pb-4">
+          <span className="text-[11px] text-white/20 font-mono">{body.length}/1000</span>
           <button
             type="submit"
             disabled={submitting}
-            className="px-5 py-2 bg-primary text-black text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-primary/90 disabled:opacity-50 transition-all"
+            className="relative flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200 overflow-hidden group"
           >
-            {submitting ? "Posting…" : "Post Comment"}
+            <span className="relative z-10">{submitting ? "Posting…" : "Post"}</span>
+            {!submitting && (
+              <svg className="w-3 h-3 relative z-10 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            )}
           </button>
         </div>
-        {error && <p className="text-red-400 text-xs">{error}</p>}
-        {success && <p className="text-primary text-xs">Comment posted!</p>}
-      </form>
+
+        {(error || success) && (
+          <div className={`px-4 pb-4 text-xs ${error ? "text-red-400" : "text-amber-400"}`}>
+            {error || "Comment posted — thank you!"}
+          </div>
+        )}
+      </motion.form>
 
       {/* Comments list */}
       {commentsLoading ? (
         <div className="flex justify-center py-8">
-          <div className="w-6 h-6 border-t border-primary rounded-full animate-spin" />
+          <div className="w-6 h-6 border-t border-amber-500/50 rounded-full animate-spin" />
         </div>
       ) : comments.length === 0 ? (
-        <p className="text-center text-white/20 text-sm py-10">Be the first to leave a comment.</p>
+        <div className="text-center py-16">
+          <div className="w-10 h-10 mx-auto mb-4 rounded-full border border-white/10 flex items-center justify-center">
+            <svg className="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <p className="text-white/20 text-sm">Be the first to leave a field note.</p>
+        </div>
       ) : (
-        <div className="space-y-6">
-          {comments.map(c => (
+        <div className="space-y-4">
+          {comments.map((c, idx) => (
             <motion.div
               key={c.id}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="border border-white/8 rounded-xl px-5 py-4 bg-white/3"
+              transition={{ delay: idx * 0.04 }}
+              className="group flex gap-3 p-4 rounded-2xl border border-white/6 bg-white/2 hover:bg-white/4 hover:border-white/10 transition-all duration-300"
             >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-stone-200">{c.name}</span>
-                <span className="text-xs text-white/25">
-                  {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                </span>
+              <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarColor(c.name)} flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5`}>
+                {getInitials(c.name)}
               </div>
-              <p className="text-sm text-stone-400 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2 mb-1.5">
+                  <span className="text-sm font-semibold text-stone-200">{c.name}</span>
+                  <span className="text-[10px] text-white/20 font-mono">
+                    {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+                <p className="text-sm text-stone-400 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+              </div>
             </motion.div>
           ))}
         </div>
