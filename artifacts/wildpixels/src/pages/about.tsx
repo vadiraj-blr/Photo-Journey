@@ -247,21 +247,21 @@ export default function About() {
           className="space-y-8"
         >
           <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-amber-600">{aboutTitle}</h1>
-          <div className="space-y-6 text-lg text-stone-500 font-sans font-light leading-relaxed max-w-lg">
+          <div className="space-y-6 text-lg text-stone-900 font-sans font-normal leading-relaxed max-w-lg">
             {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
           </div>
           <div className="pt-8 border-t border-stone-200 grid grid-cols-3 gap-8">
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.tripCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-amber-600">Expeditions</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-700">Expeditions</span>
             </div>
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.countryCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-amber-600">Countries</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-700">Countries</span>
             </div>
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.photoCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-amber-600">Captures</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-700">Captures</span>
             </div>
           </div>
         </motion.div>
@@ -315,7 +315,7 @@ export default function About() {
         >
           <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-600 mb-3">Get in Touch</p>
           <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mb-4">Let's Connect.</h2>
-          <p className="text-stone-500 font-light max-w-lg">
+          <p className="text-stone-800 max-w-lg">
             Whether you're interested in licensing an image, planning a collaboration, or simply want to share what moved you — I'd love to hear from you.
           </p>
         </motion.div>
@@ -338,7 +338,7 @@ export default function About() {
                 </div>
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Email</p>
-                  <p className="text-sm text-stone-700 group-hover:text-amber-700 transition-colors break-all">{contactEmail}</p>
+                  <p className="text-sm text-stone-900 group-hover:text-amber-700 transition-colors break-all">{contactEmail}</p>
                 </div>
               </a>
             )}
@@ -352,7 +352,7 @@ export default function About() {
                 </div>
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Phone</p>
-                  <p className="text-sm text-stone-700 group-hover:text-amber-700 transition-colors">{contactPhone}</p>
+                  <p className="text-sm text-stone-900 group-hover:text-amber-700 transition-colors">{contactPhone}</p>
                 </div>
               </a>
             )}
@@ -366,7 +366,7 @@ export default function About() {
                 </div>
                 <div>
                   <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Based in</p>
-                  <p className="text-sm text-stone-700">{contactLocation}</p>
+                  <p className="text-sm text-stone-900">{contactLocation}</p>
                 </div>
               </div>
             )}
@@ -411,7 +411,7 @@ export default function About() {
                       <div>
                         <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-3">{formatDate(article.created_at)}</p>
                         <h3 className="text-xl font-serif text-stone-900 group-hover:text-violet-700 transition-colors leading-snug mb-3">{article.title}</h3>
-                        {article.excerpt && <p className="text-stone-500 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
+                        {article.excerpt && <p className="text-stone-800 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
                       </div>
                       <div className="mt-4 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-violet-400 group-hover:text-violet-600 transition-colors">
                         Read

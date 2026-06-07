@@ -272,7 +272,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
                     {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
-                <p className="text-sm text-stone-500 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                <p className="text-sm text-stone-800 leading-relaxed whitespace-pre-wrap">{c.body}</p>
               </div>
             </motion.div>
           ))}
@@ -594,7 +594,7 @@ export default function Trip() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1 }}
-            className="text-lg md:text-xl font-serif font-light leading-loose text-stone-600"
+            className="text-lg md:text-xl font-serif leading-loose text-stone-900"
           >
             <p className="first-letter:text-6xl first-letter:font-serif first-letter:text-amber-600 first-letter:float-left first-letter:mr-4 first-letter:-mt-2">
               {trip.story}
@@ -761,7 +761,7 @@ export default function Trip() {
             <div className="px-6 py-5">
               <ul className="flex flex-col gap-2.5">
                 {trip.travelTips.split("\n").filter((l) => l.trim()).map((line, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-stone-600 leading-relaxed">
+                  <li key={i} className="flex items-start gap-3 text-sm text-stone-900 leading-relaxed">
                     <span className="text-amber-600 mt-[3px] flex-shrink-0 text-xs">▸</span>
                     <span>{line.replace(/^[-•*▸]\s*/, "")}</span>
                   </li>

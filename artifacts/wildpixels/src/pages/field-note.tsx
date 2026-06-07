@@ -86,7 +86,7 @@ export default function FieldNote() {
         >
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-amber-600 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-stone-600 hover:text-amber-600 transition-colors"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -109,7 +109,7 @@ export default function FieldNote() {
             {article.title}
           </h1>
           {article.excerpt && (
-            <p className="text-xl text-stone-500 font-light leading-relaxed border-l-2 border-amber-400 pl-6">
+            <p className="text-xl text-stone-900 font-normal leading-relaxed border-l-2 border-amber-400 pl-6">
               {article.excerpt}
             </p>
           )}
@@ -134,14 +134,14 @@ export default function FieldNote() {
         >
           <Link
             href="/about"
-            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-stone-400 hover:text-amber-600 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-stone-600 hover:text-amber-600 transition-colors"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             All Field Notes
           </Link>
-          <p className="text-xs text-stone-300 font-mono">Wildpixels</p>
+          <p className="text-xs text-stone-500 font-mono">Wildpixels</p>
         </motion.div>
       </div>
     </div>

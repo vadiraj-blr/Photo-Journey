@@ -163,7 +163,7 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-serif text-stone-900 mb-2">{trip.title}</h3>
-                <p className="text-stone-400 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
+                <p className="text-stone-700 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
               </Link>
             </motion.div>
           ))}

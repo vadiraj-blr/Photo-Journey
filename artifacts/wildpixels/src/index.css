@@ -101,9 +101,9 @@
   --input: 20 10% 94%;
   --ring: 38 92% 42%;
 
-  --app-font-sans: 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Cormorant Garamond', Georgia, serif;
+  --app-font-mono: 'DM Mono', Menlo, monospace;
   --radius: 0rem;
 }
 
@@ -393,10 +393,10 @@
 
   /* Field note markdown body */
   .prose-wildpixels {
-    color: rgb(68 64 60);
+    color: rgb(28 25 23);
     font-size: 1.0625rem;
     line-height: 1.85;
-    font-weight: 300;
+    font-weight: 400;
   }
   .prose-wildpixels h1,
   .prose-wildpixels h2,
