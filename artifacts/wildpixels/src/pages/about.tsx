@@ -227,7 +227,7 @@ export default function About() {
       {/* Hero: Portrait + Bio */}
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
 
-        {/* Left column: photo + bio below */}
+        {/* Left column: photo only */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -241,19 +241,19 @@ export default function About() {
               className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000"
             />
           </div>
-          <div className="mt-10 space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
-            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
-          </div>
         </motion.div>
 
-        {/* Right column: title + stats — top-aligned */}
+        {/* Right column: title → bio → stats, all top-aligned */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="space-y-10 md:pt-0"
+          className="flex flex-col gap-8"
         >
           <h1 className="text-5xl md:text-7xl font-serif tracking-tight leading-tight text-amber-600">{aboutTitle}</h1>
+          <div className="space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
+            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
+          </div>
           <div className="pt-8 border-t border-stone-200 grid grid-cols-3 gap-8">
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.tripCount || 0}</span>
