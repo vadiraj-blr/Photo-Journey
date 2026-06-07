@@ -892,6 +892,7 @@ function AboutSettingsPanel() {
     aboutTitle: "The Lens.",
     aboutPortraitUrl: "/images/about-portrait.png",
     aboutBio: "",
+    aboutPhotoHeight: 480,
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -910,6 +911,7 @@ function AboutSettingsPanel() {
         aboutTitle: settings.aboutTitle ?? "The Lens.",
         aboutPortraitUrl: settings.aboutPortraitUrl ?? "/images/about-portrait.png",
         aboutBio: settings.aboutBio ?? "",
+        aboutPhotoHeight: settings.aboutPhotoHeight ?? 480,
       });
       if (settings.aboutAlbumUrl) {
         setAlbumUrl(settings.aboutAlbumUrl);
@@ -1025,6 +1027,46 @@ function AboutSettingsPanel() {
             onChange={(e) => setForm((f) => ({ ...f, aboutPortraitUrl: e.target.value }))}
             placeholder="/images/about-portrait.png or https://lh3.googleusercontent.com/..."
           />
+        </div>
+
+        {/* Photo height */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] text-white/30">Photo height</span>
+          <div className="flex gap-2 flex-wrap">
+            {[
+              { label: "XS", value: 320 },
+              { label: "S", value: 400 },
+              { label: "M", value: 480 },
+              { label: "L", value: 580 },
+              { label: "XL", value: 680 },
+            ].map(({ label, value }) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, aboutPhotoHeight: value }))}
+                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border transition-colors ${
+                  form.aboutPhotoHeight === value
+                    ? "bg-sky-500/30 border-sky-400 text-sky-200"
+                    : "bg-white/5 border-white/10 text-white/40 hover:border-sky-400/50 hover:text-white/60"
+                }`}
+              >
+                {label}
+                <span className="ml-1.5 font-mono font-normal normal-case text-[10px] opacity-60">{value}px</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <input
+              type="range"
+              min={240}
+              max={800}
+              step={20}
+              value={form.aboutPhotoHeight}
+              onChange={(e) => setForm((f) => ({ ...f, aboutPhotoHeight: Number(e.target.value) }))}
+              className="flex-1 accent-sky-400"
+            />
+            <span className="text-xs font-mono text-white/50 w-14 text-right">{form.aboutPhotoHeight}px</span>
+          </div>
         </div>
 
         {/* Photo grid */}

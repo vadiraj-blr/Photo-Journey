@@ -9,6 +9,7 @@ interface AboutSettings {
   aboutTitle: string;
   aboutPortraitUrl: string;
   aboutBio: string;
+  aboutPhotoHeight: number;
   contactEmail: string;
   contactPhone: string;
   contactLocation: string;
@@ -198,6 +199,7 @@ export default function About() {
   const highlights: string[] = settings?.highlightPhotoUrls ?? [];
   const aboutTitle = settings?.aboutTitle ?? "The Lens.";
   const portraitUrl = settings?.aboutPortraitUrl ?? "/images/about-portrait.png";
+  const photoHeight = settings?.aboutPhotoHeight ?? 480;
   const bioRaw = settings?.aboutBio ?? "";
   const contactEmail = settings?.contactEmail ?? "";
   const contactPhone = settings?.contactPhone ?? "";
@@ -234,7 +236,7 @@ export default function About() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="flex flex-col gap-10"
         >
-          <div className="relative w-full" style={{ height: '480px' }}>
+          <div className="relative w-full" style={{ height: `${photoHeight}px` }}>
             <div className="absolute -inset-4 border border-stone-300" />
             <img
               src={portraitUrl}
