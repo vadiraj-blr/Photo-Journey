@@ -234,7 +234,7 @@ export default function About() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="flex flex-col gap-10"
         >
-          <div className="relative aspect-[3/4] w-full">
+          <div className="relative aspect-square w-full">
             <div className="absolute -inset-4 border border-stone-300" />
             <img
               src={portraitUrl}
