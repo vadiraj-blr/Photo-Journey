@@ -1115,6 +1115,335 @@ function AboutSettingsPanel() {
   );
 }
 
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  body: string;
+  cover_image_url: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+function toSlug(title: string) {
+  return title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 80);
+}
+
+const EMPTY_ARTICLE = { title: "", slug: "", excerpt: "", body: "", cover_image_url: "", published: false };
+
+function ArticlesPanel() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<Article | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState(EMPTY_ARTICLE);
+  const [preview, setPreview] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [markdownComp, setMarkdownComp] = useState<React.ComponentType<{ children: string; remarkPlugins: unknown[] }> | null>(null);
+  const [remarkGfmPlugin, setRemarkGfmPlugin] = useState<unknown>(null);
+
+  const { data: articles = [], isLoading } = useQuery<Article[]>({
+    queryKey: ["admin-articles"],
+    queryFn: () => fetch(`${base}/api/articles`).then((r) => r.json()),
+  });
+
+  useEffect(() => {
+    if (preview && !markdownComp) {
+      Promise.all([
+        import("react-markdown").then((m) => m.default),
+        import("remark-gfm").then((m) => m.default),
+      ]).then(([Md, gfm]) => {
+        setMarkdownComp(() => Md as React.ComponentType<{ children: string; remarkPlugins: unknown[] }>);
+        setRemarkGfmPlugin(() => gfm);
+      });
+    }
+  }, [preview, markdownComp]);
+
+  const openCreate = () => {
+    setForm(EMPTY_ARTICLE);
+    setEditing(null);
+    setCreating(true);
+    setPreview(false);
+    setError(null);
+  };
+
+  const openEdit = (a: Article) => {
+    setForm({
+      title: a.title,
+      slug: a.slug,
+      excerpt: a.excerpt ?? "",
+      body: a.body ?? "",
+      cover_image_url: a.cover_image_url ?? "",
+      published: a.published,
+    });
+    setEditing(a);
+    setCreating(false);
+    setPreview(false);
+    setError(null);
+  };
+
+  const handleClose = () => {
+    setCreating(false);
+    setEditing(null);
+    setError(null);
+  };
+
+  const handleTitleChange = (val: string) => {
+    setForm((f) => ({
+      ...f,
+      title: val,
+      slug: editing ? f.slug : toSlug(val),
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!form.title.trim()) { setError("Title is required."); return; }
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = {
+        title: form.title.trim(),
+        slug: form.slug.trim() || toSlug(form.title.trim()),
+        excerpt: form.excerpt.trim(),
+        body: form.body,
+        coverImageUrl: form.cover_image_url.trim(),
+        published: form.published,
+      };
+      const res = editing
+        ? await fetch(`${base}/api/articles/${editing.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+        : await fetch(`${base}/api/articles`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error((d as { error?: string }).error ?? `HTTP ${res.status}`);
+      }
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["field-notes"] });
+      handleClose();
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this field note? This cannot be undone.")) return;
+    setDeleting(id);
+    try {
+      await fetch(`${base}/api/articles/${id}`, { method: "DELETE" });
+      queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+      queryClient.invalidateQueries({ queryKey: ["field-notes"] });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleTogglePublish = async (a: Article) => {
+    await fetch(`${base}/api/articles/${a.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ published: !a.published }),
+    });
+    queryClient.invalidateQueries({ queryKey: ["admin-articles"] });
+    queryClient.invalidateQueries({ queryKey: ["field-notes"] });
+  };
+
+  const isEditorOpen = creating || !!editing;
+
+  return (
+    <div className="mb-12">
+      <div className="rounded-2xl border border-violet-500/20 bg-violet-500/4 p-6 flex flex-col gap-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-violet-400 mb-1">Field Notes</p>
+            <h2 className="text-xl font-serif font-bold text-white">Articles</h2>
+            <p className="text-white/40 text-sm mt-1">Write and publish articles that appear on your About page.</p>
+          </div>
+          {!isEditorOpen && (
+            <button
+              onClick={openCreate}
+              className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/25 text-violet-300 text-sm font-medium transition-all"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+              </svg>
+              New Field Note
+            </button>
+          )}
+        </div>
+
+        {/* Article list */}
+        {!isEditorOpen && (
+          <div className="flex flex-col gap-3">
+            {isLoading && <p className="text-white/30 text-sm font-mono">Loading…</p>}
+            {!isLoading && articles.length === 0 && (
+              <p className="text-white/20 text-sm font-mono py-4 text-center">No articles yet. Write your first field note!</p>
+            )}
+            {articles.map((a) => (
+              <div key={a.id} className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/3 px-4 py-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-white/80 text-sm font-medium truncate">{a.title}</p>
+                  {a.excerpt && <p className="text-white/30 text-xs mt-0.5 truncate">{a.excerpt}</p>}
+                </div>
+                <button
+                  onClick={() => handleTogglePublish(a)}
+                  className={`flex-shrink-0 text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 rounded-lg border transition-colors ${
+                    a.published
+                      ? "bg-emerald-500/15 border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/25"
+                      : "bg-white/5 border-white/10 text-white/30 hover:text-white/50"
+                  }`}
+                >
+                  {a.published ? "Live" : "Draft"}
+                </button>
+                <button
+                  onClick={() => openEdit(a)}
+                  className="flex-shrink-0 text-xs text-white/40 hover:text-violet-300 transition-colors px-2 py-1 rounded-lg hover:bg-violet-500/10"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(a.id)}
+                  disabled={deleting === a.id}
+                  className="flex-shrink-0 text-xs text-white/20 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10 disabled:opacity-40"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Editor */}
+        {isEditorOpen && (
+          <div className="flex flex-col gap-4">
+            {/* Title */}
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-white/40">Title</span>
+              <input
+                className={inputCls + " text-base font-serif"}
+                value={form.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                placeholder="Into the Sundarban Fog"
+                autoFocus
+              />
+            </div>
+
+            {/* Slug + Excerpt row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-mono uppercase tracking-widest text-white/40">URL Slug</span>
+                <input
+                  className={inputCls + " font-mono text-xs"}
+                  value={form.slug}
+                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") }))}
+                  placeholder="into-the-sundarban-fog"
+                />
+                <span className="text-[10px] text-white/20">/field-notes/{form.slug || "..."}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-xs font-mono uppercase tracking-widest text-white/40">Cover Image URL</span>
+                <input
+                  className={inputCls}
+                  value={form.cover_image_url}
+                  onChange={(e) => setForm((f) => ({ ...f, cover_image_url: e.target.value }))}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            {/* Excerpt */}
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-mono uppercase tracking-widest text-white/40">Excerpt <span className="text-white/20 normal-case">(short description for listing)</span></span>
+              <input
+                className={inputCls}
+                value={form.excerpt}
+                onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))}
+                placeholder="A short description that appears in the articles listing…"
+              />
+            </div>
+
+            {/* Body with preview toggle */}
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono uppercase tracking-widest text-white/40">Body <span className="text-white/20 normal-case">(Markdown)</span></span>
+                <button
+                  type="button"
+                  onClick={() => setPreview((p) => !p)}
+                  className="text-[10px] font-mono uppercase tracking-widest text-white/30 hover:text-violet-300 transition-colors flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-violet-500/10 border border-white/8"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={preview ? "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
+                  </svg>
+                  {preview ? "Edit" : "Preview"}
+                </button>
+              </div>
+              {!preview ? (
+                <textarea
+                  className={inputCls + " font-mono text-sm leading-relaxed resize-none"}
+                  rows={16}
+                  value={form.body}
+                  onChange={(e) => setForm((f) => ({ ...f, body: e.target.value }))}
+                  placeholder={"# Into the Fog\n\nWrite your article here using **Markdown**.\n\n> A quote from the wild\n\nParagraphs, *emphasis*, **bold**, [links](https://...), images, and more are all supported."}
+                />
+              ) : (
+                <div className="min-h-[300px] rounded-xl border border-white/8 bg-white/2 p-6 overflow-y-auto">
+                  {markdownComp && remarkGfmPlugin ? (
+                    <div className="prose-wildpixels">
+                      {(() => {
+                        const MD = markdownComp;
+                        return <MD remarkPlugins={[remarkGfmPlugin as never]}>{form.body || "*Nothing to preview yet…*"}</MD>;
+                      })()}
+                    </div>
+                  ) : (
+                    <p className="text-white/20 text-sm font-mono">Loading preview…</p>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Published toggle */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setForm((f) => ({ ...f, published: !f.published }))}
+                className={`relative w-10 h-5.5 rounded-full border transition-all duration-200 flex-shrink-0 ${form.published ? "bg-emerald-500/40 border-emerald-500/50" : "bg-white/8 border-white/15"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-all duration-200 ${form.published ? "translate-x-4.5 bg-emerald-400" : "bg-white/30"}`} />
+              </button>
+              <span className="text-sm text-white/50">{form.published ? <span className="text-emerald-400">Published — visible on About page</span> : "Draft — not visible to visitors"}</span>
+            </div>
+
+            {error && <p className="text-xs text-red-400">{error}</p>}
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="px-5 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-400 text-white text-sm font-bold transition-colors disabled:opacity-50"
+              >
+                {saving ? "Saving…" : editing ? "Update Field Note" : "Publish Field Note"}
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="px-4 py-2.5 rounded-xl bg-white/6 hover:bg-white/10 text-white/50 hover:text-white text-sm transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ContactSettingsPanel() {
   const { data: settings, isLoading } = useLandingSettings();
   const queryClient = useQueryClient();
@@ -1265,6 +1594,9 @@ export default function Admin() {
 
         {/* Contact Details */}
         <ContactSettingsPanel />
+
+        {/* Field Notes / Articles */}
+        <ArticlesPanel />
 
         {/* Section header + Add button */}
         <div className="mb-6 flex items-end justify-between gap-4">

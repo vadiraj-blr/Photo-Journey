@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useGetTripStats, useListTrips } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +12,29 @@ interface AboutSettings {
   contactEmail: string;
   contactPhone: string;
   contactLocation: string;
+}
+
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  cover_image_url: string;
+  published: boolean;
+  created_at: string;
+}
+
+function useFieldNotes() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return useQuery<Article[]>({
+    queryKey: ["field-notes"],
+    queryFn: () => fetch(`${base}/api/articles`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
+}
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
 }
 
 interface TripRow {
@@ -204,7 +228,9 @@ export default function About() {
   const { data: stats } = useGetTripStats();
   const { data: settings } = useAboutSettings();
   const { data: tripsRaw } = useListTrips();
+  const { data: articlesRaw } = useFieldNotes();
   const trips = (tripsRaw as TripRow[] | undefined) ?? [];
+  const publishedArticles = ((articlesRaw ?? []) as Article[]).filter((a) => a.published);
 
   const highlights: string[] = settings?.highlightPhotoUrls ?? [];
   const aboutTitle = settings?.aboutTitle ?? "The Lens.";
@@ -399,6 +425,61 @@ export default function About() {
           <ContactForm toEmail={contactEmail} />
         </motion.div>
       </div>
+
+      {/* Field Notes */}
+      {publishedArticles.length > 0 && (
+        <div className="max-w-[900px] mx-auto px-6 md:px-12 mt-32">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="mb-12"
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-violet-400/80 mb-3">Field Notes</p>
+            <h2 className="text-4xl md:text-5xl font-serif text-stone-100">From the Journal.</h2>
+          </motion.div>
+          <div className="flex flex-col gap-6">
+            {publishedArticles.map((article, i) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: i * 0.08 }}
+              >
+                <Link href={`/field-notes/${article.slug}`}>
+                  <div className="group grid grid-cols-1 md:grid-cols-[1fr_280px] gap-0 rounded-2xl border border-white/8 bg-white/2 hover:border-violet-500/25 hover:bg-violet-500/4 overflow-hidden transition-all duration-300 cursor-pointer">
+                    <div className="p-7 flex flex-col justify-between min-h-[140px]">
+                      <div>
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-3">{formatDate(article.created_at)}</p>
+                        <h3 className="text-xl font-serif text-stone-100 group-hover:text-violet-200 transition-colors leading-snug mb-3">{article.title}</h3>
+                        {article.excerpt && <p className="text-white/40 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
+                      </div>
+                      <div className="mt-4 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-violet-400/60 group-hover:text-violet-300 transition-colors">
+                        Read
+                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </div>
+                    </div>
+                    {article.cover_image_url && (
+                      <div className="relative overflow-hidden md:h-auto h-[200px]">
+                        <img
+                          src={article.cover_image_url}
+                          alt={article.title}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/40 md:from-black/60 to-transparent md:to-transparent" />
+                      </div>
+                    )}
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Curated Highlights */}
       {highlights.length > 0 && (

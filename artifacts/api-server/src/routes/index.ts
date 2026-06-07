@@ -5,6 +5,7 @@ import photosRouter from "./photos";
 import settingsRouter from "./settings";
 import commentsRouter from "./comments";
 import contactRouter from "./contact";
+import articlesRouter from "./articles";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use("/trips/:tripId", commentsRouter);
 router.use("/photos", photosRouter);
 router.use("/settings", settingsRouter);
 router.use("/contact", contactRouter);
+router.use("/articles", articlesRouter);
 
 export default router;

@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import About from "@/pages/about";
 import Trip from "@/pages/trip";
 import Admin from "@/pages/admin";
+import FieldNote from "@/pages/field-note";
 import Layout from "@/components/layout";
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function Router() {
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/about" component={About} />
+            <Route path="/field-notes/:slug" component={FieldNote} />
             <Route path="/trips/:id" component={Trip} />
             <Route component={NotFound} />
           </Switch>
