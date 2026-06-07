@@ -559,7 +559,7 @@ export default function Trip() {
               <span className="w-8 h-px bg-primary/50" />
               <span>{trip.month} {trip.year}</span>
             </div>
-            <h1 className="text-5xl md:text-8xl font-serif tracking-tight leading-none mb-6">
+            <h1 className="text-5xl md:text-8xl font-serif tracking-tight leading-none mb-6 text-white">
               {trip.title}
             </h1>
           </motion.div>
