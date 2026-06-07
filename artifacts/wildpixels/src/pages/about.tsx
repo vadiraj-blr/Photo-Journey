@@ -227,11 +227,12 @@ export default function About() {
       {/* Hero: Portrait + Bio */}
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
 
-        {/* Left column: photo only */}
+        {/* Left column: photo + stats below */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
+          className="flex flex-col gap-10"
         >
           <div className="relative aspect-[3/4] w-full">
             <div className="absolute -inset-4 border border-stone-300" />
@@ -241,20 +242,7 @@ export default function About() {
               className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000"
             />
           </div>
-        </motion.div>
-
-        {/* Right column: title → bio → stats, all top-aligned */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="flex flex-col gap-8"
-        >
-          <h1 className="text-5xl md:text-7xl font-serif tracking-tight leading-tight text-amber-600">{aboutTitle}</h1>
-          <div className="space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
-            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
-          </div>
-          <div className="pt-8 border-t border-stone-200 grid grid-cols-3 gap-8">
+          <div className="border-t border-stone-200 pt-8 grid grid-cols-3 gap-8">
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.tripCount || 0}</span>
               <span className="block text-xs uppercase tracking-widest text-amber-700">Expeditions</span>
@@ -267,6 +255,19 @@ export default function About() {
               <span className="block text-4xl font-serif text-stone-900">{stats?.photoCount || 0}</span>
               <span className="block text-xs uppercase tracking-widest text-amber-700">Captures</span>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Right column: title → bio */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
+          className="flex flex-col gap-8"
+        >
+          <h1 className="text-5xl md:text-7xl font-serif tracking-tight leading-tight text-amber-600">{aboutTitle}</h1>
+          <div className="space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
+            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
           </div>
         </motion.div>
       </div>
