@@ -8,14 +8,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground dark">
-      <nav className="fixed top-0 left-0 w-full z-50 mix-blend-difference text-stone-100 px-6 py-4 flex justify-between items-center">
+    <div className="min-h-screen bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-stone-900">
+      <nav className="fixed top-0 left-0 w-full z-50 bg-stone-50/90 backdrop-blur-sm border-b border-stone-200/60 px-6 py-4 flex justify-between items-center">
         <Link
           href="/"
           onClick={location === "/" ? handleLogoClick : undefined}
-          className="group flex items-center gap-2 hover:text-primary transition-colors duration-500"
+          className="group flex items-center gap-2 hover:text-amber-600 transition-colors duration-500"
         >
-          <svg width="38" height="38" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 opacity-90 group-hover:opacity-100 transition-opacity">
+          <svg width="38" height="38" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity">
             <circle cx="14" cy="14" r="13" stroke="currentColor" strokeWidth="1.2"/>
             <circle cx="14" cy="14" r="4.5" fill="currentColor"/>
             <line x1="14" y1="1" x2="14" y2="5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -25,10 +25,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </svg>
           <span className="font-serif text-3xl font-bold tracking-tight leading-none">Wildpixels</span>
         </Link>
-        <div className="flex gap-8 tracking-widest uppercase text-xs font-semibold">
-          <Link href="/" className="hover:text-primary transition-colors duration-500">Portfolio</Link>
-          <Link href="/about" className="hover:text-primary transition-colors duration-500">About Vadiraj</Link>
-          <Link href="/admin" className="hover:text-primary transition-colors duration-500">Admin</Link>
+        <div className="flex gap-8 tracking-widest uppercase text-xs font-semibold text-stone-500">
+          <Link href="/" className="hover:text-amber-600 transition-colors duration-500">Portfolio</Link>
+          <Link href="/about" className="hover:text-amber-600 transition-colors duration-500">About Vadiraj</Link>
+          <Link href="/admin" className="hover:text-amber-600 transition-colors duration-500">Admin</Link>
         </div>
       </nav>
 
@@ -36,13 +36,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="w-full border-t border-white/8 mt-24 bg-[#080808]">
+      <footer className="w-full border-t border-stone-200 mt-24 bg-white">
         <div className="max-w-[1200px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
 
           {/* Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-60">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
                 <circle cx="14" cy="14" r="13" stroke="currentColor" strokeWidth="1.2"/>
                 <circle cx="14" cy="14" r="4.5" fill="currentColor"/>
                 <line x1="14" y1="1" x2="14" y2="5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -50,38 +50,38 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <line x1="1" y1="14" x2="5.5" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                 <line x1="22.5" y1="14" x2="27" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
-              <span className="font-serif text-xl font-bold text-white/70 tracking-tight">Wildpixels</span>
+              <span className="font-serif text-xl font-bold text-stone-400 tracking-tight">Wildpixels</span>
             </div>
-            <p className="text-xs text-white/30 leading-relaxed max-w-[220px]">
+            <p className="text-xs text-stone-400 leading-relaxed max-w-[220px]">
               A personal visual journal of expeditions, wildlife, and landscapes across the world.
             </p>
-            <p className="text-[11px] font-mono text-white/20 uppercase tracking-widest">The Personal Legend.</p>
+            <p className="text-[11px] font-mono text-stone-300 uppercase tracking-widest">The Personal Legend.</p>
           </div>
 
           {/* Rights */}
           <div className="flex flex-col gap-3">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-500/60 mb-1">Rights &amp; Usage</p>
-            <p className="text-xs text-white/35 leading-relaxed">
-              All photographs are original works by <strong className="text-white/50">Vadiraj</strong> and are protected under copyright law.
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600/80 mb-1">Rights &amp; Usage</p>
+            <p className="text-xs text-stone-500 leading-relaxed">
+              All photographs are original works by <strong className="text-stone-700">Vadiraj</strong> and are protected under copyright law.
             </p>
-            <p className="text-xs text-white/35 leading-relaxed">
+            <p className="text-xs text-stone-500 leading-relaxed">
               No image may be reproduced, distributed, or used commercially without explicit written permission from the photographer.
             </p>
-            <p className="text-xs text-white/25">
+            <p className="text-xs text-stone-400">
               For licensing enquiries, please reach out directly.
             </p>
           </div>
 
           {/* Legal */}
           <div className="flex flex-col gap-3">
-            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-500/60 mb-1">Legal</p>
-            <p className="text-xs text-white/35 leading-relaxed">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-600/80 mb-1">Legal</p>
+            <p className="text-xs text-stone-500 leading-relaxed">
               &copy; {new Date().getFullYear()} Vadiraj. All rights reserved.
             </p>
-            <p className="text-xs text-white/25 leading-relaxed">
+            <p className="text-xs text-stone-400 leading-relaxed">
               Images, text, and design on this site are the intellectual property of the photographer. Unauthorised reproduction is strictly prohibited.
             </p>
-            <p className="text-xs text-white/20 mt-2">
+            <p className="text-xs text-stone-300 mt-2">
               Built with Wildpixels — a bespoke photography portfolio.
             </p>
           </div>
@@ -89,8 +89,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/5 py-5 text-center">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-white/15">
+        <div className="border-t border-stone-100 py-5 text-center">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-300">
             &copy; {new Date().getFullYear()} Vadiraj Photography &nbsp;·&nbsp; All Images Original Works &nbsp;·&nbsp; All Rights Reserved
           </p>
         </div>

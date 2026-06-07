@@ -24,6 +24,15 @@ interface Article {
   created_at: string;
 }
 
+function useAboutSettings() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  return useQuery<AboutSettings>({
+    queryKey: ["about-settings"],
+    queryFn: () => fetch(`${base}/api/settings`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
+}
+
 function useFieldNotes() {
   const base = import.meta.env.BASE_URL.replace(/\/$/, "");
   return useQuery<Article[]>({
@@ -44,15 +53,6 @@ interface TripRow {
   year: number;
 }
 
-function useAboutSettings() {
-  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-  return useQuery<AboutSettings>({
-    queryKey: ["about-settings"],
-    queryFn: () => fetch(`${base}/api/settings`).then((r) => r.json()),
-    staleTime: 60_000,
-  });
-}
-
 function seededRand(seed: number) {
   const x = Math.sin(seed + 1) * 10000;
   return x - Math.floor(x);
@@ -70,14 +70,14 @@ const SIZE_CLASSES = [
 ];
 
 const OPACITY_CLASSES = [
-  "text-white/70",
-  "text-white/40",
-  "text-white/55",
-  "text-amber-400/60",
-  "text-white/30",
-  "text-white/65",
-  "text-amber-500/40",
-  "text-white/45",
+  "text-stone-700",
+  "text-stone-400",
+  "text-stone-500",
+  "text-amber-600/70",
+  "text-stone-300",
+  "text-stone-600",
+  "text-amber-500/50",
+  "text-stone-400",
 ];
 
 function ContactForm({ toEmail }: { toEmail: string }) {
@@ -109,25 +109,25 @@ function ContactForm({ toEmail }: { toEmail: string }) {
     }
   };
 
-  const fieldCls = "w-full bg-transparent text-sm text-stone-200 placeholder:text-white/20 focus:outline-none";
+  const fieldCls = "w-full bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none";
 
   if (done) {
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-2xl border border-emerald-500/25 bg-emerald-500/8 p-10 text-center"
+        className="rounded-2xl border border-emerald-300 bg-emerald-50 p-10 text-center"
       >
-        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-          <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center">
+          <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <p className="text-emerald-300 font-medium mb-1">Message sent!</p>
-        <p className="text-white/30 text-sm">{toEmail ? `Your message is on its way to Vadiraj.` : "Your message has been received."}</p>
+        <p className="text-emerald-700 font-medium mb-1">Message sent!</p>
+        <p className="text-stone-500 text-sm">{toEmail ? `Your message is on its way to Vadiraj.` : "Your message has been received."}</p>
         <button
           onClick={() => setDone(false)}
-          className="mt-6 text-xs text-white/30 hover:text-white/60 transition-colors underline underline-offset-2"
+          className="mt-6 text-xs text-stone-400 hover:text-stone-600 transition-colors underline underline-offset-2"
         >
           Send another message
         </button>
@@ -138,76 +138,42 @@ function ContactForm({ toEmail }: { toEmail: string }) {
   return (
     <motion.form
       onSubmit={handleSubmit}
-      className={`rounded-2xl border transition-all duration-300 overflow-hidden ${focused
-        ? "border-amber-500/25 shadow-[0_0_40px_rgba(245,158,11,0.06)]"
-        : "border-white/8"} bg-white/3`}
+      className={`rounded-2xl border transition-all duration-300 overflow-hidden bg-white ${focused
+        ? "border-amber-400 shadow-[0_0_0_3px_rgba(217,119,6,0.08)]"
+        : "border-stone-200"}`}
     >
-      {/* Name + Email row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/6">
+      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-100">
         <div className="px-5 py-4">
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Your Name</label>
-          <input
-            required
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="Vadiraj Kulkarni"
-            className={fieldCls}
-          />
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Your Name</label>
+          <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            placeholder="Vadiraj Kulkarni" className={fieldCls} />
         </div>
         <div className="px-5 py-4">
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Your Email</label>
-          <input
-            required
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder="you@example.com"
-            className={fieldCls}
-          />
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Your Email</label>
+          <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            placeholder="you@example.com" className={fieldCls} />
         </div>
       </div>
-
-      {/* Subject */}
-      <div className="border-t border-white/6 px-5 py-4">
-        <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Subject</label>
-        <input
-          value={form.subject}
-          onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          placeholder="Licensing enquiry / Collaboration / Just saying hi…"
-          className={fieldCls}
-        />
+      <div className="border-t border-stone-100 px-5 py-4">
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Subject</label>
+        <input value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          placeholder="Licensing enquiry / Collaboration / Just saying hi…" className={fieldCls} />
       </div>
-
-      {/* Message */}
-      <div className="border-t border-white/6 px-5 py-4">
-        <label className="block text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1.5">Message</label>
-        <textarea
-          required
-          rows={5}
-          maxLength={2000}
-          value={form.message}
+      <div className="border-t border-stone-100 px-5 py-4">
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Message</label>
+        <textarea required rows={5} maxLength={2000} value={form.message}
           onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           placeholder="Tell me about your project, or just share what moved you…"
-          className={`${fieldCls} resize-none leading-relaxed`}
-        />
+          className={`${fieldCls} resize-none leading-relaxed`} />
       </div>
-
-      {/* Footer */}
-      <div className="border-t border-white/6 px-5 py-4 flex items-center justify-between gap-4">
-        <span className="text-[11px] text-white/20 font-mono">{form.message.length}/2000</span>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200"
-        >
+      <div className="border-t border-stone-100 px-5 py-4 flex items-center justify-between gap-4">
+        <span className="text-[11px] text-stone-300 font-mono">{form.message.length}/2000</span>
+        <button type="submit" disabled={submitting}
+          className="flex items-center gap-2 px-6 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200">
           {submitting ? "Sending…" : "Send Message"}
           {!submitting && (
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,10 +182,7 @@ function ContactForm({ toEmail }: { toEmail: string }) {
           )}
         </button>
       </div>
-
-      {error && (
-        <div className="border-t border-red-500/20 bg-red-500/8 px-5 py-3 text-xs text-red-400">{error}</div>
-      )}
+      {error && <div className="border-t border-red-100 bg-red-50 px-5 py-3 text-xs text-red-600">{error}</div>}
     </motion.form>
   );
 }
@@ -259,7 +222,7 @@ export default function About() {
   const hasContact = contactEmail || contactPhone || contactLocation;
 
   return (
-    <div className="w-full bg-black min-h-screen pt-32 pb-24 text-stone-100">
+    <div className="w-full bg-stone-50 min-h-screen pt-32 pb-24 text-stone-900">
 
       {/* Hero: Portrait + Bio */}
       <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center">
@@ -269,7 +232,7 @@ export default function About() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="relative aspect-[3/4] w-full max-w-[500px] mx-auto"
         >
-          <div className="absolute -inset-4 border border-primary/20" />
+          <div className="absolute -inset-4 border border-stone-300" />
           <img
             src={portraitUrl}
             alt="Vadiraj in the wilderness"
@@ -283,22 +246,22 @@ export default function About() {
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
           className="space-y-8"
         >
-          <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-primary">{aboutTitle}</h1>
-          <div className="space-y-6 text-lg text-muted-foreground font-sans font-light leading-relaxed max-w-lg">
+          <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-amber-600">{aboutTitle}</h1>
+          <div className="space-y-6 text-lg text-stone-500 font-sans font-light leading-relaxed max-w-lg">
             {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
           </div>
-          <div className="pt-8 border-t border-border grid grid-cols-3 gap-8">
+          <div className="pt-8 border-t border-stone-200 grid grid-cols-3 gap-8">
             <div className="space-y-2">
-              <span className="block text-4xl font-serif text-stone-100">{stats?.tripCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-primary">Expeditions</span>
+              <span className="block text-4xl font-serif text-stone-900">{stats?.tripCount || 0}</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-600">Expeditions</span>
             </div>
             <div className="space-y-2">
-              <span className="block text-4xl font-serif text-stone-100">{stats?.countryCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-primary">Countries</span>
+              <span className="block text-4xl font-serif text-stone-900">{stats?.countryCount || 0}</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-600">Countries</span>
             </div>
             <div className="space-y-2">
-              <span className="block text-4xl font-serif text-stone-100">{stats?.photoCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-primary">Captures</span>
+              <span className="block text-4xl font-serif text-stone-900">{stats?.photoCount || 0}</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-600">Captures</span>
             </div>
           </div>
         </motion.div>
@@ -306,9 +269,9 @@ export default function About() {
 
       {/* Places Word Map */}
       {placeWords.length > 0 && (
-        <div className="mt-32 relative overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
+        <div className="mt-32 relative overflow-hidden bg-stone-100/60 py-16">
+          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-stone-50 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-stone-50 to-transparent z-10 pointer-events-none" />
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -316,7 +279,7 @@ export default function About() {
             transition={{ duration: 1 }}
             className="text-center mb-10"
           >
-            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-white/25">Places Witnessed</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-stone-400">Places Witnessed</p>
           </motion.div>
           <div className="px-8 md:px-16 flex flex-wrap justify-center items-baseline gap-x-6 gap-y-4 max-w-[1100px] mx-auto">
             {placeWords.map((place, i) => {
@@ -331,7 +294,7 @@ export default function About() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ duration: 0.6, delay: (i % 8) * 0.06 }}
-                  className={`${sizeClass} ${opacityClass} leading-tight select-none cursor-default hover:text-amber-400/80 transition-colors duration-500`}
+                  className={`${sizeClass} ${opacityClass} leading-tight select-none cursor-default hover:text-amber-600 transition-colors duration-500`}
                 >
                   {place}
                 </motion.span>
@@ -350,14 +313,13 @@ export default function About() {
           transition={{ duration: 0.8 }}
           className="mb-12"
         >
-          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-500/70 mb-3">Get in Touch</p>
-          <h2 className="text-4xl md:text-5xl font-serif text-stone-100 mb-4">Let's Connect.</h2>
-          <p className="text-white/40 font-light max-w-lg">
+          <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-600 mb-3">Get in Touch</p>
+          <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mb-4">Let's Connect.</h2>
+          <p className="text-stone-500 font-light max-w-lg">
             Whether you're interested in licensing an image, planning a collaboration, or simply want to share what moved you — I'd love to hear from you.
           </p>
         </motion.div>
 
-        {/* Contact details */}
         {hasContact && (
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -367,55 +329,50 @@ export default function About() {
             className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10"
           >
             {contactEmail && (
-              <a
-                href={`mailto:${contactEmail}`}
-                className="group flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/25 transition-colors">
-                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <a href={`mailto:${contactEmail}`}
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-sm transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-100 transition-colors">
+                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Email</p>
-                  <p className="text-sm text-stone-300 group-hover:text-amber-300 transition-colors break-all">{contactEmail}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Email</p>
+                  <p className="text-sm text-stone-700 group-hover:text-amber-700 transition-colors break-all">{contactEmail}</p>
                 </div>
               </a>
             )}
             {contactPhone && (
-              <a
-                href={`tel:${contactPhone.replace(/\s/g, "")}`}
-                className="group flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3 hover:border-amber-500/30 hover:bg-amber-500/5 transition-all duration-300"
-              >
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/25 transition-colors">
-                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <a href={`tel:${contactPhone.replace(/\s/g, "")}`}
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-stone-200 bg-white hover:border-amber-400 hover:shadow-sm transition-all duration-300">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-100 transition-colors">
+                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Phone</p>
-                  <p className="text-sm text-stone-300 group-hover:text-amber-300 transition-colors">{contactPhone}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Phone</p>
+                  <p className="text-sm text-stone-700 group-hover:text-amber-700 transition-colors">{contactPhone}</p>
                 </div>
               </a>
             )}
             {contactLocation && (
-              <div className="flex items-start gap-3 p-5 rounded-2xl border border-white/8 bg-white/3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex items-start gap-3 p-5 rounded-2xl border border-stone-200 bg-white">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[10px] font-mono uppercase tracking-widest text-white/30 mb-1">Based in</p>
-                  <p className="text-sm text-stone-300">{contactLocation}</p>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Based in</p>
+                  <p className="text-sm text-stone-700">{contactLocation}</p>
                 </div>
               </div>
             )}
           </motion.div>
         )}
 
-        {/* Contact form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -436,10 +393,10 @@ export default function About() {
             transition={{ duration: 0.7 }}
             className="mb-12"
           >
-            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-violet-400/80 mb-3">Field Notes</p>
-            <h2 className="text-4xl md:text-5xl font-serif text-stone-100">From the Journal.</h2>
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-violet-500 mb-3">Field Notes</p>
+            <h2 className="text-4xl md:text-5xl font-serif text-stone-900">From the Journal.</h2>
           </motion.div>
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5">
             {publishedArticles.map((article, i) => (
               <motion.div
                 key={article.id}
@@ -449,14 +406,14 @@ export default function About() {
                 transition={{ duration: 0.7, delay: i * 0.08 }}
               >
                 <Link href={`/field-notes/${article.slug}`}>
-                  <div className="group grid grid-cols-1 md:grid-cols-[1fr_280px] gap-0 rounded-2xl border border-white/8 bg-white/2 hover:border-violet-500/25 hover:bg-violet-500/4 overflow-hidden transition-all duration-300 cursor-pointer">
+                  <div className="group grid grid-cols-1 md:grid-cols-[1fr_260px] gap-0 rounded-2xl border border-stone-200 bg-white hover:border-violet-300 hover:shadow-md overflow-hidden transition-all duration-300 cursor-pointer">
                     <div className="p-7 flex flex-col justify-between min-h-[140px]">
                       <div>
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-white/25 mb-3">{formatDate(article.created_at)}</p>
-                        <h3 className="text-xl font-serif text-stone-100 group-hover:text-violet-200 transition-colors leading-snug mb-3">{article.title}</h3>
-                        {article.excerpt && <p className="text-white/40 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-3">{formatDate(article.created_at)}</p>
+                        <h3 className="text-xl font-serif text-stone-900 group-hover:text-violet-700 transition-colors leading-snug mb-3">{article.title}</h3>
+                        {article.excerpt && <p className="text-stone-500 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
                       </div>
-                      <div className="mt-4 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-violet-400/60 group-hover:text-violet-300 transition-colors">
+                      <div className="mt-4 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-violet-400 group-hover:text-violet-600 transition-colors">
                         Read
                         <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -470,7 +427,6 @@ export default function About() {
                           alt={article.title}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/40 md:from-black/60 to-transparent md:to-transparent" />
                       </div>
                     )}
                   </div>
@@ -488,7 +444,7 @@ export default function About() {
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
-            className="text-center text-xs uppercase tracking-widest text-primary mb-16"
+            className="text-center text-xs uppercase tracking-widest text-amber-600 mb-16"
           >
             Curated Highlights
           </motion.h2>

@@ -58,15 +58,14 @@ export default function Home() {
 
   const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroAlbumUrl);
 
-  // Determine hero source: dedicated hero album > trip cover fallback
   const hasSlideshowAlbum = slideshowPhotos.length > 0;
   const fallbackTrip = featuredTrips?.[0] || allTrips?.[0];
   const staticHeroUrl = settings?.heroImageUrl || fallbackTrip?.coverImageUrl || "";
 
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative w-full h-[100dvh] flex items-center justify-center overflow-hidden bg-black">
+    <div className="w-full bg-stone-50">
+      {/* Hero Section — stays dark for full-bleed photography impact */}
+      <section className="relative w-full h-[100dvh] flex items-center justify-center overflow-hidden bg-stone-900">
 
         {hasSlideshowAlbum ? (
           <AnimatePresence mode="sync">
@@ -76,9 +75,9 @@ export default function Home() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 flex items-center justify-center bg-black"
+              className="absolute inset-0 flex items-center justify-center bg-stone-900"
             >
-              <div className="absolute inset-0 bg-black/20 z-10" />
+              <div className="absolute inset-0 bg-black/15 z-10" />
               <img
                 src={slideshowPhotos[slideshowIndex].replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1920"}
                 alt="Hero"
@@ -91,9 +90,9 @@ export default function Home() {
             initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="absolute inset-0 flex items-center justify-center bg-black"
+            className="absolute inset-0 flex items-center justify-center bg-stone-900"
           >
-            <div className="absolute inset-0 bg-black/20 z-10" />
+            <div className="absolute inset-0 bg-black/15 z-10" />
             <img
               src={staticHeroUrl}
               alt="Hero"
@@ -107,7 +106,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-            className="text-5xl md:text-8xl font-serif text-stone-100 tracking-tight"
+            className="text-5xl md:text-8xl font-serif text-stone-50 tracking-tight"
           >
             {heroTagline}
           </motion.h1>
@@ -115,7 +114,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 1 }}
-            className="mt-8 flex justify-center gap-12 text-sm tracking-widest text-primary font-mono uppercase"
+            className="mt-8 flex justify-center gap-12 text-sm tracking-widest text-amber-400 font-mono uppercase"
           >
             <span>{(stats as typeof stats & { placeCount?: number })?.placeCount ?? "—"} Places</span>
             <span>{stats?.photoCount ?? "—"} Photos</span>
@@ -156,15 +155,15 @@ export default function Home() {
             >
               <Link href={`/trips/${trip.id}`} className="group block cursor-pointer">
                 <div className="relative aspect-[4/5] overflow-hidden mb-6">
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-700 z-10" />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 z-10" />
                   <img
                     src={trip.coverImageUrl || "/images/texture-1.png"}
                     alt={trip.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
                   />
                 </div>
-                <h3 className="text-2xl font-serif text-stone-100 mb-2">{trip.title}</h3>
-                <p className="text-muted-foreground uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
+                <h3 className="text-2xl font-serif text-stone-900 mb-2">{trip.title}</h3>
+                <p className="text-stone-400 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
               </Link>
             </motion.div>
           ))}

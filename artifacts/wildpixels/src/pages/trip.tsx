@@ -137,13 +137,13 @@ function CommentsSection({ tripId }: { tripId: number }) {
     <section className="max-w-[800px] mx-auto px-6 py-16 md:py-24">
 
       {/* Reactions bar */}
-      <div className="flex items-center gap-3 mb-14 p-4 rounded-2xl bg-white/3 border border-white/8">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-white/25 mr-1">React</span>
+      <div className="flex items-center gap-3 mb-14 p-4 rounded-2xl bg-white border border-stone-200">
+        <span className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mr-1">React</span>
         <button
           onClick={() => react("like")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${voted === "like"
-            ? "border-amber-500/50 bg-amber-500/15 text-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-            : "border-white/8 bg-white/3 text-white/40 hover:border-white/20 hover:text-white/70"}`}
+            ? "border-amber-400 bg-amber-50 text-amber-700 shadow-sm"
+            : "border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300 hover:text-stone-600"}`}
         >
           <svg className="w-4 h-4" fill={voted === "like" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
@@ -153,8 +153,8 @@ function CommentsSection({ tripId }: { tripId: number }) {
         <button
           onClick={() => react("dislike")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${voted === "dislike"
-            ? "border-red-500/40 bg-red-500/10 text-red-400"
-            : "border-white/8 bg-white/3 text-white/40 hover:border-white/20 hover:text-white/70"}`}
+            ? "border-red-300 bg-red-50 text-red-600"
+            : "border-stone-200 bg-stone-50 text-stone-400 hover:border-stone-300 hover:text-stone-600"}`}
         >
           <svg className="w-4 h-4 rotate-180" fill={voted === "dislike" ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
@@ -165,25 +165,25 @@ function CommentsSection({ tripId }: { tripId: number }) {
 
       {/* Section header */}
       <div className="flex items-center gap-4 mb-8">
-        <p className="text-xs font-mono uppercase tracking-widest text-white/30">Field Notes</p>
-        <div className="flex-1 h-px bg-white/8" />
+        <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Field Notes</p>
+        <div className="flex-1 h-px bg-stone-200" />
         {comments.length > 0 && (
-          <span className="text-[10px] font-mono text-white/20 bg-white/5 px-2 py-0.5 rounded-full">{comments.length}</span>
+          <span className="text-[10px] font-mono text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">{comments.length}</span>
         )}
       </div>
 
       {/* Comment form */}
       <motion.form
         onSubmit={handleSubmit}
-        className={`mb-12 rounded-2xl border transition-all duration-300 overflow-hidden ${focused
-          ? "border-amber-500/25 bg-[#111] shadow-[0_0_40px_rgba(245,158,11,0.06)]"
-          : "border-white/8 bg-white/3"}`}
+        className={`mb-12 rounded-2xl border transition-all duration-300 overflow-hidden bg-white ${focused
+          ? "border-amber-400 shadow-[0_0_0_3px_rgba(217,119,6,0.08)]"
+          : "border-stone-200"}`}
       >
         {/* Name row */}
-        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-white/6">
-          <div className={`w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white flex-shrink-0 transition-all ${name.trim() ? avatarColor(name) : "from-white/10 to-white/5"}`}>
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-stone-100">
+          <div className={`w-8 h-8 rounded-full bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white flex-shrink-0 transition-all ${name.trim() ? avatarColor(name) : "from-stone-200 to-stone-300"}`}>
             {name.trim() ? getInitials(name) : (
-              <svg className="w-3.5 h-3.5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             )}
@@ -195,7 +195,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
             onBlur={() => setFocused(false)}
             placeholder="Your name"
             maxLength={80}
-            className="flex-1 bg-transparent text-sm text-stone-200 placeholder:text-white/20 focus:outline-none"
+            className="flex-1 bg-transparent text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none"
           />
         </div>
 
@@ -210,17 +210,17 @@ function CommentsSection({ tripId }: { tripId: number }) {
             placeholder="Share your thoughts about this expedition…"
             rows={4}
             maxLength={1000}
-            className="w-full bg-transparent text-sm text-stone-300 placeholder:text-white/15 focus:outline-none resize-none leading-relaxed"
+            className="w-full bg-transparent text-sm text-stone-700 placeholder:text-stone-400 focus:outline-none resize-none leading-relaxed"
           />
         </div>
 
         {/* Footer row */}
         <div className="flex items-center justify-between gap-4 px-4 pb-4">
-          <span className="text-[11px] text-white/20 font-mono">{body.length}/1000</span>
+          <span className="text-[11px] text-stone-300 font-mono">{body.length}/1000</span>
           <button
             type="submit"
             disabled={submitting}
-            className="relative flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200 overflow-hidden group"
+            className="relative flex items-center gap-2 px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold uppercase tracking-widest rounded-xl disabled:opacity-50 transition-all duration-200 overflow-hidden group"
           >
             <span className="relative z-10">{submitting ? "Posting…" : "Post"}</span>
             {!submitting && (
@@ -232,7 +232,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
         </div>
 
         {(error || success) && (
-          <div className={`px-4 pb-4 text-xs ${error ? "text-red-400" : "text-amber-400"}`}>
+          <div className={`px-4 pb-4 text-xs ${error ? "text-red-500" : "text-amber-600"}`}>
             {error || "Comment posted — thank you!"}
           </div>
         )}
@@ -241,16 +241,16 @@ function CommentsSection({ tripId }: { tripId: number }) {
       {/* Comments list */}
       {commentsLoading ? (
         <div className="flex justify-center py-8">
-          <div className="w-6 h-6 border-t border-amber-500/50 rounded-full animate-spin" />
+          <div className="w-6 h-6 border-t border-amber-500 rounded-full animate-spin" />
         </div>
       ) : comments.length === 0 ? (
         <div className="text-center py-16">
-          <div className="w-10 h-10 mx-auto mb-4 rounded-full border border-white/10 flex items-center justify-center">
-            <svg className="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="w-10 h-10 mx-auto mb-4 rounded-full border border-stone-200 flex items-center justify-center">
+            <svg className="w-4 h-4 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <p className="text-white/20 text-sm">Be the first to leave a field note.</p>
+          <p className="text-stone-400 text-sm">Be the first to leave a field note.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -260,19 +260,19 @@ function CommentsSection({ tripId }: { tripId: number }) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.04 }}
-              className="group flex gap-3 p-4 rounded-2xl border border-white/6 bg-white/2 hover:bg-white/4 hover:border-white/10 transition-all duration-300"
+              className="group flex gap-3 p-4 rounded-2xl border border-stone-100 bg-white hover:bg-stone-50 hover:border-stone-200 transition-all duration-300"
             >
               <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarColor(c.name)} flex items-center justify-center text-xs font-bold text-white flex-shrink-0 mt-0.5`}>
                 {getInitials(c.name)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1.5">
-                  <span className="text-sm font-semibold text-stone-200">{c.name}</span>
-                  <span className="text-[10px] text-white/20 font-mono">
+                  <span className="text-sm font-semibold text-stone-800">{c.name}</span>
+                  <span className="text-[10px] text-stone-400 font-mono">
                     {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
-                <p className="text-sm text-stone-400 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                <p className="text-sm text-stone-500 leading-relaxed whitespace-pre-wrap">{c.body}</p>
               </div>
             </motion.div>
           ))}
@@ -493,16 +493,16 @@ export default function Trip() {
   // Only block on loading when there's no cached placeholder to show
   if (isTripLoading && !trip) {
     return (
-      <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center space-y-4">
-        <div className="w-16 h-16 border-t-2 border-primary rounded-full animate-spin" />
-        <p className="text-primary text-xs uppercase tracking-widest animate-pulse">Loading Expedition...</p>
+      <div className="min-h-screen w-full bg-stone-50 flex flex-col items-center justify-center space-y-4">
+        <div className="w-16 h-16 border-t-2 border-amber-600 rounded-full animate-spin" />
+        <p className="text-amber-600 text-xs uppercase tracking-widest animate-pulse">Loading Expedition...</p>
       </div>
     );
   }
 
   if (!trip) {
     return (
-      <div className="min-h-screen w-full bg-black flex items-center justify-center text-stone-100">
+      <div className="min-h-screen w-full bg-stone-50 flex items-center justify-center text-stone-900">
         <h1 className="text-4xl font-serif">Trip not found.</h1>
       </div>
     );
@@ -530,7 +530,7 @@ export default function Trip() {
     : [];
 
   return (
-    <div className="min-h-screen bg-black text-stone-100">
+    <div className="min-h-screen bg-stone-50 text-stone-900">
 
       {/* Immersive Cover */}
       <section className="relative w-full h-[80vh] md:h-[100dvh]">
@@ -594,9 +594,9 @@ export default function Trip() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1 }}
-            className="text-lg md:text-xl font-serif font-light leading-loose text-stone-300"
+            className="text-lg md:text-xl font-serif font-light leading-loose text-stone-600"
           >
-            <p className="first-letter:text-6xl first-letter:font-serif first-letter:text-primary first-letter:float-left first-letter:mr-4 first-letter:-mt-2">
+            <p className="first-letter:text-6xl first-letter:font-serif first-letter:text-amber-600 first-letter:float-left first-letter:mr-4 first-letter:-mt-2">
               {trip.story}
             </p>
           </motion.div>
@@ -607,8 +607,8 @@ export default function Trip() {
       {showPinnedGallery && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-white/10" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-200" />
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {pinnedGallery.map((url, i) => {
@@ -644,8 +644,8 @@ export default function Trip() {
       {showGooglePhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-white/10" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-200" />
           </div>
 
           {gLoading ? (
@@ -683,7 +683,7 @@ export default function Trip() {
             </div>
           ) : (
             <div className="text-center py-24">
-              <p className="text-white/30 text-sm">Could not load photos from this album.</p>
+              <p className="text-stone-400 text-sm">Could not load photos from this album.</p>
             </div>
           )}
         </section>
@@ -693,8 +693,8 @@ export default function Trip() {
       {showDbPhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-white/40">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-white/10" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-200" />
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {dbPhotos.map((photo, i) => (
@@ -749,20 +749,20 @@ export default function Trip() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1 }}
-            className="border border-white/10 rounded-2xl overflow-hidden"
+            className="border border-stone-200 rounded-2xl overflow-hidden bg-white"
           >
-            <div className="flex items-center gap-3 px-6 py-4 border-b border-white/10 bg-white/3">
-              <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center gap-3 px-6 py-4 border-b border-stone-100 bg-stone-50">
+              <svg className="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                   d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 13l4.553 2.276A1 1 0 0021 21.382V10.618a1 1 0 00-.553-.894L15 7m0 13V7m0 0L9 7" />
               </svg>
-              <h2 className="text-xs font-mono uppercase tracking-widest text-white/50">Travel Tips</h2>
+              <h2 className="text-xs font-mono uppercase tracking-widest text-stone-500">Travel Tips</h2>
             </div>
             <div className="px-6 py-5">
               <ul className="flex flex-col gap-2.5">
                 {trip.travelTips.split("\n").filter((l) => l.trim()).map((line, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-stone-300 leading-relaxed">
-                    <span className="text-primary mt-[3px] flex-shrink-0 text-xs">▸</span>
+                  <li key={i} className="flex items-start gap-3 text-sm text-stone-600 leading-relaxed">
+                    <span className="text-amber-600 mt-[3px] flex-shrink-0 text-xs">▸</span>
                     <span>{line.replace(/^[-•*▸]\s*/, "")}</span>
                   </li>
                 ))}

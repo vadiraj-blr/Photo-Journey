@@ -60,16 +60,60 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root, .dark {
+:root {
+  --background: 0 0% 99%;
+  --foreground: 20 14% 8%;
+
+  --border: 20 10% 88%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 20 14% 8%;
+  --card-border: 20 10% 88%;
+
+  --sidebar: 0 0% 98%;
+  --sidebar-foreground: 20 14% 8%;
+  --sidebar-border: 20 10% 88%;
+  --sidebar-primary: 38 92% 42%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 20 10% 94%;
+  --sidebar-accent-foreground: 20 14% 8%;
+  --sidebar-ring: 38 92% 42%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14% 8%;
+  --popover-border: 20 10% 88%;
+
+  --primary: 38 92% 42%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 20 10% 94%;
+  --secondary-foreground: 20 14% 8%;
+
+  --muted: 20 10% 94%;
+  --muted-foreground: 20 10% 44%;
+
+  --accent: 38 92% 42%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 80% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --input: 20 10% 94%;
+  --ring: 38 92% 42%;
+
+  --app-font-sans: 'Inter', sans-serif;
+  --app-font-serif: Georgia, serif;
+  --app-font-mono: Menlo, monospace;
+  --radius: 0rem;
+}
+
+.dark {
   --background: 0 0% 3%;
   --foreground: 40 20% 90%;
-  
   --border: 0 0% 15%;
-  
   --card: 120 10% 6%;
   --card-foreground: 40 20% 90%;
   --card-border: 120 10% 12%;
-  
   --sidebar: 120 10% 5%;
   --sidebar-foreground: 40 20% 90%;
   --sidebar-border: 120 10% 10%;
@@ -78,29 +122,21 @@
   --sidebar-accent: 120 10% 12%;
   --sidebar-accent-foreground: 40 20% 90%;
   --sidebar-ring: 40 90% 60%;
-  
   --popover: 0 0% 3%;
   --popover-foreground: 40 20% 90%;
   --popover-border: 0 0% 15%;
-  
   --primary: 40 90% 50%;
   --primary-foreground: 0 0% 3%;
-  
   --secondary: 120 10% 15%;
   --secondary-foreground: 40 20% 90%;
-  
   --muted: 120 10% 15%;
   --muted-foreground: 40 10% 60%;
-  
   --accent: 40 90% 50%;
   --accent-foreground: 0 0% 3%;
-  
   --destructive: 0 80% 50%;
   --destructive-foreground: 40 20% 90%;
-  
   --input: 120 10% 15%;
   --ring: 40 90% 50%;
-  
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: Menlo, monospace;
@@ -357,7 +393,7 @@
 
   /* Field note markdown body */
   .prose-wildpixels {
-    color: rgb(231 229 228 / 0.75);
+    color: rgb(68 64 60);
     font-size: 1.0625rem;
     line-height: 1.85;
     font-weight: 300;
@@ -367,7 +403,7 @@
   .prose-wildpixels h3,
   .prose-wildpixels h4 {
     font-family: var(--font-serif, serif);
-    color: rgb(245 245 244);
+    color: rgb(28 25 23);
     font-weight: 700;
     margin-top: 2.5rem;
     margin-bottom: 0.75rem;
@@ -378,18 +414,18 @@
   .prose-wildpixels h3 { font-size: 1.2rem; }
   .prose-wildpixels p { margin-bottom: 1.4rem; }
   .prose-wildpixels a {
-    color: rgb(251 191 36);
+    color: rgb(180 83 9);
     text-decoration: underline;
     text-underline-offset: 3px;
   }
-  .prose-wildpixels a:hover { color: rgb(252 211 77); }
-  .prose-wildpixels strong { color: rgb(245 245 244); font-weight: 600; }
-  .prose-wildpixels em { font-style: italic; color: rgb(214 211 209 / 0.85); }
+  .prose-wildpixels a:hover { color: rgb(217 119 6); }
+  .prose-wildpixels strong { color: rgb(28 25 23); font-weight: 600; }
+  .prose-wildpixels em { font-style: italic; color: rgb(87 83 78); }
   .prose-wildpixels blockquote {
-    border-left: 2px solid rgb(245 158 11 / 0.4);
+    border-left: 2px solid rgb(217 119 6 / 0.5);
     padding-left: 1.25rem;
     margin: 2rem 0;
-    color: rgb(168 162 158);
+    color: rgb(120 113 108);
     font-style: italic;
     font-size: 1.1rem;
   }
@@ -403,20 +439,20 @@
   .prose-wildpixels li { margin-bottom: 0.4rem; }
   .prose-wildpixels hr {
     border: none;
-    border-top: 1px solid rgb(255 255 255 / 0.08);
+    border-top: 1px solid rgb(231 229 228);
     margin: 3rem 0;
   }
   .prose-wildpixels code {
-    background: rgb(255 255 255 / 0.06);
+    background: rgb(245 245 244);
     border-radius: 4px;
     padding: 0.15em 0.4em;
     font-size: 0.875em;
-    color: rgb(251 191 36 / 0.8);
+    color: rgb(180 83 9);
     font-family: ui-monospace, monospace;
   }
   .prose-wildpixels pre {
-    background: rgb(255 255 255 / 0.04);
-    border: 1px solid rgb(255 255 255 / 0.08);
+    background: rgb(245 245 244);
+    border: 1px solid rgb(231 229 228);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
     overflow-x: auto;
@@ -425,12 +461,13 @@
   .prose-wildpixels pre code {
     background: none;
     padding: 0;
-    color: rgb(214 211 209);
+    color: rgb(68 64 60);
   }
   .prose-wildpixels img {
     border-radius: 12px;
     width: 100%;
     margin: 2rem 0;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
   }
   .prose-wildpixels table {
     width: 100%;
@@ -441,12 +478,12 @@
   .prose-wildpixels th {
     text-align: left;
     font-weight: 600;
-    color: rgb(245 245 244);
-    border-bottom: 1px solid rgb(255 255 255 / 0.12);
+    color: rgb(28 25 23);
+    border-bottom: 1px solid rgb(214 211 209);
     padding: 0.5rem 0.75rem;
   }
   .prose-wildpixels td {
-    border-bottom: 1px solid rgb(255 255 255 / 0.06);
+    border-bottom: 1px solid rgb(245 245 244);
     padding: 0.5rem 0.75rem;
   }
 }
