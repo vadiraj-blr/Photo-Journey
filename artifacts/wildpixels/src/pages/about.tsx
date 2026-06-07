@@ -234,12 +234,13 @@ export default function About() {
           transition={{ duration: 1, ease: "easeOut" }}
           className="flex flex-col gap-10"
         >
-          <div className="relative aspect-square w-full">
+          <div className="relative w-full" style={{ height: '480px' }}>
             <div className="absolute -inset-4 border border-stone-300" />
             <img
               src={portraitUrl}
               alt="Vadiraj in the wilderness"
-              className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000"
+              className="w-full h-full object-cover object-center filter grayscale hover:grayscale-0 transition-all duration-1000"
+              style={{ objectPosition: 'center 35%' }}
             />
           </div>
           <div className="border-t border-stone-200 pt-8 grid grid-cols-3 gap-8">
