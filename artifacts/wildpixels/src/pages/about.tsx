@@ -225,31 +225,35 @@ export default function About() {
     <div className="w-full bg-stone-50 min-h-screen pt-32 pb-24 text-stone-900">
 
       {/* Hero: Portrait + Bio */}
-      <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-start">
+
+        {/* Left column: photo + bio below */}
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
-          className="relative aspect-[3/4] w-full max-w-[500px] mx-auto"
         >
-          <div className="absolute -inset-4 border border-stone-300" />
-          <img
-            src={portraitUrl}
-            alt="Vadiraj in the wilderness"
-            className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000"
-          />
+          <div className="relative aspect-[3/4] w-full">
+            <div className="absolute -inset-4 border border-stone-300" />
+            <img
+              src={portraitUrl}
+              alt="Vadiraj in the wilderness"
+              className="w-full h-full object-cover filter grayscale hover:grayscale-0 transition-all duration-1000"
+            />
+          </div>
+          <div className="mt-10 space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
+            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
+          </div>
         </motion.div>
 
+        {/* Right column: title + stats — top-aligned */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-          className="space-y-8"
+          className="space-y-10 md:pt-0"
         >
-          <h1 className="text-5xl md:text-7xl font-serif tracking-tight text-amber-600">{aboutTitle}</h1>
-          <div className="space-y-6 text-lg text-stone-900 font-sans font-normal leading-relaxed max-w-lg">
-            {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
-          </div>
+          <h1 className="text-5xl md:text-7xl font-serif tracking-tight leading-tight text-amber-600">{aboutTitle}</h1>
           <div className="pt-8 border-t border-stone-200 grid grid-cols-3 gap-8">
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.tripCount || 0}</span>
@@ -385,7 +389,7 @@ export default function About() {
 
       {/* Field Notes */}
       {publishedArticles.length > 0 && (
-        <div className="max-w-[900px] mx-auto px-6 md:px-12 mt-32">
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12 mt-32">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -393,42 +397,51 @@ export default function About() {
             transition={{ duration: 0.7 }}
             className="mb-12"
           >
-            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-violet-500 mb-3">Field Notes</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-600 mb-3">Field Notes</p>
             <h2 className="text-4xl md:text-5xl font-serif text-stone-900">From the Journal.</h2>
           </motion.div>
-          <div className="flex flex-col gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {publishedArticles.map((article, i) => (
               <motion.div
                 key={article.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: i * 0.08 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.7, delay: (i % 3) * 0.1 }}
               >
                 <Link href={`/field-notes/${article.slug}`}>
-                  <div className="group grid grid-cols-1 md:grid-cols-[1fr_260px] gap-0 rounded-2xl border border-stone-200 bg-white hover:border-violet-300 hover:shadow-md overflow-hidden transition-all duration-300 cursor-pointer">
-                    <div className="p-7 flex flex-col justify-between min-h-[140px]">
-                      <div>
-                        <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-3">{formatDate(article.created_at)}</p>
-                        <h3 className="text-xl font-serif text-stone-900 group-hover:text-violet-700 transition-colors leading-snug mb-3">{article.title}</h3>
-                        {article.excerpt && <p className="text-stone-800 text-sm leading-relaxed line-clamp-2">{article.excerpt}</p>}
-                      </div>
-                      <div className="mt-4 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-violet-400 group-hover:text-violet-600 transition-colors">
-                        Read
-                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </div>
-                    </div>
-                    {article.cover_image_url && (
-                      <div className="relative overflow-hidden md:h-auto h-[200px]">
+                  <div className="group flex flex-col rounded-2xl border border-stone-200 bg-white hover:border-stone-400 hover:shadow-lg overflow-hidden transition-all duration-300 cursor-pointer h-full">
+                    {/* Cover image */}
+                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-stone-100 flex-shrink-0">
+                      {article.cover_image_url ? (
                         <img
                           src={article.cover_image_url}
                           alt={article.title}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                         />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg className="w-10 h-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card body */}
+                    <div className="flex flex-col flex-1 p-6 gap-3">
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400">{formatDate(article.created_at)}</p>
+                      <h3 className="text-xl font-serif text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
+                      {article.excerpt && (
+                        <p className="text-sm text-stone-700 leading-relaxed line-clamp-3 flex-1">{article.excerpt}</p>
+                      )}
+                      <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-stone-500 group-hover:text-amber-600 transition-colors mt-auto">
+                        Read article
+                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </Link>
               </motion.div>
