@@ -1495,6 +1495,8 @@ function ContactSettingsPanel() {
     contactEmail: "",
     contactPhone: "",
     contactLocation: "",
+    contactInstagram: "",
+    contactFacebook: "",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -1506,6 +1508,8 @@ function ContactSettingsPanel() {
         contactEmail: settings.contactEmail ?? "",
         contactPhone: settings.contactPhone ?? "",
         contactLocation: settings.contactLocation ?? "",
+        contactInstagram: settings.contactInstagram ?? "",
+        contactFacebook: settings.contactFacebook ?? "",
       });
     }
   }, [settings]);
@@ -1573,6 +1577,35 @@ function ContactSettingsPanel() {
           onChange={(e) => setForm((f) => ({ ...f, contactLocation: e.target.value }))}
           placeholder="Bengaluru, India"
         />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Instagram</span>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-mono">@</span>
+            <input
+              className={`${inputCls} pl-7`}
+              value={form.contactInstagram}
+              onChange={(e) => setForm((f) => ({ ...f, contactInstagram: e.target.value.replace(/^@/, "") }))}
+              placeholder="vadiraj.wildlife"
+            />
+          </div>
+          <span className="text-[11px] text-white/20">Username only, without @</span>
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Facebook</span>
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-sm font-mono">@</span>
+            <input
+              className={`${inputCls} pl-7`}
+              value={form.contactFacebook}
+              onChange={(e) => setForm((f) => ({ ...f, contactFacebook: e.target.value.replace(/^@/, "") }))}
+              placeholder="vadiraj.photography"
+            />
+          </div>
+          <span className="text-[11px] text-white/20">Username or page name, without @</span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

@@ -13,6 +13,8 @@ interface AboutSettings {
   contactEmail: string;
   contactPhone: string;
   contactLocation: string;
+  contactInstagram: string;
+  contactFacebook: string;
 }
 
 interface Article {
@@ -204,6 +206,8 @@ export default function About() {
   const contactEmail = settings?.contactEmail ?? "";
   const contactPhone = settings?.contactPhone ?? "";
   const contactLocation = settings?.contactLocation ?? "";
+  const contactInstagram = settings?.contactInstagram ?? "";
+  const contactFacebook = settings?.contactFacebook ?? "";
 
   const placeWords: string[] = [];
   const seen = new Set<string>();
@@ -221,7 +225,7 @@ export default function About() {
         "From the mist-shrouded peaks of Patagonia to the golden savannas of the Serengeti, his visual diary captures moments of profound silence and fierce power. This portfolio is a curated collection of a personal legend.",
       ];
 
-  const hasContact = contactEmail || contactPhone || contactLocation;
+  const hasContact = contactEmail || contactPhone || contactLocation || contactInstagram || contactFacebook;
 
   return (
     <div className="w-full bg-stone-50 min-h-screen pt-32 pb-24 text-stone-900">
@@ -377,6 +381,44 @@ export default function About() {
                   <p className="text-sm text-stone-900">{contactLocation}</p>
                 </div>
               </div>
+            )}
+            {contactInstagram && (
+              <a
+                href={`https://instagram.com/${contactInstagram}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-stone-200 bg-white hover:border-pink-400 hover:shadow-sm transition-all duration-300"
+              >
+                <div className="w-9 h-9 rounded-xl bg-pink-50 border border-pink-200 flex items-center justify-center flex-shrink-0 group-hover:bg-pink-100 transition-colors">
+                  <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" strokeWidth="1.5"/>
+                    <circle cx="12" cy="12" r="4" strokeWidth="1.5"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" strokeWidth="0"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Instagram</p>
+                  <p className="text-sm text-stone-900 group-hover:text-pink-600 transition-colors">@{contactInstagram}</p>
+                </div>
+              </a>
+            )}
+            {contactFacebook && (
+              <a
+                href={`https://facebook.com/${contactFacebook}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-3 p-5 rounded-2xl border border-stone-200 bg-white hover:border-blue-400 hover:shadow-sm transition-all duration-300"
+              >
+                <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-100 transition-colors">
+                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.264h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1">Facebook</p>
+                  <p className="text-sm text-stone-900 group-hover:text-blue-600 transition-colors">@{contactFacebook}</p>
+                </div>
+              </a>
             )}
           </motion.div>
         )}

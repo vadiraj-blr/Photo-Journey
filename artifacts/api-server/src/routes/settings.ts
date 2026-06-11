@@ -6,7 +6,7 @@ const router = Router();
 
 async function getSettings() {
   const result = await db.execute(
-    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url, highlight_album_url, highlight_photo_urls, about_title, about_portrait_url, about_bio, about_album_url, about_photo_height, contact_email, contact_phone, contact_location FROM landing_settings WHERE id = 1`
+    sql`SELECT hero_image_url, hero_image_source_trip_id, trips_on_homepage, hero_tagline, hero_album_url, highlight_album_url, highlight_photo_urls, about_title, about_portrait_url, about_bio, about_album_url, about_photo_height, contact_email, contact_phone, contact_location, contact_instagram, contact_facebook FROM landing_settings WHERE id = 1`
   );
   const r = result.rows[0] as Record<string, unknown> | undefined;
   return {
@@ -25,6 +25,8 @@ async function getSettings() {
     contactEmail: (r?.contact_email as string) ?? "",
     contactPhone: (r?.contact_phone as string) ?? "",
     contactLocation: (r?.contact_location as string) ?? "",
+    contactInstagram: (r?.contact_instagram as string) ?? "",
+    contactFacebook: (r?.contact_facebook as string) ?? "",
   };
 }
 
@@ -154,6 +156,12 @@ router.patch("/", async (req, res) => {
     }
     if ("contactLocation" in body) {
       await db.execute(sql`UPDATE landing_settings SET contact_location = ${(body.contactLocation as string)?.trim() || ""} WHERE id = 1`);
+    }
+    if ("contactInstagram" in body) {
+      await db.execute(sql`UPDATE landing_settings SET contact_instagram = ${(body.contactInstagram as string)?.trim() || ""} WHERE id = 1`);
+    }
+    if ("contactFacebook" in body) {
+      await db.execute(sql`UPDATE landing_settings SET contact_facebook = ${(body.contactFacebook as string)?.trim() || ""} WHERE id = 1`);
     }
 
     res.json(await getSettings());
