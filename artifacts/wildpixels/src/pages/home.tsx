@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { useGetFeaturedTrips, useListTrips, useGetTripStats } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import SubscribeSection from "../components/subscribe-section";
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -141,6 +142,8 @@ export default function Home() {
           </motion.div>
         </motion.button>
       </section>
+
+      <SubscribeSection />
 
       {/* Grid Section */}
       <section className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
