@@ -1,8 +1,14 @@
 import { Router } from "express";
 import { db, tripsTable, photosTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { notifySubscribers } from "../lib/notify";
 
 const router = Router();
+
+async function getSiteUrl(): Promise<string> {
+  const domain = process.env["REPLIT_DEV_DOMAIN"];
+  return domain ? `https://${domain}` : "https://wildpixels.replit.app";
+}
 
 function parseTrip(trip: typeof tripsTable.$inferSelect) {
   return {
@@ -39,7 +45,6 @@ router.get("/stats", async (_req, res) => {
   const countries = new Set(trips.map((t) => t.country));
   const places = new Set(trips.map((t) => t.location));
 
-  // Count photos from all sources per trip: Google cache > pinned gallery > DB photos
   const dbPhotosByTrip = new Map<number, number>();
   for (const p of dbPhotos) {
     dbPhotosByTrip.set(p.tripId, (dbPhotosByTrip.get(p.tripId) ?? 0) + 1);
@@ -71,7 +76,6 @@ router.get("/:id/google-photos", async (req, res) => {
   if (!trip) return res.status(404).json({ error: "Not found" });
   if (!trip.googlePhotosUrl) return res.json({ photos: [] });
 
-  // ?refresh=true clears the cache so the next fetch is forced fresh
   const forceRefresh = req.query.refresh === "true";
   if (forceRefresh) {
     await db
@@ -80,9 +84,8 @@ router.get("/:id/google-photos", async (req, res) => {
       .where(eq(tripsTable.id, id));
   }
 
-  // Helper: parse cached URLs from DB column (may not exist on old rows)
   const getCached = (): string[] => {
-    if (forceRefresh) return []; // ignore cache on forced refresh
+    if (forceRefresh) return [];
     try {
       const raw = (trip as typeof trip & { cachedGooglePhotoUrls?: string }).cachedGooglePhotoUrls ?? "[]";
       const parsed = JSON.parse(raw);
@@ -101,19 +104,15 @@ router.get("/:id/google-photos", async (req, res) => {
     });
 
     if (!resp.ok) {
-      // Google blocked the scrape — serve whatever we cached last time
       const cached = getCached();
       console.warn(`Google Photos returned ${resp.status} for trip ${id}; serving ${cached.length} cached photos`);
       return res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
     }
 
     const html = await resp.text();
-
-    // Extract /pw/ photo URLs — these are actual album photos (not icons/avatars)
     const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
     const rawMatches = html.match(urlPattern) ?? [];
 
-    // Deduplicate
     const seen = new Set<string>();
     const photos: string[] = [];
     for (const url of rawMatches) {
@@ -122,7 +121,6 @@ router.get("/:id/google-photos", async (req, res) => {
       photos.push(`${url}=w1200`);
     }
 
-    // Persist to cache and sync photo_count so future scrape failures fall back to these
     if (photos.length > 0) {
       await db
         .update(tripsTable)
@@ -185,6 +183,16 @@ router.post("/", async (req, res) => {
     })
     .returning();
   res.status(201).json(parseTrip(created));
+
+  // Notify subscribers about the new trip (fire-and-forget)
+  getSiteUrl().then((siteUrl) => {
+    notifySubscribers("trip", {
+      title: created.title,
+      url: `${siteUrl}/trips/${created.id}`,
+      excerpt: created.story?.slice(0, 200) || undefined,
+      coverImageUrl: created.coverImageUrl || undefined,
+    });
+  }).catch(console.error);
 });
 
 router.delete("/:id", async (req, res) => {

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
+import { notifySubscribers } from "../lib/notify";
 
 const router = Router();
 
@@ -14,7 +15,12 @@ function toSlug(title: string): string {
     .slice(0, 80);
 }
 
-// GET /api/articles — list published articles (public)
+async function getSiteUrl(): Promise<string> {
+  const domain = process.env["REPLIT_DEV_DOMAIN"];
+  return domain ? `https://${domain}` : "https://wildpixels.replit.app";
+}
+
+// GET /api/articles — list all articles (public)
 router.get("/", async (_req, res) => {
   try {
     const result = await db.execute(
@@ -50,7 +56,6 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Title is required." });
     }
     const rawSlug = toSlug(title.trim());
-    // Ensure unique slug
     const existing = await db.execute(
       sql`SELECT slug FROM articles WHERE slug LIKE ${rawSlug + "%"} ORDER BY created_at DESC`
     );
@@ -59,12 +64,25 @@ router.post("/", async (req, res) => {
       slug = `${rawSlug}-${Date.now()}`;
     }
 
+    const isPublished = !!(published);
     const result = await db.execute(
       sql`INSERT INTO articles (title, slug, excerpt, body, cover_image_url, published)
-          VALUES (${title.trim()}, ${slug}, ${(excerpt as string)?.trim() ?? ""}, ${(body as string) ?? ""}, ${(coverImageUrl as string)?.trim() ?? ""}, ${!!(published)})
+          VALUES (${title.trim()}, ${slug}, ${(excerpt as string)?.trim() ?? ""}, ${(body as string) ?? ""}, ${(coverImageUrl as string)?.trim() ?? ""}, ${isPublished})
           RETURNING *`
     );
-    res.status(201).json(result.rows[0]);
+    const article = result.rows[0] as Record<string, unknown>;
+    res.status(201).json(article);
+
+    // Notify subscribers if published immediately on creation
+    if (isPublished) {
+      const siteUrl = await getSiteUrl();
+      notifySubscribers("article", {
+        title: title.trim(),
+        url: `${siteUrl}/field-notes/${slug}`,
+        excerpt: (excerpt as string)?.trim() ?? undefined,
+        coverImageUrl: (coverImageUrl as string)?.trim() || undefined,
+      }).catch(console.error);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create article" });
@@ -77,6 +95,10 @@ router.patch("/:id", async (req, res) => {
     const id = Number(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
     const body = req.body as Record<string, unknown>;
+
+    // Fetch current state before update (for publish-flip detection)
+    const before = await db.execute(sql`SELECT published, title, slug, excerpt, cover_image_url FROM articles WHERE id = ${id}`);
+    const current = before.rows[0] as Record<string, unknown> | undefined;
 
     if ("title" in body && typeof body.title === "string") {
       await db.execute(sql`UPDATE articles SET title = ${body.title.trim()}, updated_at = now() WHERE id = ${id}`);
@@ -98,7 +120,25 @@ router.patch("/:id", async (req, res) => {
     }
 
     const result = await db.execute(sql`SELECT * FROM articles WHERE id = ${id}`);
-    res.json(result.rows[0]);
+    const updated = result.rows[0] as Record<string, unknown>;
+    res.json(updated);
+
+    // Notify subscribers when article flips from draft → published
+    const wasPublished = !!(current?.published);
+    const nowPublished = "published" in body ? !!(body.published) : wasPublished;
+    if (!wasPublished && nowPublished && current) {
+      const siteUrl = await getSiteUrl();
+      const title = (("title" in body && typeof body.title === "string") ? body.title.trim() : current.title) as string;
+      const slug = (("slug" in body && typeof body.slug === "string") ? body.slug.trim() : current.slug) as string;
+      const excerpt = (("excerpt" in body ? body.excerpt : current.excerpt) as string) ?? "";
+      const cover = (("coverImageUrl" in body ? body.coverImageUrl : current.cover_image_url) as string) ?? "";
+      notifySubscribers("article", {
+        title,
+        url: `${siteUrl}/field-notes/${slug}`,
+        excerpt: excerpt || undefined,
+        coverImageUrl: cover || undefined,
+      }).catch(console.error);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update article" });

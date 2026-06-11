@@ -1,4 +1,59 @@
 import { Link, useLocation } from "wouter";
+import { useState } from "react";
+
+function SubscribeFooterCta() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setStatus("loading");
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+      if (res.ok) {
+        setStatus("done");
+      } else {
+        setStatus("error");
+      }
+    } catch {
+      setStatus("error");
+    }
+  }
+
+  if (status === "done") {
+    return (
+      <p className="text-xs text-amber-700 font-medium">
+        ✓ You're subscribed. Watch your inbox for new stories.
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex gap-2 mt-1">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="your@email.com"
+        required
+        disabled={status === "loading"}
+        className="flex-1 min-w-0 text-xs px-3 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-200 disabled:opacity-50"
+      />
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="text-xs px-4 py-2 rounded-lg bg-amber-600 text-white font-semibold hover:bg-amber-700 transition-colors disabled:opacity-50 whitespace-nowrap"
+      >
+        {status === "loading" ? "…" : "Notify me"}
+      </button>
+    </form>
+  );
+}
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -37,7 +92,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </main>
 
       <footer className="w-full border-t border-stone-200 mt-24 bg-white">
-        <div className="max-w-[1200px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
+        <div className="max-w-[1200px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
 
           {/* Brand */}
           <div className="flex flex-col gap-4">
@@ -58,6 +113,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-[11px] font-mono text-stone-500 uppercase tracking-widest">The Personal Legend.</p>
           </div>
 
+          {/* Subscribe CTA */}
+          <div className="flex flex-col gap-3">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-amber-700 mb-1">Stay in the Loop</p>
+            <p className="text-xs text-stone-700 leading-relaxed">
+              Get notified when a new field note or journey is published. No noise — just the good stuff.
+            </p>
+            <SubscribeFooterCta />
+          </div>
+
           {/* Rights */}
           <div className="flex flex-col gap-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-amber-700 mb-1">Rights &amp; Usage</p>
@@ -66,9 +130,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </p>
             <p className="text-xs text-stone-700 leading-relaxed">
               No image may be reproduced, distributed, or used commercially without explicit written permission from the photographer.
-            </p>
-            <p className="text-xs text-stone-600">
-              For licensing enquiries, please reach out directly.
             </p>
           </div>
 

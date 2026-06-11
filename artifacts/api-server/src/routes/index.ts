@@ -6,6 +6,7 @@ import settingsRouter from "./settings";
 import commentsRouter from "./comments";
 import contactRouter from "./contact";
 import articlesRouter from "./articles";
+import subscribeRouter from "./subscribe";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,8 @@ router.use("/photos", photosRouter);
 router.use("/settings", settingsRouter);
 router.use("/contact", contactRouter);
 router.use("/articles", articlesRouter);
+router.use("/subscribe", subscribeRouter);
+router.use("/unsubscribe", subscribeRouter);
+router.use("/subscribers", subscribeRouter);
 
 export default router;
