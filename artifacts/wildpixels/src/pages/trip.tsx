@@ -588,18 +588,45 @@ export default function Trip() {
 
       {/* Story Section */}
       {trip.story && (
-        <section className="max-w-[800px] mx-auto px-6 py-24 md:py-32">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 1 }}
-            className="text-lg md:text-xl font-serif leading-loose text-stone-900"
-          >
-            <p className="first-letter:text-6xl first-letter:font-serif first-letter:text-amber-600 first-letter:float-left first-letter:mr-4 first-letter:-mt-2">
-              {trip.story}
-            </p>
-          </motion.div>
+        <section className="max-w-[720px] mx-auto px-6 py-24 md:py-32">
+          {/* Summary pull-quote */}
+          {(trip as typeof trip & { storySummary?: string | null }).storySummary && (
+            <motion.blockquote
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.9 }}
+              className="relative mb-16 pl-7 border-l-[3px] border-amber-500"
+            >
+              <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-stone-700">
+                {(trip as typeof trip & { storySummary?: string | null }).storySummary}
+              </p>
+            </motion.blockquote>
+          )}
+
+          {/* Paragraphs */}
+          <div className="space-y-8">
+            {trip.story
+              .split(/\n\s*\n/)
+              .map((para) => para.trim())
+              .filter(Boolean)
+              .map((para, i) => (
+                <motion.p
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.8, delay: i === 0 ? 0 : 0.05 }}
+                  className={`text-lg md:text-xl font-serif leading-loose text-stone-900 ${
+                    i === 0
+                      ? "first-letter:text-6xl first-letter:font-serif first-letter:text-amber-600 first-letter:float-left first-letter:mr-4 first-letter:leading-none first-letter:-mt-1"
+                      : ""
+                  }`}
+                >
+                  {para}
+                </motion.p>
+              ))}
+          </div>
         </section>
       )}
 

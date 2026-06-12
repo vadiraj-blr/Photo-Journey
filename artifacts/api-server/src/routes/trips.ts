@@ -19,6 +19,7 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     month: trip.month,
     year: trip.year,
     story: trip.story ?? null,
+    storySummary: (trip as typeof trip & { storySummary?: string | null }).storySummary ?? null,
     travelTips: (trip as typeof trip & { travelTips?: string | null }).travelTips ?? null,
     coverImageUrl: trip.coverImageUrl,
     photoCount: trip.photoCount,
@@ -162,7 +163,7 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const { title, location, country, month, year, story, coverImageUrl, tags, featured, googlePhotosUrl } = req.body;
+  const { title, location, country, month, year, story, storySummary, coverImageUrl, tags, featured, googlePhotosUrl } = req.body;
   if (!title || !location || !country || !month || !year) {
     return res.status(400).json({ error: "title, location, country, month and year are required" });
   }
@@ -180,11 +181,17 @@ router.post("/", async (req, res) => {
       tags: JSON.stringify(tags ?? []),
       featured: featured ?? false,
       googlePhotosUrl: googlePhotosUrl ?? null,
-    })
+    } as typeof tripsTable.$inferInsert)
     .returning();
-  res.status(201).json(parseTrip(created));
 
-  // Notify subscribers about the new trip (fire-and-forget)
+  // Save storySummary if provided (raw SQL since it may not be in drizzle schema yet)
+  if (storySummary?.trim()) {
+    const { sql } = await import("drizzle-orm");
+    await db.execute(sql`UPDATE trips SET story_summary = ${storySummary.trim()} WHERE id = ${created.id}`);
+  }
+
+  res.status(201).json({ ...parseTrip(created), storySummary: storySummary?.trim() ?? null });
+
   getSiteUrl().then((siteUrl) => {
     notifySubscribers("trip", {
       title: created.title,
@@ -208,6 +215,14 @@ router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
   if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
 
+  const { sql } = await import("drizzle-orm");
+
+  // Handle storySummary separately via raw SQL (column may not be in drizzle schema)
+  if ("storySummary" in req.body) {
+    const val = req.body.storySummary ?? null;
+    await db.execute(sql`UPDATE trips SET story_summary = ${val} WHERE id = ${id}`);
+  }
+
   const allowed = ["title", "location", "country", "month", "year", "story", "travelTips", "coverImageUrl", "featured", "tags", "googlePhotosUrl", "galleryPhotoUrls"];
   const updates: Record<string, unknown> = {};
 
@@ -223,18 +238,21 @@ router.patch("/:id", async (req, res) => {
     }
   }
 
-  if (Object.keys(updates).length === 0) {
-    return res.status(400).json({ error: "No valid fields to update" });
+  if (Object.keys(updates).length > 0) {
+    await db
+      .update(tripsTable)
+      .set(updates as Parameters<typeof db.update>[0] extends { set: (v: infer V) => unknown } ? V : never)
+      .where(eq(tripsTable.id, id));
   }
 
-  const [updated] = await db
-    .update(tripsTable)
-    .set(updates as Parameters<typeof db.update>[0] extends { set: (v: infer V) => unknown } ? V : never)
-    .where(eq(tripsTable.id, id))
-    .returning();
-
+  // Re-fetch with storySummary
+  const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id));
   if (!updated) return res.status(404).json({ error: "Not found" });
-  res.json(parseTrip(updated));
+
+  const summaryResult = await db.execute(sql`SELECT story_summary FROM trips WHERE id = ${id}`);
+  const storySummary = (summaryResult.rows[0] as Record<string, unknown>)?.story_summary as string | null ?? null;
+
+  res.json({ ...parseTrip(updated), storySummary });
 });
 
 export default router;

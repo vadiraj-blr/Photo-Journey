@@ -278,6 +278,7 @@ interface TripRow {
   month: string;
   year: number;
   story?: string | null;
+  storySummary?: string | null;
   coverImageUrl: string;
   tags: string[];
   featured: boolean;
@@ -469,7 +470,7 @@ function TripFormFields({
 }: {
   form: {
     title: string; location: string; country: string; month: string;
-    year: string; story: string; travelTips: string; coverImageUrl: string; tags: string;
+    year: string; story: string; storySummary: string; travelTips: string; coverImageUrl: string; tags: string;
     featured: boolean; googlePhotosUrl: string; galleryPhotoUrls: string[];
   };
   set: (field: string, value: string | boolean) => void;
@@ -592,13 +593,43 @@ function TripFormFields({
         />
       </Field>
 
-      <Field label="Story / Description">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/50">Story</span>
+          <span className="text-[10px] text-white/30">Each blank line = new paragraph on the trip page</span>
+        </div>
         <textarea
-          className={`${inputCls} resize-y min-h-[100px]`}
+          className={`${inputCls} resize-y min-h-[220px] font-mono text-sm leading-relaxed`}
+          placeholder={"Write the trip story here.\n\nUse a blank line between paragraphs.\n\nEach paragraph becomes its own block on the trip page."}
           value={form.story}
           onChange={(e) => set("story", e.target.value)}
         />
-      </Field>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/50">Summary <span className="text-white/30 normal-case tracking-normal">(shown at the top of the story)</span></span>
+          <button
+            type="button"
+            onClick={() => {
+              if (!form.story.trim()) return;
+              const firstPara = form.story.trim().split(/\n\s*\n/)[0].trim();
+              const sentences = firstPara.match(/[^.!?]*[.!?]+/g) ?? [];
+              const summary = sentences.slice(0, 3).join(" ").trim() || firstPara.slice(0, 280);
+              set("storySummary", summary);
+            }}
+            className="text-[10px] font-mono uppercase tracking-widest text-amber-400/80 hover:text-amber-300 transition-colors px-2 py-1 rounded border border-amber-500/20 hover:border-amber-400/40"
+          >
+            ↑ Extract from story
+          </button>
+        </div>
+        <textarea
+          className={`${inputCls} resize-y min-h-[80px]`}
+          placeholder="A short 1–3 sentence pull-quote shown before the full story…"
+          value={form.storySummary}
+          onChange={(e) => set("storySummary", e.target.value)}
+        />
+      </div>
 
       <Field
         label="Travel Tips"
@@ -634,7 +665,7 @@ function AddTripModal({
 }) {
   const [form, setForm] = useState({
     title: "", location: "", country: "", month: "January",
-    year: String(new Date().getFullYear()), story: "", travelTips: "",
+    year: String(new Date().getFullYear()), story: "", storySummary: "", travelTips: "",
     coverImageUrl: "", tags: "", featured: false, googlePhotosUrl: "",
     galleryPhotoUrls: [] as string[],
   });
@@ -664,6 +695,7 @@ function AddTripModal({
           month: form.month,
           year: Number(form.year),
           story: form.story.trim() || null,
+          storySummary: form.storySummary.trim() || null,
           travelTips: form.travelTips.trim() || null,
           coverImageUrl: form.coverImageUrl.trim() || null,
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
@@ -737,6 +769,7 @@ function EditModal({
     month: trip.month,
     year: String(trip.year),
     story: trip.story ?? "",
+    storySummary: trip.storySummary ?? "",
     travelTips: (trip as typeof trip & { travelTips?: string | null }).travelTips ?? "",
     coverImageUrl: trip.coverImageUrl,
     tags: trip.tags.join(", "),
@@ -768,6 +801,7 @@ function EditModal({
           month: form.month,
           year: Number(form.year),
           story: form.story,
+          storySummary: form.storySummary.trim() || null,
           travelTips: form.travelTips.trim() || null,
           coverImageUrl: form.coverImageUrl,
           tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
