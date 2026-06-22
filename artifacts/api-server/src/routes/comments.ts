@@ -65,11 +65,10 @@ router.post("/comments", async (req, res) => {
   const tripId = parseInt(req.params.tripId, 10);
   if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
 
-  // Rate limiting — use X-Forwarded-For (Replit proxy) or socket IP
-  const ip =
-    (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim() ||
-    req.socket.remoteAddress ||
-    "unknown";
+  // Rate limiting — use req.ip which Express normalises via trust proxy setting.
+  // This means the Replit reverse-proxy hop is trusted and counted, but a
+  // client cannot spoof the key by injecting extra X-Forwarded-For values.
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
 
   if (isRateLimited(ip)) {
     return res.status(429).json({
