@@ -26,8 +26,13 @@ app.use(
     },
   }),
 );
+const sessionSecret = process.env["SESSION_SECRET"];
+if (!sessionSecret) {
+  throw new Error("SESSION_SECRET environment variable is required but was not set. Add it as a Replit secret.");
+}
+
 app.use(cors({ origin: true, credentials: true }));
-app.use(cookieParser(process.env["SESSION_SECRET"] || "wildpixels-dev-secret"));
+app.use(cookieParser(sessionSecret));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

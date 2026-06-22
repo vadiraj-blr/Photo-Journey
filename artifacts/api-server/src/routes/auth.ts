@@ -33,7 +33,11 @@ router.post("/login", (req, res) => {
 });
 
 router.post("/logout", (_req, res) => {
-  res.clearCookie("admin_session");
+  res.clearCookie("admin_session", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env["NODE_ENV"] === "production",
+  });
   res.json({ ok: true });
 });
 
