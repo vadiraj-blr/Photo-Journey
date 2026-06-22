@@ -301,55 +301,59 @@ const inputCls =
   "bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-white/25 focus:outline-none focus:border-amber-500/60 transition-colors text-sm";
 
 function TripPhotoPicker({
-  tripId,
+  albumUrl,
   currentCover,
   galleryUrls,
   onSetCover,
   onSetGallery,
+  tripId,
 }: {
-  tripId: number;
+  albumUrl: string;
   currentCover: string;
   galleryUrls: string[];
   onSetCover: (url: string) => void;
   onSetGallery: (urls: string[]) => void;
+  tripId?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-  const load = (forceRefresh = false) => {
+  const load = async (forceRefresh = false) => {
+    if (!albumUrl.trim()) return;
     if (!forceRefresh && photos.length > 0) { setOpen(true); return; }
     setLoading(true);
     setError(null);
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-    const url = forceRefresh
-      ? `${base}/api/trips/${tripId}/google-photos?refresh=true`
-      : `${base}/api/trips/${tripId}/google-photos`;
-    fetch(url)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.photos?.length) {
-          setPhotos(data.photos);
-          setOpen(true);
-          setError(null);
-        } else {
-          setPhotos([]);
-          setError(forceRefresh
-            ? `Album couldn't be loaded (Google may be blocking this URL). Try again later or pin photos manually.`
-            : "No photos found in this album yet. Try 'Refresh Photos' to force a new fetch.");
-        }
-      })
-      .catch(() => setError("Could not reach the album."))
-      .finally(() => setLoading(false));
+    try {
+      let data: { photos?: string[] };
+      if (tripId && forceRefresh) {
+        // For existing trips, the refresh route clears the cache in DB
+        data = await fetch(`${base}/api/trips/${tripId}/google-photos?refresh=true`).then((r) => r.json());
+      } else {
+        // Generic scraper — works for both Add and Edit modals
+        data = await fetch(`${base}/api/settings/album-photos?url=${encodeURIComponent(albumUrl.trim())}`).then((r) => r.json());
+      }
+      if (data.photos?.length) {
+        setPhotos(data.photos);
+        setOpen(true);
+        setError(null);
+      } else {
+        setPhotos([]);
+        setError("No photos found. Make sure the album is public and shared.");
+      }
+    } catch {
+      setError("Could not reach the album.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleGallery = (url: string) => {
-    if (galleryUrls.includes(url)) {
-      onSetGallery(galleryUrls.filter((u) => u !== url));
-    } else {
-      onSetGallery([...galleryUrls, url]);
-    }
+    onSetGallery(galleryUrls.includes(url)
+      ? galleryUrls.filter((u) => u !== url)
+      : [...galleryUrls, url]);
   };
 
   return (
@@ -358,33 +362,47 @@ function TripPhotoPicker({
         <button
           type="button"
           onClick={() => load(false)}
-          disabled={loading}
+          disabled={loading || !albumUrl.trim()}
           className="self-start text-xs font-mono uppercase tracking-wider text-amber-500 border border-amber-500/30 hover:border-amber-500/60 hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
         >
-          {loading ? "Loading photos…" : "Pick from Google Photos album"}
+          {loading ? "Loading…" : open ? "↓ Show grid" : "Load Photos"}
         </button>
-        <button
-          type="button"
-          onClick={() => load(true)}
-          disabled={loading}
-          title="Force a fresh fetch from Google Photos, clearing any cached results"
-          className="self-start text-xs font-mono uppercase tracking-wider text-white/35 border border-white/10 hover:border-white/25 hover:text-white/60 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-        >
-          ↻ Refresh Photos
-        </button>
+        {tripId && (
+          <button
+            type="button"
+            onClick={() => load(true)}
+            disabled={loading || !albumUrl.trim()}
+            title="Force a fresh fetch from Google Photos, clearing any cached results"
+            className="self-start text-xs font-mono uppercase tracking-wider text-white/35 border border-white/10 hover:border-white/25 hover:text-white/60 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+          >
+            ↻ Refresh
+          </button>
+        )}
       </div>
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
       {open && photos.length > 0 && (
-        <div className="flex flex-col gap-3">
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-[11px] text-white/35">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-amber-500/80 inline-block" /> Thumbnail (cover)
+        <div className="flex flex-col gap-2">
+          {/* Counter + actions row */}
+          <div className="flex items-center justify-between text-[11px] text-white/40">
+            <span>
+              {galleryUrls.length === 0
+                ? "Click photos to add to gallery"
+                : <span className="text-amber-400">{galleryUrls.length} photo{galleryUrls.length !== 1 ? "s" : ""} selected</span>
+              }
             </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-sky-500/80 inline-block" /> Gallery photo
-            </span>
+            <div className="flex items-center gap-3">
+              {galleryUrls.length > 0 && (
+                <button type="button" onClick={() => onSetGallery([])}
+                  className="text-red-400/60 hover:text-red-400 transition-colors">
+                  Clear all
+                </button>
+              )}
+              <button type="button" onClick={() => setOpen(false)}
+                className="text-white/30 hover:text-white/60 transition-colors">
+                Hide
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto rounded-xl border border-white/10 p-2 bg-white/3">
@@ -395,68 +413,53 @@ function TripPhotoPicker({
               const inGallery = galleryUrls.includes(url);
 
               return (
-                <div key={i} className="relative aspect-square overflow-hidden rounded-lg group">
+                <div
+                  key={i}
+                  onClick={() => toggleGallery(url)}
+                  className={`relative aspect-square overflow-hidden rounded-lg cursor-pointer ring-2 transition-all duration-150 group ${
+                    inGallery ? "ring-amber-500" : "ring-transparent hover:ring-white/30"
+                  }`}
+                >
                   <img src={thumb} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
 
-                  {/* Badges */}
+                  {/* Selected overlay + checkmark */}
+                  {inGallery && (
+                    <div className="absolute inset-0 bg-amber-500/20 flex items-start justify-end p-1.5">
+                      <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-black text-[10px] font-bold flex-shrink-0">
+                        ✓
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cover badge */}
                   {isCover && (
-                    <div className="absolute top-1 left-1 bg-amber-500 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-black leading-none">
+                    <div className="absolute bottom-1 left-1 bg-amber-500 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-black leading-none">
                       Cover
                     </div>
                   )}
-                  {inGallery && (
-                    <div className={`absolute top-1 ${isCover ? "left-12" : "left-1"} bg-sky-500 rounded-md px-1.5 py-0.5 text-[10px] font-bold text-white leading-none`}>
-                      Gallery
+
+                  {/* "Set as cover" on hover (secondary action) */}
+                  {!isCover && (
+                    <div className="absolute bottom-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onSetCover(url); }}
+                        className="bg-black/60 hover:bg-amber-500 hover:text-black text-white text-[9px] font-semibold px-1.5 py-0.5 rounded-md transition-colors"
+                      >
+                        Set cover
+                      </button>
                     </div>
                   )}
-
-                  {/* Action buttons on hover */}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
-                    <button
-                      type="button"
-                      onClick={() => onSetCover(url)}
-                      className={`w-full text-[10px] font-semibold py-1 rounded-md transition-colors ${
-                        isCover
-                          ? "bg-amber-500 text-black"
-                          : "bg-white/20 text-white hover:bg-amber-500/70 hover:text-black"
-                      }`}
-                    >
-                      {isCover ? "✓ Cover" : "Set Cover"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleGallery(url)}
-                      className={`w-full text-[10px] font-semibold py-1 rounded-md transition-colors ${
-                        inGallery
-                          ? "bg-sky-500 text-white"
-                          : "bg-white/20 text-white hover:bg-sky-500/70 hover:text-white"
-                      }`}
-                    >
-                      {inGallery ? "✓ Gallery" : "+ Gallery"}
-                    </button>
-                  </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-[11px] text-white/35">
-              {galleryUrls.length === 0
-                ? "No gallery photos selected — all album photos will show"
-                : `${galleryUrls.length} gallery photo${galleryUrls.length !== 1 ? "s" : ""} selected`}
-            </p>
-            <div className="flex items-center gap-3">
-              {galleryUrls.length > 0 && (
-                <button type="button" onClick={() => onSetGallery([])} className="text-[11px] text-red-400/60 hover:text-red-400 transition-colors">
-                  Clear selection
-                </button>
-              )}
-              <button type="button" onClick={() => setOpen(false)} className="text-[11px] text-white/30 hover:text-white/60 transition-colors">
-                Close
-              </button>
-            </div>
-          </div>
+          <p className="text-[10px] text-white/25">
+            {galleryUrls.length === 0
+              ? "No photos pinned — all album photos will show on the trip page."
+              : "Selected photos will be shown in the trip gallery. Save the trip to apply."}
+          </p>
         </div>
       )}
     </div>
@@ -530,9 +533,10 @@ function TripFormFields({
       </Field>
 
       {/* Photo picker — cover + gallery selection */}
-      {tripId && form.googlePhotosUrl && (
-        <div className="flex flex-col gap-2 p-4 rounded-xl border border-white/8 bg-white/2">
-          <div className="flex items-start gap-3 mb-1">
+      {form.googlePhotosUrl ? (
+        <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
+          {/* Cover URL row */}
+          <div className="flex items-start gap-3">
             {form.coverImageUrl && (
               <img
                 src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
@@ -551,18 +555,32 @@ function TripFormFields({
               />
             </div>
           </div>
+
+          {/* Gallery section header */}
+          <div className="flex items-center gap-2 pt-1">
+            <span className="text-xs font-mono uppercase tracking-widest text-white/40">Photo Gallery</span>
+            <div className="flex-1 h-px bg-white/8" />
+            {form.galleryPhotoUrls.length > 0 && (
+              <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                {form.galleryPhotoUrls.length} selected
+              </span>
+            )}
+          </div>
+          <p className="text-[11px] text-white/30 -mt-1">
+            Load photos from the album above, then click to pin them to this trip's gallery.
+          </p>
+
           <TripPhotoPicker
-            tripId={tripId}
+            albumUrl={form.googlePhotosUrl}
             currentCover={form.coverImageUrl}
             galleryUrls={form.galleryPhotoUrls}
             onSetCover={(url) => set("coverImageUrl", url)}
             onSetGallery={setGallery}
+            tripId={tripId}
           />
         </div>
-      )}
-
-      {/* Fallback: no google photos yet — just show cover URL input */}
-      {!(tripId && form.googlePhotosUrl) && (
+      ) : (
+        /* Fallback: no Google Photos URL set — plain cover input */
         <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
           <div className="flex items-start gap-3">
             {form.coverImageUrl && (
@@ -577,7 +595,7 @@ function TripFormFields({
               <input
                 className={inputCls}
                 value={form.coverImageUrl}
-                placeholder="Paste an image URL"
+                placeholder="Paste an image URL, or add a Google Photos album above"
                 onChange={(e) => set("coverImageUrl", e.target.value)}
               />
             </Field>
