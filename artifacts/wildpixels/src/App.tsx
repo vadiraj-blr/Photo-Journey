@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import About from "@/pages/about";
 import Trip from "@/pages/trip";
 import Admin from "@/pages/admin";
+import AdminLogin from "@/pages/admin-login";
 import FieldNote from "@/pages/field-note";
 import Layout from "@/components/layout";
 
@@ -15,6 +16,7 @@ const queryClient = new QueryClient();
 function Router() {
   return (
     <Switch>
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin" component={Admin} />
       <Route>
         <Layout>

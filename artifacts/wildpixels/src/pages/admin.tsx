@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useListTrips } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -1673,9 +1674,30 @@ function ContactSettingsPanel() {
 export default function Admin() {
   const { data: trips, isLoading } = useListTrips();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [editing, setEditing] = useState<TripRow | null>(null);
   const [adding, setAdding] = useState(false);
   const [saved, setSaved] = useState<number | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+  useEffect(() => {
+    fetch(`${base}/api/auth/me`, { credentials: "include" })
+      .then((r) => {
+        if (r.status === 401) {
+          setLocation("/admin/login");
+        } else {
+          setAuthChecked(true);
+        }
+      })
+      .catch(() => setLocation("/admin/login"));
+  }, []);
+
+  const handleSignOut = async () => {
+    await fetch(`${base}/api/auth/logout`, { method: "POST", credentials: "include" });
+    setLocation("/admin/login");
+  };
 
   const refresh = () => queryClient.invalidateQueries();
 
@@ -1687,12 +1709,31 @@ export default function Admin() {
 
   const typedTrips = (trips as TripRow[] | undefined) ?? [];
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0D0D0D] text-white px-4 py-12">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-10">
-          <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-2">Admin</p>
-          <h1 className="text-3xl font-serif font-bold">Wildpixels Admin</h1>
+        <div className="mb-10 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-mono uppercase tracking-widest text-amber-500 mb-2">Admin</p>
+            <h1 className="text-3xl font-serif font-bold">Wildpixels Admin</h1>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="flex-shrink-0 mt-1 flex items-center gap-2 px-4 py-2 rounded-lg border border-white/10 hover:border-white/25 text-white/40 hover:text-white/70 text-xs font-mono uppercase tracking-wider transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Sign out
+          </button>
         </div>
 
         {/* Landing Page Settings */}
