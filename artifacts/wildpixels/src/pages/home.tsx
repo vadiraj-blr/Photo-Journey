@@ -102,7 +102,7 @@ export default function Home() {
           </motion.div>
         ) : null}
 
-        <div className="relative z-20 text-center px-6">
+        <div className="absolute top-0 left-0 right-0 z-20 text-center px-6 pt-20 md:pt-24">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
