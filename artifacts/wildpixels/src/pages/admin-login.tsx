@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -87,9 +87,14 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <p className="text-center text-white/20 text-xs mt-8">
-          Wildpixels · Private Admin
-        </p>
+        <div className="flex items-center justify-center mt-8">
+          <Link href="/" className="text-white/20 hover:text-white/50 text-xs transition-colors flex items-center gap-1.5">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to homepage
+          </Link>
+        </div>
       </div>
     </div>
   );

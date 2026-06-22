@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function SubscribeFooterCta() {
   const [email, setEmail] = useState("");
@@ -55,8 +55,21 @@ function SubscribeFooterCta() {
   );
 }
 
+function useIsAdmin() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    const base = (import.meta as { env: { BASE_URL: string } }).env.BASE_URL.replace(/\/$/, "");
+    fetch(`${base}/api/auth/me`, { credentials: "include" })
+      .then((r) => r.ok ? r.json() : { authenticated: false })
+      .then((d) => setIsAdmin(d.authenticated === true))
+      .catch(() => setIsAdmin(false));
+  }, []);
+  return isAdmin;
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const isAdmin = useIsAdmin();
 
   const handleLogoClick = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -83,7 +96,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="flex gap-8 tracking-widest uppercase text-xs font-semibold text-stone-800">
           <Link href="/" className="hover:text-amber-600 transition-colors duration-500">Portfolio</Link>
           <Link href="/about" className="hover:text-amber-600 transition-colors duration-500">About Vadiraj</Link>
-          <Link href="/admin" className="hover:text-amber-600 transition-colors duration-500">Admin</Link>
+          {isAdmin && <Link href="/admin" className="hover:text-amber-600 transition-colors duration-500">Admin</Link>}
         </div>
       </nav>
 
