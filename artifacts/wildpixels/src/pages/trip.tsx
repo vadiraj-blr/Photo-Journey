@@ -77,13 +77,13 @@ function useComments(tripId: number) {
 
   useEffect(() => { load(); }, [load]);
 
-  const post = async (name: string, body: string): Promise<{ ok: boolean; error?: string }> => {
+  const post = async (name: string, body: string): Promise<{ ok: boolean; error?: string; errorType?: string }> => {
     const res = await fetch(`${base}/api/trips/${tripId}/comments`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, body }),
     });
     const data = await res.json();
-    if (!res.ok) return { ok: false, error: data.error ?? "Failed to post comment." };
+    if (!res.ok) return { ok: false, error: data.error ?? "Failed to post comment.", errorType: data.type };
     setComments(prev => [data, ...prev]);
     return { ok: true };
   };
@@ -117,6 +117,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [focused, setFocused] = useState(false);
@@ -124,13 +125,14 @@ function CommentsSection({ tripId }: { tripId: number }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setErrorType(null);
     setSuccess(false);
-    if (!name.trim() || !body.trim()) { setError("Name and comment are required."); return; }
+    if (!name.trim() || !body.trim()) { setError("Name and comment are required."); setErrorType("validation"); return; }
     setSubmitting(true);
     const result = await post(name.trim(), body.trim());
     setSubmitting(false);
     if (result.ok) { setBody(""); setSuccess(true); setTimeout(() => setSuccess(false), 3000); }
-    else setError(result.error ?? "Something went wrong.");
+    else { setError(result.error ?? "Something went wrong."); setErrorType(result.errorType ?? null); }
   };
 
   return (
@@ -232,8 +234,19 @@ function CommentsSection({ tripId }: { tripId: number }) {
         </div>
 
         {(error || success) && (
-          <div className={`px-4 pb-4 text-xs ${error ? "text-red-500" : "text-amber-600"}`}>
-            {error || "Comment posted — thank you!"}
+          <div className={`mx-4 mb-4 px-3 py-2.5 rounded-xl text-xs flex items-start gap-2 ${
+            success
+              ? "bg-amber-50 border border-amber-200 text-amber-700"
+              : errorType === "rate_limited"
+              ? "bg-orange-50 border border-orange-200 text-orange-700"
+              : errorType === "profanity"
+              ? "bg-red-50 border border-red-200 text-red-600"
+              : "bg-red-50 border border-red-200 text-red-500"
+          }`}>
+            <span className="mt-0.5 flex-shrink-0">
+              {success ? "✓" : errorType === "rate_limited" ? "⏱" : "✕"}
+            </span>
+            <span>{error || "Comment posted — thank you!"}</span>
           </div>
         )}
       </motion.form>

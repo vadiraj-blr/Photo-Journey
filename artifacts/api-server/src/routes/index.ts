@@ -23,9 +23,13 @@ router.use(healthRouter);
 // Auth routes (always public)
 router.use("/auth", authRouter);
 
-// Routes with mutation-guard applied
+// Comments & reactions are public (spam/profanity guard handles protection)
+// Must be registered BEFORE the auth-guarded trips mount so the more-specific
+// path "/trips/:tripId/comments" resolves without hitting requireAuth.
+router.use("/trips/:tripId", commentsRouter);
+
+// All other trip mutations require auth
 router.use("/trips", authForMutations, tripsRouter);
-router.use("/trips/:tripId", commentsRouter); // comments POST is public (spam guard is enough)
 router.use("/photos", photosRouter);
 router.use("/settings", authForMutations, settingsRouter);
 router.use("/contact", contactRouter);
