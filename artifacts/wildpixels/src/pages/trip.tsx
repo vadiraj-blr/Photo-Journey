@@ -301,7 +301,11 @@ function useGooglePhotos(tripId: number, hasGooglePhotosUrl: boolean) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!hasGooglePhotosUrl || !tripId) return;
+    if (!hasGooglePhotosUrl || !tripId) {
+      setPhotos([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     const base = import.meta.env.BASE_URL.replace(/\/$/, "");
