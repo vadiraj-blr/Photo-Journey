@@ -157,7 +157,7 @@ export default function Home() {
               transition={{ duration: 0.8, delay: idx * 0.05 }}
             >
               <Link href={`/trips/${trip.id}`} className="group block cursor-pointer">
-                <div className="relative aspect-[4/5] overflow-hidden mb-6">
+                <div className="relative aspect-[4/3] sm:aspect-[4/5] overflow-hidden mb-6">
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 z-10" />
                   <img
                     src={trip.coverImageUrl || "/images/texture-1.png"}

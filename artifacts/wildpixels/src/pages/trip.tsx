@@ -424,7 +424,7 @@ function Lightbox({
             transition={{ duration: 0.3, ease: "easeOut" }}
             src={fullUrl}
             alt={`Photo ${current + 1}`}
-            className="max-h-[calc(100vh-140px)] max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
+            className="max-h-[calc(100dvh-60px)] sm:max-h-[calc(100dvh-140px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
             draggable={false}
           />
         </AnimatePresence>
@@ -441,9 +441,9 @@ function Lightbox({
         </button>
       </div>
 
-      {/* Thumbnail strip */}
+      {/* Thumbnail strip — hidden on phones, visible on tablet/desktop */}
       <div
-        className="flex-shrink-0 px-4 py-3 flex gap-2 overflow-x-auto scrollbar-none justify-center"
+        className="hidden sm:flex flex-shrink-0 px-4 py-3 gap-2 overflow-x-auto scrollbar-none justify-center"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: "none" }}
       >
