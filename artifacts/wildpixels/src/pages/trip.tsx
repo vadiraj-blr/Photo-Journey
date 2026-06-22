@@ -527,7 +527,8 @@ export default function Trip() {
   // Priority: pinned gallery > all Google Photos (fallback when nothing selected) > DB photos
   const googlePhotosReady = !gLoading && googlePhotos.length > 0;
   const googlePhotosLoading = hasGooglePhotos && !hasPinnedGallery && gLoading;
-  const showAllGooglePhotos = googlePhotosLoading || googlePhotosReady;
+  // Gate on !hasPinnedGallery so cached React Query data doesn't trigger a second gallery
+  const showAllGooglePhotos = !hasPinnedGallery && (googlePhotosLoading || googlePhotosReady);
   // Show pinned when there are selections; show all-Google fallback only when no selection
   const showPinnedGallery = hasPinnedGallery;
   const showDbPhotos = !showPinnedGallery && !showAllGooglePhotos && dbPhotos && dbPhotos.length > 0;
