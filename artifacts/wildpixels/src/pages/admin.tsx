@@ -532,76 +532,61 @@ function TripFormFields({
         )}
       </Field>
 
-      {/* Photo picker — cover + gallery selection */}
-      {form.googlePhotosUrl ? (
-        <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
-          {/* Cover URL row */}
-          <div className="flex items-start gap-3">
-            {form.coverImageUrl && (
-              <img
-                src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
-                alt="Cover"
-                className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-amber-500/40"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            )}
-            <div className="flex-1 flex flex-col gap-1">
-              <span className="text-xs font-mono uppercase tracking-widest text-white/40">Cover Image URL</span>
-              <input
-                className={inputCls}
-                value={form.coverImageUrl}
-                placeholder="Paste or pick from album below"
-                onChange={(e) => set("coverImageUrl", e.target.value)}
-              />
-            </div>
-          </div>
+      {/* Photos panel — always visible */}
+      <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
 
-          {/* Gallery section header */}
-          <div className="flex items-center gap-2 pt-1">
-            <span className="text-xs font-mono uppercase tracking-widest text-white/40">Photo Gallery</span>
-            <div className="flex-1 h-px bg-white/8" />
-            {form.galleryPhotoUrls.length > 0 && (
-              <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                {form.galleryPhotoUrls.length} selected
-              </span>
-            )}
+        {/* Cover URL row */}
+        <div className="flex items-start gap-3">
+          {form.coverImageUrl && (
+            <img
+              src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
+              alt="Cover"
+              className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border border-amber-500/40"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+            />
+          )}
+          <div className="flex-1 flex flex-col gap-1">
+            <span className="text-xs font-mono uppercase tracking-widest text-white/40">Cover Image URL</span>
+            <input
+              className={inputCls}
+              value={form.coverImageUrl}
+              placeholder="Paste an image URL, or pick one from the gallery below"
+              onChange={(e) => set("coverImageUrl", e.target.value)}
+            />
           </div>
-          <p className="text-[11px] text-white/30 -mt-1">
-            Load photos from the album above, then click to pin them to this trip's gallery.
+        </div>
+
+        {/* Gallery section header */}
+        <div className="flex items-center gap-2 pt-1">
+          <span className="text-xs font-mono uppercase tracking-widest text-white/40">Photo Gallery</span>
+          <div className="flex-1 h-px bg-white/8" />
+          {form.galleryPhotoUrls.length > 0 && (
+            <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+              {form.galleryPhotoUrls.length} selected
+            </span>
+          )}
+        </div>
+
+        {form.googlePhotosUrl ? (
+          <>
+            <p className="text-[11px] text-white/30 -mt-1">
+              Click <strong className="text-white/50">Load Photos</strong> to fetch photos from your album, then tap any photo to add it to the gallery.
+            </p>
+            <TripPhotoPicker
+              albumUrl={form.googlePhotosUrl}
+              currentCover={form.coverImageUrl}
+              galleryUrls={form.galleryPhotoUrls}
+              onSetCover={(url) => set("coverImageUrl", url)}
+              onSetGallery={setGallery}
+              tripId={tripId}
+            />
+          </>
+        ) : (
+          <p className="text-[11px] text-amber-500/50">
+            Paste a Google Photos album URL in the <strong className="text-amber-400/80">Google Photos Album Link</strong> field above, then the photo picker will appear here.
           </p>
-
-          <TripPhotoPicker
-            albumUrl={form.googlePhotosUrl}
-            currentCover={form.coverImageUrl}
-            galleryUrls={form.galleryPhotoUrls}
-            onSetCover={(url) => set("coverImageUrl", url)}
-            onSetGallery={setGallery}
-            tripId={tripId}
-          />
-        </div>
-      ) : (
-        /* Fallback: no Google Photos URL set — plain cover input */
-        <div className="flex flex-col gap-3 p-4 rounded-xl border border-white/8 bg-white/2">
-          <div className="flex items-start gap-3">
-            {form.coverImageUrl && (
-              <img
-                src={form.coverImageUrl.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w120"}
-                alt="Cover preview"
-                className="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-white/10"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-              />
-            )}
-            <Field label="Cover Image URL">
-              <input
-                className={inputCls}
-                value={form.coverImageUrl}
-                placeholder="Paste an image URL, or add a Google Photos album above"
-                onChange={(e) => set("coverImageUrl", e.target.value)}
-              />
-            </Field>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <Field label="Tags (comma-separated)">
         <input
