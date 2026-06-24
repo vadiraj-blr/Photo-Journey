@@ -370,7 +370,7 @@ function Lightbox({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col bg-black/95 backdrop-blur-sm group/lb"
       onClick={onClose}
     >
       {/* Top bar */}
@@ -424,7 +424,7 @@ function Lightbox({
             transition={{ duration: 0.3, ease: "easeOut" }}
             src={fullUrl}
             alt={`Photo ${current + 1}`}
-            className="max-h-[calc(100dvh-60px)] sm:max-h-[calc(100dvh-140px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
+            className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
             draggable={false}
           />
         </AnimatePresence>
@@ -441,9 +441,9 @@ function Lightbox({
         </button>
       </div>
 
-      {/* Thumbnail strip — hidden on phones, visible on tablet/desktop */}
+      {/* Thumbnail strip — floats at bottom, fades in on hover */}
       <div
-        className="hidden flex-shrink-0 px-4 py-3 gap-2 overflow-x-auto scrollbar-none justify-center"
+        className="absolute bottom-0 left-0 right-0 z-20 flex justify-center px-4 pb-4 pt-12 gap-2 overflow-x-auto opacity-0 group-hover/lb:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/70 to-transparent pointer-events-none group-hover/lb:pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: "none" }}
       >
@@ -453,8 +453,8 @@ function Lightbox({
             <button
               key={i}
               onClick={() => { setDir(i > current ? 1 : -1); setCurrent(i); }}
-              className={`flex-shrink-0 w-12 h-12 rounded-md overflow-hidden border-2 transition-all ${
-                i === current ? "border-amber-500 opacity-100 scale-105" : "border-transparent opacity-40 hover:opacity-70"
+              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                i === current ? "border-amber-500 opacity-100 scale-110 shadow-lg shadow-amber-500/30" : "border-transparent opacity-50 hover:opacity-90 hover:scale-105"
               }`}
             >
               <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
