@@ -809,7 +809,9 @@ function EditModal({
     tags: trip.tags.join(", "),
     featured: trip.featured,
     googlePhotosUrl: trip.googlePhotosUrl ?? "",
-    galleryPhotoUrls: trip.galleryPhotoUrls ?? [],
+    galleryPhotoUrls: (trip.galleryPhotoUrls ?? []).map((item: unknown) =>
+      typeof item === "string" ? { url: item, caption: "" } : item as { url: string; caption: string }
+    ),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
