@@ -443,7 +443,7 @@ function Lightbox({
 
       {/* Thumbnail strip — hidden on phones, visible on tablet/desktop */}
       <div
-        className="hidden sm:flex flex-shrink-0 px-4 py-3 gap-2 overflow-x-auto scrollbar-none justify-center"
+        className="hidden flex-shrink-0 px-4 py-3 gap-2 overflow-x-auto scrollbar-none justify-center"
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: "none" }}
       >
