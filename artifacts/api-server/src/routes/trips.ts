@@ -26,7 +26,12 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     tags: JSON.parse(trip.tags || "[]"),
     featured: trip.featured,
     googlePhotosUrl: trip.googlePhotosUrl ?? null,
-    galleryPhotoUrls: JSON.parse(trip.galleryPhotoUrls || "[]") as string[],
+    galleryPhotoUrls: (() => {
+      const raw = JSON.parse(trip.galleryPhotoUrls || "[]") as unknown[];
+      return raw.map((item) =>
+        typeof item === "string" ? { url: item, caption: "" } : { url: (item as { url: string }).url, caption: (item as { caption?: string }).caption ?? "" }
+      ) as { url: string; caption: string }[];
+    })(),
   };
 }
 
@@ -55,7 +60,8 @@ router.get("/stats", async (_req, res) => {
   for (const trip of trips) {
     const t = trip as typeof trip & { cachedGooglePhotoUrls?: string };
     const cached: string[] = (() => { try { return JSON.parse(t.cachedGooglePhotoUrls ?? "[]"); } catch { return []; } })();
-    const pinned: string[] = (() => { try { return JSON.parse(trip.galleryPhotoUrls ?? "[]"); } catch { return []; } })();
+    const rawPinned = (() => { try { return JSON.parse(trip.galleryPhotoUrls ?? "[]") as unknown[]; } catch { return [] as unknown[]; } })();
+    const pinned: string[] = rawPinned.map((item) => typeof item === "string" ? item : (item as { url: string }).url);
     if (cached.length > 0) photoCount += cached.length;
     else if (pinned.length > 0) photoCount += pinned.length;
     else photoCount += dbPhotosByTrip.get(trip.id) ?? 0;

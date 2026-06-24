@@ -284,7 +284,7 @@ interface TripRow {
   tags: string[];
   featured: boolean;
   googlePhotosUrl?: string | null;
-  galleryPhotoUrls?: string[];
+  galleryPhotoUrls?: { url: string; caption: string }[];
 }
 
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
@@ -303,16 +303,16 @@ const inputCls =
 function TripPhotoPicker({
   albumUrl,
   currentCover,
-  galleryUrls,
+  galleryItems,
   onSetCover,
   onSetGallery,
   tripId,
 }: {
   albumUrl: string;
   currentCover: string;
-  galleryUrls: string[];
+  galleryItems: { url: string; caption: string }[];
   onSetCover: (url: string) => void;
-  onSetGallery: (urls: string[]) => void;
+  onSetGallery: (items: { url: string; caption: string }[]) => void;
   tripId?: number;
 }) {
   const [open, setOpen] = useState(false);
@@ -351,9 +351,10 @@ function TripPhotoPicker({
   };
 
   const toggleGallery = (url: string) => {
-    onSetGallery(galleryUrls.includes(url)
-      ? galleryUrls.filter((u) => u !== url)
-      : [...galleryUrls, url]);
+    const exists = galleryItems.some((item) => item.url === url);
+    onSetGallery(exists
+      ? galleryItems.filter((item) => item.url !== url)
+      : [...galleryItems, { url, caption: "" }]);
   };
 
   return (
@@ -386,13 +387,13 @@ function TripPhotoPicker({
           {/* Counter + actions row */}
           <div className="flex items-center justify-between text-[11px] text-white/40">
             <span>
-              {galleryUrls.length === 0
+              {galleryItems.length === 0
                 ? "Click photos to add to gallery"
-                : <span className="text-amber-400">{galleryUrls.length} photo{galleryUrls.length !== 1 ? "s" : ""} selected</span>
+                : <span className="text-amber-400">{galleryItems.length} photo{galleryItems.length !== 1 ? "s" : ""} selected</span>
               }
             </span>
             <div className="flex items-center gap-3">
-              {galleryUrls.length > 0 && (
+              {galleryItems.length > 0 && (
                 <button type="button" onClick={() => onSetGallery([])}
                   className="text-red-400/60 hover:text-red-400 transition-colors">
                   Clear all
@@ -410,7 +411,7 @@ function TripPhotoPicker({
               const base2 = url.replace(/=w\d+(-h\d+)?(-no)?$/, "");
               const thumb = `${base2}=w300`;
               const isCover = currentCover === url;
-              const inGallery = galleryUrls.includes(url);
+              const inGallery = galleryItems.some((item) => item.url === url);
 
               return (
                 <div
@@ -456,10 +457,39 @@ function TripPhotoPicker({
           </div>
 
           <p className="text-[10px] text-white/25">
-            {galleryUrls.length === 0
+            {galleryItems.length === 0
               ? "No photos pinned — all album photos will show on the trip page."
               : "Selected photos will be shown in the trip gallery. Save the trip to apply."}
           </p>
+
+          {/* Caption inputs for selected photos */}
+          {galleryItems.length > 0 && (
+            <div className="flex flex-col gap-2 pt-2 border-t border-white/8 mt-1">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/30">Captions (optional)</p>
+              {galleryItems.map((item, i) => {
+                const thumb = item.url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w80-h80-c";
+                return (
+                  <div key={i} className="flex items-center gap-2">
+                    <img src={thumb} alt="" className="w-10 h-10 rounded-md object-cover flex-shrink-0 border border-white/10" loading="lazy" />
+                    <input
+                      type="text"
+                      placeholder={`Caption for photo ${i + 1}…`}
+                      value={item.caption}
+                      maxLength={200}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => {
+                        const updated = galleryItems.map((g, idx) =>
+                          idx === i ? { ...g, caption: e.target.value } : g
+                        );
+                        onSetGallery(updated);
+                      }}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white placeholder:text-white/20 focus:outline-none focus:border-amber-500/50 transition-colors text-xs"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -475,10 +505,10 @@ function TripFormFields({
   form: {
     title: string; location: string; country: string; month: string;
     year: string; story: string; storySummary: string; travelTips: string; coverImageUrl: string; tags: string;
-    featured: boolean; googlePhotosUrl: string; galleryPhotoUrls: string[];
+    featured: boolean; googlePhotosUrl: string; galleryPhotoUrls: { url: string; caption: string }[];
   };
   set: (field: string, value: string | boolean) => void;
-  setGallery: (urls: string[]) => void;
+  setGallery: (items: { url: string; caption: string }[]) => void;
   tripId?: number;
 }) {
   return (
@@ -575,7 +605,7 @@ function TripFormFields({
             <TripPhotoPicker
               albumUrl={form.googlePhotosUrl}
               currentCover={form.coverImageUrl}
-              galleryUrls={form.galleryPhotoUrls}
+              galleryItems={form.galleryPhotoUrls}
               onSetCover={(url) => set("coverImageUrl", url)}
               onSetGallery={setGallery}
               tripId={tripId}
@@ -671,14 +701,14 @@ function AddTripModal({
     title: "", location: "", country: "", month: "January",
     year: String(new Date().getFullYear()), story: "", storySummary: "", travelTips: "",
     coverImageUrl: "", tags: "", featured: false, googlePhotosUrl: "",
-    galleryPhotoUrls: [] as string[],
+    galleryPhotoUrls: [] as { url: string; caption: string }[],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = (field: string, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
-  const setGallery = (urls: string[]) => setForm((f) => ({ ...f, galleryPhotoUrls: urls }));
+  const setGallery = (items: { url: string; caption: string }[]) => setForm((f) => ({ ...f, galleryPhotoUrls: items }));
 
   const handleCreate = async () => {
     if (!form.title.trim() || !form.location.trim() || !form.country.trim()) {
@@ -788,7 +818,7 @@ function EditModal({
 
   const set = (field: string, value: string | boolean) =>
     setForm((f) => ({ ...f, [field]: value }));
-  const setGallery = (urls: string[]) => setForm((f) => ({ ...f, galleryPhotoUrls: urls }));
+  const setGallery = (items: { url: string; caption: string }[]) => setForm((f) => ({ ...f, galleryPhotoUrls: items }));
 
   const handleSave = async () => {
     setSaving(true);

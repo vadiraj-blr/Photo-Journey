@@ -501,9 +501,9 @@ export default function Trip() {
     },
   });
 
-  const tripData = trip as { googlePhotosUrl?: string | null; galleryPhotoUrls?: string[] } | undefined;
+  const tripData = trip as { googlePhotosUrl?: string | null; galleryPhotoUrls?: { url: string; caption: string }[] } | undefined;
   const hasGooglePhotos = !!tripData?.googlePhotosUrl;
-  const pinnedGallery: string[] = tripData?.galleryPhotoUrls ?? [];
+  const pinnedGallery: { url: string; caption: string }[] = tripData?.galleryPhotoUrls ?? [];
   const hasPinnedGallery = pinnedGallery.length > 0;
   // Only fetch all Google Photos when no curated selection has been made
   const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos && !hasPinnedGallery);
@@ -539,7 +539,7 @@ export default function Trip() {
 
   // Build flat list for lightbox
   const lightboxPhotos: { url: string }[] = hasPinnedGallery
-    ? pinnedGallery.map((url) => ({ url }))
+    ? pinnedGallery.map((item) => ({ url: item.url }))
     : googlePhotosReady
     ? googlePhotos
     : showDbPhotos
@@ -655,8 +655,8 @@ export default function Trip() {
             <div className="flex-1 h-px bg-stone-200" />
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-            {pinnedGallery.map((url, i) => {
-              const displayUrl = url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1200";
+            {pinnedGallery.map((item, i) => {
+              const displayUrl = item.url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1200";
               return (
                 <motion.div
                   key={i}
@@ -664,19 +664,24 @@ export default function Trip() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
                   transition={{ duration: 0.8, delay: (i % 3) * 0.1 }}
-                  className="break-inside-avoid mb-6 relative group overflow-hidden cursor-pointer"
+                  className="break-inside-avoid mb-6 cursor-pointer"
                   onClick={() => setLightboxIndex(i)}
                 >
-                  <img src={displayUrl} alt={`Photo ${i + 1}`}
-                    className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
-                    loading="lazy" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-500 flex items-center justify-center">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                      </svg>
+                  <div className="relative group overflow-hidden">
+                    <img src={displayUrl} alt={`Photo ${i + 1}`}
+                      className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
+                      loading="lazy" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-500 flex items-center justify-center">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
+                  {item.caption && (
+                    <p className="mt-2 px-1 text-sm font-serif italic text-stone-500 leading-snug">{item.caption}</p>
+                  )}
                 </motion.div>
               );
             })}
