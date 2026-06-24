@@ -503,7 +503,9 @@ export default function Trip() {
 
   const tripData = trip as { googlePhotosUrl?: string | null; galleryPhotoUrls?: { url: string; caption: string }[] } | undefined;
   const hasGooglePhotos = !!tripData?.googlePhotosUrl;
-  const pinnedGallery: { url: string; caption: string }[] = tripData?.galleryPhotoUrls ?? [];
+  const pinnedGallery: { url: string; caption: string }[] = (tripData?.galleryPhotoUrls ?? []).map(
+    (item: unknown) => typeof item === "string" ? { url: item, caption: "" } : item as { url: string; caption: string }
+  );
   const hasPinnedGallery = pinnedGallery.length > 0;
   // Only fetch all Google Photos when no curated selection has been made
   const { photos: googlePhotos, loading: gLoading } = useGooglePhotos(tripId, hasGooglePhotos && !hasPinnedGallery);
