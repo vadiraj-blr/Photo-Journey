@@ -6,21 +6,24 @@ import { Scene2 } from './video_scenes/Scene2';
 import { Scene3 } from './video_scenes/Scene3';
 import { Scene4 } from './video_scenes/Scene4';
 import { Scene5 } from './video_scenes/Scene5';
+import { Scene6 } from './video_scenes/Scene6';
 
 export const SCENE_DURATIONS: Record<string, number> = {
-  open: 4000,
-  stats: 3500,
-  wildlife: 4500,
-  landscape: 4500,
-  close: 4000,
+  hook: 4000,
+  tigers: 6000,
+  cheetah: 6000,
+  landscape: 7000,
+  birds: 5000,
+  outro: 6000,
 };
 
 const SCENE_COMPONENTS: Record<string, React.ComponentType> = {
-  open: Scene1,
-  stats: Scene2,
-  wildlife: Scene3,
+  hook: Scene1,
+  tigers: Scene2,
+  cheetah: Scene3,
   landscape: Scene4,
-  close: Scene5,
+  birds: Scene5,
+  outro: Scene6,
 };
 
 export default function VideoTemplate({
@@ -32,7 +35,7 @@ export default function VideoTemplate({
   loop?: boolean;
   onSceneChange?: (sceneKey: string) => void;
 } = {}) {
-  const { currentScene, currentSceneKey } = useVideoPlayer({ durations, loop });
+  const { currentSceneKey } = useVideoPlayer({ durations, loop });
 
   useEffect(() => {
     onSceneChange?.(currentSceneKey);
@@ -43,18 +46,9 @@ export default function VideoTemplate({
 
   return (
     <div
-      className="w-full h-screen overflow-hidden relative"
-      style={{ backgroundColor: 'var(--color-bg-dark)' }}
+      className="w-full h-screen overflow-hidden relative bg-[#0A0A0A]"
     >
-      <div className="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay">
-        <motion.img
-          src={`${import.meta.env.BASE_URL}images/texture.jpg`}
-          className="w-full h-full object-cover"
-          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
-          alt=""
-        />
-      </div>
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-screen bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
 
       <AnimatePresence mode="popLayout">
         {SceneComponent && <SceneComponent key={currentSceneKey} />}

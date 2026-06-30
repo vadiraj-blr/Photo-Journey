@@ -1,22 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
 @import "tailwindcss";
 
 :root {
   --color-primary: #C4862A;
-  --color-secondary: #D1CEC9;
-  --color-accent: #8C5C1A;
+  --color-secondary: #F5F3EF;
+  --color-accent: #C4862A;
 
-  --color-bg-light: #F8F5F2;
-  --color-bg-dark: #050505;
+  --color-bg-light: #F5F3EF;
+  --color-bg-dark: #0A0A0A;
   --color-bg-muted: #111111;
 
-  --color-text-primary: #F8F5F2;
-  --color-text-secondary: #D1CEC9;
+  --color-text-primary: #F5F3EF;
+  --color-text-secondary: #C4862A;
   --color-text-muted: #888888;
-  --color-text-inverse: #050505;
+  --color-text-inverse: #0A0A0A;
 
-  --font-display: 'Playfair Display', serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-body: 'DM Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
 
