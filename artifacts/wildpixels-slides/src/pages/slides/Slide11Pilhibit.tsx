@@ -8,7 +8,7 @@ export default function Slide11Pilhibit() {
 
       <div style={{ position: "absolute", top: 0, right: 0, width: "50vw", height: "100%", overflow: "hidden" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczNgEUXJeqHr08QchFFVQh5sJ0H2OihOWHd3-7nPH-B689iNwnlyldp317yQVZZ_cmjq5afPwWLbXpJD1SOoVHrrmFi15jvyfT3dLb3Ve1qNLH13_ECx=w1920"
+          src="https://lh3.googleusercontent.com/pw/AP1GczPZ9RWLZiuKUcCrINzsEdo5pAfcu6jC0_KoGoUhNMQ80OOo0XzsAHqRY_FnaIBIqx6r0FWdRzzgKp-F4a6Kr7Lo9nWvb-BvXqq_n56Smn2lWfewI-0t=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           alt="Pilibhit Tiger Reserve"
         />
