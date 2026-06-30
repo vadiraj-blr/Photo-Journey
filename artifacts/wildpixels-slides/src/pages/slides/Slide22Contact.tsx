@@ -43,6 +43,21 @@ export default function Slide22Contact() {
           </div>
           <div style={{ fontSize: "0.85vw", color: "#555550", fontFamily: "'DM Mono', monospace" }}>India's Wild Heart · Documented</div>
         </div>
+        <div style={{ marginTop: "3vh", display: "flex", alignItems: "center", gap: "3vw" }}>
+          {[
+            { icon: "📷", handle: "@vadiraj.bk", platform: "Instagram" },
+            { icon: "✉", handle: "vadiraj.bk@gmail.com", platform: "Email" },
+            { icon: "f", handle: "vadiraj.bk", platform: "Facebook" },
+          ].map(({ icon, handle, platform }) => (
+            <div key={platform} style={{ display: "flex", alignItems: "center", gap: "0.8vw" }}>
+              <div style={{ width: "2.2vw", height: "2.2vw", border: "1px solid #333330", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.9vw", color: "#C4862A", fontFamily: "'DM Mono', monospace", fontWeight: 700, flexShrink: 0 }}>{icon}</div>
+              <div>
+                <div style={{ fontSize: "0.85vw", color: "#F5F3EF", fontFamily: "'DM Mono', monospace" }}>{handle}</div>
+                <div style={{ fontSize: "0.65vw", color: "#444440", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "0.2vh" }}>{platform}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
