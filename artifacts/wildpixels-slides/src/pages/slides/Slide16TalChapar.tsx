@@ -1,20 +1,21 @@
 export default function Slide16TalChapar() {
   return (
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#0A0A0A", fontFamily: "'DM Sans', sans-serif" }}>
-      <img
-        src="https://lh3.googleusercontent.com/pw/AP1GczO5Sqsy7hUbRYQ3TJ4RcsIAjcDidrYsrd9OJTDftpeRHT6oTD7zo3LmpYIKplMDJHyzp5kE0spelSyh7MIpfHdas5KCHxSXCf7RSJ71ulTqHbTLLZ6D=w1920"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.52 }}
-        alt="Tal Chapar blackbuck"
-      />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(10,10,10,0.97) 42%, rgba(10,10,10,0.18) 100%)" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.65) 0%, transparent 55%)" }} />
+      <div style={{ position: "absolute", top: 0, right: 0, width: "52vw", height: "100%", overflow: "hidden" }}>
+        <img
+          src="https://lh3.googleusercontent.com/pw/AP1GczO5Sqsy7hUbRYQ3TJ4RcsIAjcDidrYsrd9OJTDftpeRHT6oTD7zo3LmpYIKplMDJHyzp5kE0spelSyh7MIpfHdas5KCHxSXCf7RSJ71ulTqHbTLLZ6D=w1920"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          alt="Tal Chapar blackbuck"
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, transparent 50%, rgba(10,10,10,0.97) 100%)" }} />
+      </div>
 
       <div style={{ position: "absolute", top: "7vh", left: "7vw" }}>
         <span style={{ fontSize: "0.8vw", color: "#C4862A", fontFamily: "'DM Mono', monospace", letterSpacing: "0.25em", textTransform: "uppercase" }}>Tal Chapar, Rajasthan · December 2025</span>
       </div>
       <div style={{ position: "absolute", top: "7vh", right: "7vw", fontSize: "0.9vw", color: "#333330", fontFamily: "'DM Mono', monospace" }}>16</div>
 
-      <div style={{ position: "absolute", top: "50%", left: "7vw", transform: "translateY(-52%)", maxWidth: "46vw" }}>
+      <div style={{ position: "absolute", top: "50%", left: "7vw", transform: "translateY(-52%)", maxWidth: "44vw" }}>
         <div style={{ width: "3vw", height: "2px", backgroundColor: "#C4862A", marginBottom: "2.5vh" }} />
         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "4.2vw", fontWeight: 700, color: "#F5F3EF", margin: 0, lineHeight: 1.08, letterSpacing: "-0.02em" }}>
           Tal Chapar:<br />Open Skies
