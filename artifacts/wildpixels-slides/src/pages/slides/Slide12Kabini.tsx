@@ -1,7 +1,7 @@
 export default function Slide12Kabini() {
   return (
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#0A0A0A", fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ position: "absolute", top: 0, right: 0, width: "52vw", height: "100%", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: 0, right: 0, width: "40vw", height: "100%", overflow: "hidden" }}>
         <img
           src="https://lh3.googleusercontent.com/pw/AP1GczMaUtfe0CJKYmhm681RJshtoRfI4hzcs8nWQY9wKkyewAyEQ9esShUffZl5qRrEVquocwosfRSt6tqus6bv5T_jlJjTpjnccbApExhp5B0cIBpHRZoO=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}

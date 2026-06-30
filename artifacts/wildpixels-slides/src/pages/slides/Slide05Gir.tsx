@@ -3,11 +3,11 @@ export default function Slide05Gir() {
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#0A0A0A", fontFamily: "'DM Sans', sans-serif" }}>
       <img
         src="https://lh3.googleusercontent.com/pw/AP1GczNQ9ks-6HGPZ0BuZZQX1b1GU6jqcSgn9pV68nmaj4Hh_0f92AuHOWDJ029glkcMGHphAXEJBJJweBpSLtRsiuTVIZ8hF7R3H9es3kan_hbNE-p3Hgfk=w1920"
-        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
         alt="Gir Asiatic Lions"
       />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(10,10,10,0.97) 40%, rgba(10,10,10,0.2) 100%)" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.8) 0%, transparent 60%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, rgba(10,10,10,0.9) 35%, rgba(10,10,10,0.15) 100%)" }} />
+      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,10,10,0.5) 0%, transparent 55%)" }} />
 
       <div style={{ position: "absolute", top: "7vh", left: "7vw", display: "flex", alignItems: "center", gap: "1vw" }}>
         <span style={{ fontSize: "0.8vw", color: "#C4862A", fontFamily: "'DM Mono', monospace", letterSpacing: "0.25em", textTransform: "uppercase" }}>Gujarat, India · January 2025</span>

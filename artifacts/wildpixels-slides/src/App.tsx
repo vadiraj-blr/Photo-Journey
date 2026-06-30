@@ -129,9 +129,10 @@ function SlideEditor() {
       {slides.map((slide, index) => (
         <div
           key={slide.id}
-          style={{ display: index === currentIndex ? "block" : "none" }}
+          style={{ display: index === currentIndex ? "block" : "none", position: "relative" }}
         >
           <slide.Component />
+          <div style={{ position: "absolute", bottom: "2vh", left: "3.5vw", fontSize: "0.65vw", color: "rgba(180,175,165,0.4)", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", pointerEvents: "none", zIndex: 100 }}>© Vadiraj BK · Wildpixels</div>
         </div>
       ))}
     </div>
@@ -154,6 +155,7 @@ function AllSlides() {
           <div className="h-full w-full [&_.h-screen]:!h-full [&_.w-screen]:!w-full">
             <slide.Component />
           </div>
+          <div style={{ position: "absolute", bottom: "22px", left: "54px", fontSize: "13px", color: "rgba(180,175,165,0.4)", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", pointerEvents: "none", zIndex: 100 }}>© Vadiraj BK · Wildpixels</div>
         </div>
       ))}
     </div>

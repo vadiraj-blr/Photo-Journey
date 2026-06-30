@@ -65,3 +65,9 @@ id = "i92rTzff4nvYjMehmaMMc"
 uri = "file://.local/outputs/Photo-Journey.pptx"
 type = "slides"
 title = "Photo Journey.pptx"
+
+[[outputs]]
+id = "IfDpse482KHuQBr4eLGkH"
+uri = "file://.local/outputs/Photo-Journey.pdf"
+type = "pdf"
+title = "Photo Journey.pdf"

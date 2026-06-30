@@ -37,7 +37,7 @@ export default function Slide10Gallery1() {
 
       <div style={{ position: "absolute", bottom: "6vh", right: "7vw", textAlign: "right" }}>
         <div style={{ fontSize: "0.75vw", color: "#555550", fontFamily: "'DM Mono', monospace", letterSpacing: "0.15em", marginBottom: "0.5vh" }}>Kaziranga, Assam · December 2024</div>
-        <div style={{ fontSize: "0.9vw", color: "#333330", fontFamily: "'DM Mono', monospace" }}>10</div>
+        <div style={{ fontSize: "0.9vw", color: "#333330", fontFamily: "'DM Mono', monospace" }}>07</div>
       </div>
     </div>
   );
