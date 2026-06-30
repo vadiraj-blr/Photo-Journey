@@ -1,82 +1,24 @@
 [
-  {
-    "id": "a1b2c3d4-0001-4000-8000-000000000001",
-    "position": 1,
-    "filepath": "src/pages/slides/Slide01Cover.tsx",
-    "title": "Cover",
-    "description": "Wildpixels — cinematic dark cover with hero wildlife image",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0002-4000-8000-000000000002",
-    "position": 2,
-    "filepath": "src/pages/slides/Slide02About.tsx",
-    "title": "Behind the Lens",
-    "description": "Vadiraj's photographer bio with split-image layout and portfolio stats",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0003-4000-8000-000000000003",
-    "position": 3,
-    "filepath": "src/pages/slides/Slide03Featured.tsx",
-    "title": "Five Defining Journeys",
-    "description": "Grid of 5 featured trip images with location and date",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0004-4000-8000-000000000004",
-    "position": 4,
-    "filepath": "src/pages/slides/Slide04Serengeti.tsx",
-    "title": "The Great Migration",
-    "description": "Serengeti trip story — full-bleed cinematic image with trip details",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0005-4000-8000-000000000005",
-    "position": 5,
-    "filepath": "src/pages/slides/Slide05Patagonia.tsx",
-    "title": "Patagonia Ice Fields",
-    "description": "Patagonia trip story — split layout with large image and story text",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0006-4000-8000-000000000006",
-    "position": 6,
-    "filepath": "src/pages/slides/Slide06Jaguars.tsx",
-    "title": "Pantanal Jaguars",
-    "description": "Pantanal jaguar expedition — dark split layout with stats",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0007-4000-8000-000000000007",
-    "position": 7,
-    "filepath": "src/pages/slides/Slide07GlobalMap.tsx",
-    "title": "20 Trips Across the Globe",
-    "description": "Portfolio overview — all 20 trips organized by region with stats",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0008-4000-8000-000000000008",
-    "position": 8,
-    "filepath": "src/pages/slides/Slide08Process.tsx",
-    "title": "From Idea to Image",
-    "description": "The 4-step photography process — Research, Journey, Patience, The Frame",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0009-4000-8000-000000000009",
-    "position": 9,
-    "filepath": "src/pages/slides/Slide09Gallery.tsx",
-    "title": "Portfolio Highlights",
-    "description": "Masonry-style gallery grid of highlight images",
-    "speakerNotes": ""
-  },
-  {
-    "id": "a1b2c3d4-0010-4000-8000-000000000010",
-    "position": 10,
-    "filepath": "src/pages/slides/Slide10Contact.tsx",
-    "title": "Let's Work Together",
-    "description": "Closing contact slide with dark cinematic background",
-    "speakerNotes": ""
-  }
+  { "id": "a1b2c3d4-0001-4000-8000-000000000001", "position": 1,  "filepath": "src/pages/slides/Slide01Cover.tsx",       "title": "Cover",                          "description": "Wildpixels — cinematic dark cover, Ranthambore tiger photo",          "speakerNotes": "" },
+  { "id": "a1b2c3d4-0002-4000-8000-000000000002", "position": 2,  "filepath": "src/pages/slides/Slide02About.tsx",       "title": "Behind the Lens",                "description": "Vadiraj bio — 18 places, 1195 photos, wildlife photographer",        "speakerNotes": "" },
+  { "id": "a1b2c3d4-0003-4000-8000-000000000003", "position": 3,  "filepath": "src/pages/slides/Slide03Philosophy.tsx",  "title": "The Wild Does Not Pause",        "description": "Photography philosophy — dark typographic manifesto",              "speakerNotes": "" },
+  { "id": "a1b2c3d4-0004-4000-8000-000000000004", "position": 4,  "filepath": "src/pages/slides/Slide04Ranthambore.tsx", "title": "Ranthambore Tiger Reserve",      "description": "Ranthambore Rajasthan — India's most photographed tiger country", "speakerNotes": "" },
+  { "id": "a1b2c3d4-0005-4000-8000-000000000005", "position": 5,  "filepath": "src/pages/slides/Slide05Gir.tsx",         "title": "Gir: Land of Asiatic Lions",     "description": "Gir Gujarat — last wild sanctuary of the Asiatic lion",           "speakerNotes": "" },
+  { "id": "a1b2c3d4-0006-4000-8000-000000000006", "position": 6,  "filepath": "src/pages/slides/Slide06Kaziranga.tsx",   "title": "Kaziranga: One-Horned Fortress", "description": "Kaziranga Assam — world's largest concentration of one-horned rhinos", "speakerNotes": "" },
+  { "id": "a1b2c3d4-0007-4000-8000-000000000007", "position": 7,  "filepath": "src/pages/slides/Slide07Tigers.tsx",      "title": "F2 and Her Cubs",               "description": "Tadoba Maharashtra — F2 tigress and her cubs from Gothangaon",    "speakerNotes": "" },
+  { "id": "a1b2c3d4-0008-4000-8000-000000000008", "position": 8,  "filepath": "src/pages/slides/Slide08JimCorbett.tsx",  "title": "Jim Corbett National Park",      "description": "Corbett UP — India's oldest park, leopards and dense jungle",     "speakerNotes": "" },
+  { "id": "a1b2c3d4-0009-4000-8000-000000000009", "position": 9,  "filepath": "src/pages/slides/Slide09Kuno.tsx",        "title": "Kuno: The Cheetah Returns",      "description": "Kuno NP MP — India's historic cheetah reintroduction",           "speakerNotes": "" },
+  { "id": "a1b2c3d4-0010-4000-8000-000000000010", "position": 10, "filepath": "src/pages/slides/Slide10Gallery1.tsx",    "title": "From the Field — Kaziranga",    "description": "Gallery spread — real expedition photos from Kaziranga",          "speakerNotes": "" },
+  { "id": "a1b2c3d4-0011-4000-8000-000000000011", "position": 11, "filepath": "src/pages/slides/Slide11Pilhibit.tsx",    "title": "Pilibhit Tiger Reserve",         "description": "Pilibhit UP — the terai tiger corridor",                          "speakerNotes": "" },
+  { "id": "a1b2c3d4-0012-4000-8000-000000000012", "position": 12, "filepath": "src/pages/slides/Slide12Kabini.tsx",      "title": "Kabini: Into the Jungle",        "description": "Kabini Karnataka — primates, elephants, monsoon jungle",           "speakerNotes": "" },
+  { "id": "a1b2c3d4-0013-4000-8000-000000000013", "position": 13, "filepath": "src/pages/slides/Slide13Bharatpur.tsx",   "title": "Bharatpur: A Birder's World",   "description": "Keoladeo NP — UNESCO World Heritage migratory bird sanctuary",    "speakerNotes": "" },
+  { "id": "a1b2c3d4-0014-4000-8000-000000000014", "position": 14, "filepath": "src/pages/slides/Slide14HimBirds.tsx",    "title": "Himalayan Foothills Birds",      "description": "Uttarakhand — endemic and migratory birds of the lower Himalayas","speakerNotes": "" },
+  { "id": "a1b2c3d4-0015-4000-8000-000000000015", "position": 15, "filepath": "src/pages/slides/Slide15Valparai.tsx",    "title": "Valparai: Tea & Macaques",       "description": "Valparai Tamil Nadu — lion-tailed macaques in the tea estates",   "speakerNotes": "" },
+  { "id": "a1b2c3d4-0016-4000-8000-000000000016", "position": 16, "filepath": "src/pages/slides/Slide16TalChapar.tsx",   "title": "Tal Chapar: Open Skies",         "description": "Tal Chapar Rajasthan — blackbuck herds and migrant raptors",      "speakerNotes": "" },
+  { "id": "a1b2c3d4-0017-4000-8000-000000000017", "position": 17, "filepath": "src/pages/slides/Slide17Hampi.tsx",       "title": "Hampi & Bears of Daroji",        "description": "Hampi Karnataka — sloth bears in the ancient boulder landscape",   "speakerNotes": "" },
+  { "id": "a1b2c3d4-0018-4000-8000-000000000018", "position": 18, "filepath": "src/pages/slides/Slide18Coastal.tsx",     "title": "Rameshwaram: Coastal Light",     "description": "Rameshwaram Tamil Nadu — coastal birds and golden ocean light",    "speakerNotes": "" },
+  { "id": "a1b2c3d4-0019-4000-8000-000000000019", "position": 19, "filepath": "src/pages/slides/Slide19Valparai2.tsx",   "title": "Rare Red Phalarope",             "description": "Dandeli Karnataka — rare seabird sighting far inland",             "speakerNotes": "" },
+  { "id": "a1b2c3d4-0020-4000-8000-000000000020", "position": 20, "filepath": "src/pages/slides/Slide20Gallery2.tsx",    "title": "Portfolio Highlights",           "description": "Six-photo masonry gallery from across all expeditions",            "speakerNotes": "" },
+  { "id": "a1b2c3d4-0021-4000-8000-000000000021", "position": 21, "filepath": "src/pages/slides/Slide21Stats.tsx",       "title": "18 Places. 1195 Photos.",        "description": "Portfolio stats milestone slide — dark cinematic typography",      "speakerNotes": "" },
+  { "id": "a1b2c3d4-0022-4000-8000-000000000022", "position": 22, "filepath": "src/pages/slides/Slide22Contact.tsx",     "title": "Let's Work Together",            "description": "Closing contact slide — editorial, prints, expeditions",           "speakerNotes": "" }
 ]
