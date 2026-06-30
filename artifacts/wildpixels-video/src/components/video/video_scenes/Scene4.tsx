@@ -51,12 +51,12 @@ export function Scene4() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.img 
-            src="https://lh3.googleusercontent.com/pw/AP1GczOSWkv8ygk7qOG4wCKZBDZQSQHbWA618IcemAOTYIqJbkHyNZG_nc7iTpGI1C_UWXc-ZSvPCzH9l82qHsYQFVCZA6PeztNRnBH14P9QBmK_3nnA7Cwu=w1920"
+            src="https://lh3.googleusercontent.com/pw/AP1GczOAeSa3r4M1-WiKM79b4xDUVaVPYovMrJQ9poAgYuaLK_FA7Pz-HF6SGybDFtmBF2ox1lYjMFeNn6kmZiUFIY72np-kMCsElS2iurWSYA6ir2nvTdZg=w1920"
             className="w-full h-full object-cover"
             initial={{ scale: 1.3 }}
             animate={{ scale: 1 }}
             transition={{ duration: 6, ease: 'easeOut' }}
-            alt="F2 tiger"
+            alt="Pench tiger"
           />
           <div className="absolute inset-0 bg-[#0A0A0A]/30" />
         </motion.div>
