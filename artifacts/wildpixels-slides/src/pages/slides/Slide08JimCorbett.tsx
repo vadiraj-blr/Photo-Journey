@@ -4,11 +4,11 @@ export default function Slide08JimCorbett() {
       <div style={{ position: "absolute", top: "7vh", left: "7vw", fontSize: "0.8vw", color: "#B0ADA8", fontFamily: "'DM Mono', monospace", letterSpacing: "0.2em", textTransform: "uppercase" }}>
         Corbett National Park, UP · March 2025
       </div>
-      <div style={{ position: "absolute", top: "7vh", right: "7vw", fontSize: "0.9vw", color: "#C0BDB8" }}>09</div>
+      <div style={{ position: "absolute", top: "7vh", right: "7vw", fontSize: "0.9vw", color: "#C0BDB8" }}>08</div>
 
       <div style={{ position: "absolute", top: 0, left: 0, width: "48vw", height: "100%", overflow: "hidden" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczNOhoYanEyXCmx1DdewlfPb2fJ9gqMuS6qjNblzlFuENEd1DuW8nCjimYFcigJmHgTL_nkYRP70LW0flTpfjOCg5Yx3LOBPUKTJ_QWhuDxxKpNst2Ox=w1920"
+          src="https://lh3.googleusercontent.com/pw/AP1GczM5HrAcXjJIwb51-KLSVcUPfGVmYvlwPy42A6sSOixp4EKZuhpxP6sF-gLQCxsAGOypciFlvE361MufVWiklg5KEa6S4Zxv89ApG8GAHBjbW-2q71kw=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           alt="Jim Corbett National Park"
         />
