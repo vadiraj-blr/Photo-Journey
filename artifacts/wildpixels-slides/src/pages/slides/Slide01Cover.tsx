@@ -2,7 +2,7 @@ export default function Slide01Cover() {
   return (
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#080808", fontFamily: "'DM Sans', sans-serif" }}>
       <img
-        src="https://lh3.googleusercontent.com/pw/AP1GczNc90PnW814or1sQJzJ0fXACA_fqdHaO3Tb64O4TLVG0mByPfz_tRS5NmHw3utivxkZzlAOWWHiGuKiv6jBxhJJlVgUsKTeKrz7bq2YF0jiRCKccTTf=w1920"
+        src="https://lh3.googleusercontent.com/pw/AP1GczPitj0m4zmw5QSVMHp2iU7w1LwCfmsOz4qolp0GqwQJka0KnhODhvXhsZ8keQPd6qLcy3ELe3gAxJMtEJRHUvO8RSfqJo21xM6XfstltDLVg9zn7dpt=w1920"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
         alt="Ranthambore tiger country"
       />

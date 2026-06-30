@@ -29,7 +29,7 @@ export default function Slide04Ranthambore() {
 
       <div style={{ position: "absolute", top: "12vh", right: "5vw", width: "44vw", height: "75vh", overflow: "hidden" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczNc90PnW814or1sQJzJ0fXACA_fqdHaO3Tb64O4TLVG0mByPfz_tRS5NmHw3utivxkZzlAOWWHiGuKiv6jBxhJJlVgUsKTeKrz7bq2YF0jiRCKccTTf=w1920"
+          src="https://lh3.googleusercontent.com/pw/AP1GczOSWkv8ygk7qOG4wCKZBDZQSQHbWA618IcemAOTYIqJbkHyNZG_nc7iTpGI1C_UWXc-ZSvPCzH9l82qHsYQFVCZA6PeztNRnBH14P9QBmK_3nnA7Cwu=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           alt="Ranthambore Tiger Reserve"
         />

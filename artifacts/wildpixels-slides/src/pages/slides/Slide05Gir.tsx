@@ -2,7 +2,7 @@ export default function Slide05Gir() {
   return (
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#0A0A0A", fontFamily: "'DM Sans', sans-serif" }}>
       <img
-        src="https://lh3.googleusercontent.com/pw/AP1GczNQ9ks-6HGPZ0BuZZQX1b1GU6jqcSgn9pV68nmaj4Hh_0f92AuHOWDJ029glkcMGHphAXEJBJJweBpSLtRsiuTVIZ8hF7R3H9es3kan_8H3nkYRP3=w1920"
+        src="https://lh3.googleusercontent.com/pw/AP1GczNQ9ks-6HGPZ0BuZZQX1b1GU6jqcSgn9pV68nmaj4Hh_0f92AuHOWDJ029glkcMGHphAXEJBJJweBpSLtRsiuTVIZ8hF7R3H9es3kan_hbNE-p3Hgfk=w1920"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.55 }}
         alt="Gir Asiatic Lions"
       />

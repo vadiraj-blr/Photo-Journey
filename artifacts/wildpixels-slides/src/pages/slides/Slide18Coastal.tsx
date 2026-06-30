@@ -2,7 +2,7 @@ export default function Slide18Coastal() {
   return (
     <div style={{ width: "100vw", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#0A0A0A", fontFamily: "'DM Sans', sans-serif" }}>
       <img
-        src="https://lh3.googleusercontent.com/pw/AP1GczM5u5Xus0YkM9uTsn8pvIs_-yiHooBuh_goZTi0VLp_J87fGaQgESnfAu9_9lYGYJiRCKccTTf=w1920"
+        src="https://lh3.googleusercontent.com/pw/AP1GczM5u5Xus0YkM9uTsn8pvIs_-yiHooBuh_goZTi0VLp_J87fGaQgESnfAu9_9lYGYXHG7of4PehQ-PwFPw-Ml8bKKarDsUycGN0599bqydcwF8Cek-yV=w1920"
         style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.5 }}
         alt="Rameshwaram coastal"
       />

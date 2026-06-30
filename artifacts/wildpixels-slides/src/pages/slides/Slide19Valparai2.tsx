@@ -8,7 +8,7 @@ export default function Slide19Valparai2() {
 
       <div style={{ position: "absolute", top: 0, right: 0, width: "52vw", height: "100%", overflow: "hidden" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczPw5MsG07tQm5TUvSsJyG80_WHOIzdeIPjWzmZtCdXpInMH34JyVOSZ9JBbd-0s3OOX6n-BEGMHv3FicLXJ8BzC76F1b7IjRH-08rB2j=w1920"
+          src="https://lh3.googleusercontent.com/pw/AP1GczOuhNFdUODfz4zADEoGPpnoCr6RQW2Z3PchNFm8wXW0sxrMPAK0livXZa5igzcLufamu3tzlOpn7W4niQaCn1xQYD3zYtXljPpHQJln5WjtPbdi3Y3X=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           alt="Red Phalarope Dandeli"
         />

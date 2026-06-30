@@ -8,7 +8,7 @@ export default function Slide08JimCorbett() {
 
       <div style={{ position: "absolute", top: 0, left: 0, width: "48vw", height: "100%", overflow: "hidden" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczM5HrAcXjJIwb51-KLSVcYuhpxP6sF-gLQCxsAGOypciFlvE361MufVWiklg5KEa6S4Zxv89ApG8GAHBjbW-2q71kw=w1920"
+          src="https://lh3.googleusercontent.com/pw/AP1GczNOhoYanEyXCmx1DdewlfPb2fJ9gqMuS6qjNblzlFuENEd1DuW8nCjimYFcigJmHgTL_nkYRP70LW0flTpfjOCg5Yx3LOBPUKTJ_QWhuDxxKpNst2Ox=w1920"
           style={{ width: "100%", height: "100%", objectFit: "cover" }}
           alt="Jim Corbett National Park"
         />

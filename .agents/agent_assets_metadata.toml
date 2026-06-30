@@ -59,3 +59,9 @@ id = "Z8RytdmixxQS6wEtMizgX"
 uri = "file://artifacts/wildpixels-video/public/images/texture.jpg"
 type = "image"
 title = "dark abstract texture cinematic studio lighting"
+
+[[outputs]]
+id = "i92rTzff4nvYjMehmaMMc"
+uri = "file://.local/outputs/Photo-Journey.pptx"
+type = "slides"
+title = "Photo Journey.pptx"
