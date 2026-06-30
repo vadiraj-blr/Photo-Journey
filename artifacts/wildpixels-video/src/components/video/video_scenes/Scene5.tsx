@@ -20,30 +20,42 @@ export function Scene5() {
       exit={{ opacity: 0, transition: { duration: 1 } }}
       transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="absolute inset-0 flex flex-col">
-        {/* Himalayan Birds */}
-        <div className="h-1/2 relative overflow-hidden">
+      <div className="absolute inset-0 flex flex-row">
+        {/* Monal — Himalayan Birds, left panel */}
+        <motion.div
+          className="w-1/2 h-full relative overflow-hidden"
+          initial={{ x: '-100%' }}
+          animate={{ x: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           <motion.img 
             src="https://lh3.googleusercontent.com/pw/AP1GczOuhNFdUODfz4zADEoGPpnoCr6RQW2Z3PchNFm8wXW0sxrMPAK0livXZa5igzcLufamu3tzlOpn7W4niQaCn1xQYD3zYtXljPpHQJln5WjtPbdi3Y3X=w1920"
-            className="w-full h-full object-cover origin-bottom"
+            className="w-full h-full object-cover"
             initial={{ scale: 1.2 }}
             animate={{ scale: 1 }}
             transition={{ duration: 5, ease: 'easeOut' }}
-            alt="Himalayan Birds"
+            alt="Himalayan Monal"
           />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0A0A0A]/60" />
+        </motion.div>
         
-        {/* Rameshwaram */}
-        <div className="h-1/2 relative overflow-hidden">
+        {/* Coastal Bird — Rameshwaram, right panel */}
+        <motion.div
+          className="w-1/2 h-full relative overflow-hidden"
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           <motion.img 
             src="https://lh3.googleusercontent.com/pw/AP1GczM5u5Xus0YkM9uTsn8pvIs_-yiHooBuh_goZTi0VLp_J87fGaQgESnfAu9_9lYGYXHG7of4PehQ-PwFPw-Ml8bKKarDsUycGN0599bqydcwF8Cek-yV=w1920"
-            className="w-full h-full object-cover origin-top"
+            className="w-full h-full object-cover"
             initial={{ scale: 1.2 }}
             animate={{ scale: 1 }}
             transition={{ duration: 5, ease: 'easeOut' }}
-            alt="Rameshwaram Coastal"
+            alt="Rameshwaram Coastal Bird"
           />
-        </div>
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[#0A0A0A]/60" />
+        </motion.div>
       </div>
 
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

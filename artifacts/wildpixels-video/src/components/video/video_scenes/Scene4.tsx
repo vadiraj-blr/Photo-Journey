@@ -42,7 +42,7 @@ export function Scene4() {
           <div className="absolute inset-0 bg-[#0A0A0A]/40" />
         </motion.div>
 
-        {/* Kabini */}
+        {/* Tiger — F2 Tadoba */}
         <motion.div 
           className="h-full relative overflow-hidden border-x border-[#111]"
           style={{ width: '33.333%' }}
@@ -51,14 +51,14 @@ export function Scene4() {
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
           <motion.img 
-            src="https://lh3.googleusercontent.com/pw/AP1GczMaUtfe0CJKYmhm681RJshtoRfI4hzcs8nWQY9wKkyewAyEQ9esShUffZl5qRrEVquocwosfRSt6tqus6bv5T_jlJjTpjnccbApExhp5B0cIBpHRZoO=w1920"
+            src="https://lh3.googleusercontent.com/pw/AP1GczOSWkv8ygk7qOG4wCKZBDZQSQHbWA618IcemAOTYIqJbkHyNZG_nc7iTpGI1C_UWXc-ZSvPCzH9l82qHsYQFVCZA6PeztNRnBH14P9QBmK_3nnA7Cwu=w1920"
             className="w-full h-full object-cover"
             initial={{ scale: 1.3 }}
             animate={{ scale: 1 }}
             transition={{ duration: 6, ease: 'easeOut' }}
-            alt="Kabini"
+            alt="F2 tiger"
           />
-          <div className="absolute inset-0 bg-[#0A0A0A]/40" />
+          <div className="absolute inset-0 bg-[#0A0A0A]/30" />
         </motion.div>
 
         {/* Tal Chapar */}

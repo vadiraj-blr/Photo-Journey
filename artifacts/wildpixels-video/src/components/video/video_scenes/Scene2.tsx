@@ -43,7 +43,7 @@ export function Scene2() {
           animate={phase >= 1 ? { y: 0, opacity: 1 } : { y: 20, opacity: 0 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
         >
-          F2 AND HER CUBS · Tadoba Tiger Reserve
+          F2 AND HER CUBS · Gothangaon, Tadoba
         </motion.p>
       </div>
     </motion.div>
