@@ -1,10 +1,10 @@
 const COLLAGE = [
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczOuhNFdUODfz4zADEoGPpnoCr6RQW2Z3PchNFm8wXW0sxrMPAK0livXZa5igzcLufamu3tzlOpn7W4niQaCn1xQYD3zYtXljPpHQJln5WjtPbdi3Y3X=w1920", alt: "Himalayan Monal", label: "Himalayan Monal" },
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczOLYowST2soOmh0YEsQDumlHVMFDhptWzlTe6lh27y0qPqHBQLv9m20KyjSEq7JXlWbT_LR4z1PV7141BUce5ZEIVNruopYacYT7NOMGmnaxE3t6I-U=w1920", alt: "Kaziranga rhino", label: "One-Horned Rhino" },
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczOSWkv8ygk7qOG4wCKZBDZQSQHbWA618IcemAOTYIqJbkHyNZG_nc7iTpGI1C_UWXc-ZSvPCzH9l82qHsYQFVCZA6PeztNRnBH14P9QBmK_3nnA7Cwu=w1920", alt: "F2 tigress and cubs", label: "F2 & Cubs · Tadoba" },
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczNOhoYanEyXCmx1DdewlfPb2fJ9gqMuS6qjNblzlFuENEd1DuW8nCjimYFcigJmHgTL_nkYRP70LW0flTpfjOCg5Yx3LOBPUKTJ_QWhuDxxKpNst2Ox=w1920", alt: "Bharatpur birds", label: "Bharatpur" },
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczOHpQph1tR3ceR9aUHwbhs0ZxkTNQmm8HSWd6ntK5aoBeqyJwqeISv_yZmcrMIV58izw1Lm8OgGtgksyShQSY54a0NjQqEndSF9i0KA8e76SL11lCQU=w1920", alt: "Valparai macaque", label: "Valparai" },
-  { src: "https://lh3.googleusercontent.com/pw/AP1GczMaUtfe0CJKYmhm681RJshtoRfI4hzcs8nWQY9wKkyewAyEQ9esShUffZl5qRrEVquocwosfRSt6tqus6bv5T_jlJjTpjnccbApExhp5B0cIBpHRZoO=w1920", alt: "Kabini jungle", label: "Kabini" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczPChcMMo5iFJFfNgTLSiRjP-bU_-65LLMmjk5FHqEUt188BPcEQ109ung1PeZ2lHZ7QoXIT10BZeYNhOSgVklQlAJU1P7IFihcoAQHU-yopbYO1mCFF=w1920", alt: "Wildlife portrait 1", label: "" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczMSb9A1gyLIy3_pXU8wcRWIhYQJ9x2znpkKb78keYe5bNUiNpUFgh45iw2849EmJa8fuwPuEzp3TGouvogQpb3LNCfDTTWWpiKepXVBvsyOO0NEUDV_=w1920", alt: "Wildlife portrait 2", label: "" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczNO47SFMuhc9agnOnzB1rWDBYAxRnBdCesgQJZ6HwuU7FBYFPBF12dlZE-zkRH51V6eEBsVmcd6TDiTHyBGGn4tOc1-EFkg3XW9lXBws6YqjY664CuH=w1920", alt: "Wildlife portrait 3", label: "" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczPDtJgQnPzsECivucZw1wr3H-zTLpE4wujxvuSDwBbsWZbtGM1KLLzWw0yVrcstNQ_Fh-o_bGO1HvTnd17iqfL5oKDZKgxnS666qYziwPaAFaes8Soz=w1920", alt: "Wildlife portrait 4", label: "" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczP9BqX5CoYry6vukcwIluZFc3ccy0LDRy3WALrWoHDS_HsZrN4rqxsn0IHQCOySNFr4Q9z6v3Nr7TZSCPJHsS87rjSLfHW6qK0Suf_MjZftc4VOEQ3v=w1920", alt: "Wildlife portrait 5", label: "" },
+  { src: "https://lh3.googleusercontent.com/pw/AP1GczNMtEJlXgiPOw8hBqLHUs_j_8NSHW-Snxtn_R36yRrQ_IMbwL0RM3_0FRPSJC42aA2n5igLfpXC-ri96assjL9MdkIcy2kF8Rr4Nbfs1EGjPXj6hHLJ=w1920", alt: "Wildlife portrait 6", label: "" },
 ];
 
 export default function Slide02About() {
