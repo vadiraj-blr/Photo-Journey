@@ -4,7 +4,7 @@ export default function Slide08JimCorbett() {
       <div style={{ position: "absolute", top: "7vh", left: "7vw", fontSize: "0.8vw", color: "#B0ADA8", fontFamily: "'DM Mono', monospace", letterSpacing: "0.2em", textTransform: "uppercase" }}>
         Corbett National Park, UP · March 2025
       </div>
-      <div style={{ position: "absolute", top: "7vh", right: "7vw", fontSize: "0.9vw", color: "#C0BDB8" }}>09</div>
+      <div style={{ position: "absolute", top: "7vh", right: "7vw", fontSize: "0.9vw", color: "#C0BDB8" }}>08</div>
 
       <div style={{ position: "absolute", top: 0, left: 0, width: "48vw", height: "100%", overflow: "hidden" }}>
         <img

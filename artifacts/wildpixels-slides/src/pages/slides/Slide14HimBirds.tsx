@@ -4,7 +4,7 @@ export default function Slide14HimBirds() {
       <div style={{ position: "absolute", top: 0, right: 0, width: "52vw", height: "100%", overflow: "hidden" }}>
         <img
           src="https://lh3.googleusercontent.com/pw/AP1GczOuhNFdUODfz4zADEoGPpnoCr6RQW2Z3PchNFm8wXW0sxrMPAK0livXZa5igzcLufamu3tzlOpn7W4niQaCn1xQYD3zYtXljPpHQJln5WjtPbdi3Y3X=w1920"
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center" }}
           alt="Himalayan foothills birds"
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, transparent 50%, rgba(10,10,10,0.97) 100%)" }} />
