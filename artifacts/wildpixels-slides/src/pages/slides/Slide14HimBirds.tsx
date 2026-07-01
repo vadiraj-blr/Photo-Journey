@@ -7,7 +7,7 @@ export default function Slide14HimBirds() {
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "right center" }}
           alt="Himalayan foothills birds"
         />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, transparent 50%, rgba(10,10,10,0.97) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, transparent 50%, rgba(10,10,10,0.97) 100%)" }} />
       </div>
 
       <div style={{ position: "absolute", top: "7vh", left: "7vw" }}>
