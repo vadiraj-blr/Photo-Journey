@@ -28,6 +28,17 @@ function SlideEditor() {
   const [location, navigate] = useLocation();
   const currentIndex = getSlideIndex(location);
 
+  const [adjustMode, setAdjustMode] = useState(false);
+  const [photoPositions, setPhotoPositions] = useState<{ x: string; y: string; label: string }[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cleanupRef = useRef<(() => void)[]>([]);
+  const adjustModeRef = useRef(false);
+
+  // Keep ref in sync with state so navigation handlers can read it
+  useEffect(() => {
+    adjustModeRef.current = adjustMode;
+  }, [adjustMode]);
+
   // In the workspace, the slide iframe is nested inside another iframe,
   // so window.parent !== window.parent.parent. In the deployed SlideViewer,
   // the parent is the top-level window, so they're equal. Disable local
@@ -39,6 +50,7 @@ function SlideEditor() {
     if (currentIndex === -1) return;
 
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (adjustModeRef.current) return;
       if (navigationDisabledRef.current) return;
       if (event.key === " ") {
         event.preventDefault();
@@ -64,6 +76,7 @@ function SlideEditor() {
     const touchHandledRef = touchHandledRefStable;
 
     const onClick = (event: MouseEvent) => {
+      if (adjustModeRef.current) return;
       if (touchHandledRef.current) {
         touchHandledRef.current = false;
         return;
@@ -93,6 +106,7 @@ function SlideEditor() {
     };
 
     const onTouchEnd = (event: TouchEvent) => {
+      if (adjustModeRef.current) return;
       const dx = event.changedTouches[0].clientX - touchStartX;
       const dy = event.changedTouches[0].clientY - touchStartY;
       if (Math.abs(dx) >= 10 || Math.abs(dy) >= 10) return;
@@ -124,17 +138,294 @@ function SlideEditor() {
     };
   }, [currentIndex, navigate]);
 
+  // Photo adjust: attach drag handlers to all imgs in the current slide
+  useEffect(() => {
+    cleanupRef.current.forEach((fn) => fn());
+    cleanupRef.current = [];
+
+    if (!adjustMode) {
+      setPhotoPositions([]);
+      return;
+    }
+
+    const parsePos = (style: CSSStyleDeclaration): [number, number] => {
+      const pos = style.objectPosition || "50% 50%";
+      const parts = pos.trim().split(/\s+/);
+      const parseVal = (v = "50%"): number => {
+        if (v === "center") return 50;
+        if (v === "left" || v === "top") return 0;
+        if (v === "right" || v === "bottom") return 100;
+        if (v.endsWith("%")) return parseFloat(v);
+        return 50;
+      };
+      return [parseVal(parts[0]), parseVal(parts[1] ?? parts[0])];
+    };
+
+    const timer = setTimeout(() => {
+      const container = containerRef.current;
+      if (!container) return;
+
+      // Find visible slide (display: block)
+      const children = Array.from(container.children) as HTMLElement[];
+      const visibleSlide = children[currentIndex] ?? children[0];
+      if (!visibleSlide) return;
+
+      const imgs = Array.from(visibleSlide.querySelectorAll<HTMLImageElement>("img"));
+      if (imgs.length === 0) {
+        setPhotoPositions([]);
+        return;
+      }
+
+      const initialPositions = imgs.map((img, idx) => {
+        const cs = window.getComputedStyle(img);
+        const [x, y] = parsePos(cs);
+        return { x: x.toFixed(1), y: y.toFixed(1), label: `Photo ${idx + 1}` };
+      });
+      setPhotoPositions(initialPositions);
+
+      imgs.forEach((img, idx) => {
+        img.style.cursor = "grab";
+
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let startPosX = 50;
+        let startPosY = 50;
+
+        const onDown = (e: PointerEvent) => {
+          e.stopPropagation();
+          e.preventDefault();
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          const cs = window.getComputedStyle(img);
+          [startPosX, startPosY] = parsePos(cs);
+          img.style.cursor = "grabbing";
+          img.setPointerCapture(e.pointerId);
+        };
+
+        const onMove = (e: PointerEvent) => {
+          if (!isDragging) return;
+          const rect = img.getBoundingClientRect();
+          const nat =
+            img.naturalWidth && img.naturalHeight
+              ? img.naturalWidth / img.naturalHeight
+              : 16 / 9;
+          const boxAspect = rect.width / rect.height;
+
+          let displayW: number;
+          let displayH: number;
+          if (nat > boxAspect) {
+            displayH = rect.height;
+            displayW = rect.height * nat;
+          } else {
+            displayW = rect.width;
+            displayH = rect.width / nat;
+          }
+
+          const overflowX = Math.max(displayW - rect.width, 1);
+          const overflowY = Math.max(displayH - rect.height, 1);
+
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          const newX = Math.max(0, Math.min(100, startPosX - (dx / overflowX) * 100));
+          const newY = Math.max(0, Math.min(100, startPosY - (dy / overflowY) * 100));
+
+          img.style.objectPosition = `${newX.toFixed(1)}% ${newY.toFixed(1)}%`;
+
+          setPhotoPositions((prev) => {
+            const next = [...prev];
+            next[idx] = { x: newX.toFixed(1), y: newY.toFixed(1), label: `Photo ${idx + 1}` };
+            return next;
+          });
+        };
+
+        const onUp = () => {
+          isDragging = false;
+          img.style.cursor = "grab";
+        };
+
+        img.addEventListener("pointerdown", onDown);
+        img.addEventListener("pointermove", onMove);
+        img.addEventListener("pointerup", onUp);
+
+        cleanupRef.current.push(() => {
+          img.removeEventListener("pointerdown", onDown);
+          img.removeEventListener("pointermove", onMove);
+          img.removeEventListener("pointerup", onUp);
+          img.style.cursor = "";
+        });
+      });
+    }, 80);
+
+    return () => {
+      clearTimeout(timer);
+      cleanupRef.current.forEach((fn) => fn());
+      cleanupRef.current = [];
+    };
+  }, [adjustMode, currentIndex]);
+
   return (
-    <div className="select-none">
-      {slides.map((slide, index) => (
+    <div style={{ position: "relative" }}>
+      {/* Photo Adjust Toggle */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setAdjustMode((v) => !v);
+        }}
+        style={{
+          position: "fixed",
+          top: "1.4vh",
+          right: "1.5vw",
+          zIndex: 9999,
+          background: adjustMode ? "#C4862A" : "rgba(12,12,10,0.88)",
+          color: adjustMode ? "#0A0A0A" : "#C4862A",
+          border: `1px solid ${adjustMode ? "#C4862A" : "#3A3A38"}`,
+          borderRadius: "4px",
+          padding: "0.55vh 1.1vw",
+          fontSize: "0.72vw",
+          fontFamily: "'DM Mono', monospace",
+          letterSpacing: "0.14em",
+          cursor: "pointer",
+          textTransform: "uppercase" as const,
+          backdropFilter: "blur(10px)",
+          transition: "all 0.18s",
+          userSelect: "none" as const,
+        }}
+      >
+        {adjustMode ? "✕  Exit Adjust" : "⊹  Adjust Photos"}
+      </button>
+
+      {/* Position HUD */}
+      {adjustMode && photoPositions.length > 0 && (
         <div
-          key={slide.id}
-          style={{ display: index === currentIndex ? "block" : "none", position: "relative" }}
+          style={{
+            position: "fixed",
+            bottom: "2.5vh",
+            right: "1.5vw",
+            zIndex: 9999,
+            background: "rgba(8,8,6,0.94)",
+            border: "1px solid #252522",
+            borderRadius: "6px",
+            padding: "1.4vh 1.6vw",
+            fontFamily: "'DM Mono', monospace",
+            backdropFilter: "blur(14px)",
+            minWidth: "20vw",
+          }}
         >
-          <slide.Component />
-          <div style={{ position: "absolute", bottom: "2vh", left: "3.5vw", fontSize: "0.65vw", color: "rgba(180,175,165,0.4)", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", pointerEvents: "none", zIndex: 100 }}>© Vadiraj BK · Wildpixels</div>
+          <div
+            style={{
+              fontSize: "0.63vw",
+              color: "#C4862A",
+              letterSpacing: "0.22em",
+              textTransform: "uppercase" as const,
+              marginBottom: "1.2vh",
+            }}
+          >
+            objectPosition values
+          </div>
+          {photoPositions.map(
+            (p, i) =>
+              p && (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "0.9vh",
+                    gap: "1vw",
+                  }}
+                >
+                  <span style={{ fontSize: "0.68vw", color: "#555550" }}>{p.label}</span>
+                  <span style={{ fontSize: "0.78vw", color: "#F5F3EF", fontWeight: 600 }}>
+                    {p.x}% {p.y}%
+                  </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigator.clipboard?.writeText(`${p.x}% ${p.y}%`);
+                    }}
+                    style={{
+                      fontSize: "0.62vw",
+                      color: "#C4862A",
+                      background: "none",
+                      border: "1px solid #2A2A28",
+                      borderRadius: "3px",
+                      padding: "0.25vh 0.55vw",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    copy
+                  </button>
+                </div>
+              ),
+          )}
+          <div
+            style={{
+              marginTop: "0.8vh",
+              fontSize: "0.6vw",
+              color: "#333330",
+              borderTop: "1px solid #181816",
+              paddingTop: "0.9vh",
+              lineHeight: 1.5,
+            }}
+          >
+            Drag any photo to reposition.
+            <br />
+            Copy the value and share it to lock it in.
+          </div>
         </div>
-      ))}
+      )}
+
+      {adjustMode && photoPositions.length === 0 && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "2.5vh",
+            right: "1.5vw",
+            zIndex: 9999,
+            background: "rgba(8,8,6,0.88)",
+            border: "1px solid #252522",
+            borderRadius: "6px",
+            padding: "1.2vh 1.4vw",
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.68vw",
+            color: "#555550",
+            backdropFilter: "blur(12px)",
+          }}
+        >
+          No photos on this slide
+        </div>
+      )}
+
+      <div className="select-none" ref={containerRef}>
+        {slides.map((slide, index) => (
+          <div
+            key={slide.id}
+            style={{ display: index === currentIndex ? "block" : "none", position: "relative" }}
+          >
+            <slide.Component />
+            <div
+              style={{
+                position: "absolute",
+                bottom: "2vh",
+                left: "3.5vw",
+                fontSize: "0.65vw",
+                color: "rgba(180,175,165,0.4)",
+                fontFamily: "'DM Mono', monospace",
+                letterSpacing: "0.12em",
+                pointerEvents: "none",
+                zIndex: 100,
+              }}
+            >
+              © Vadiraj BK · Wildpixels
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
