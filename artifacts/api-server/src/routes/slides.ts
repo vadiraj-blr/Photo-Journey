@@ -22,7 +22,7 @@ router.post("/photo-position", (req, res) => {
     return;
   }
 
-  const absPath = path.join(process.cwd(), filepath);
+  const absPath = path.resolve(process.cwd(), "../..", filepath);
 
   let content: string;
   try {
