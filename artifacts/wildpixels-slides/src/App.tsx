@@ -39,10 +39,9 @@ function SlideEditor() {
     const slide = slides[currentIndex];
     if (!slide) return;
     const filepath = `artifacts/wildpixels-slides/${slide.filepath}`;
-    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
     setSaveStates((prev) => ({ ...prev, [imageIndex]: "saving" }));
     try {
-      const res = await fetch(`${base}/api/slides/photo-position`, {
+      const res = await fetch(`/api/slides/photo-position`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ filepath, imageIndex, x, y }),
