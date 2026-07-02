@@ -5,9 +5,9 @@ export default function SlideWebsite() {
       {/* Right-side photo panel */}
       <div style={{ position: "absolute", top: 0, right: 0, width: "46vw", height: "100%" }}>
         <img
-          src="https://lh3.googleusercontent.com/pw/AP1GczM5HrAcXjJIwb51-KLSVcUPfGVmYvlwPy42A6sSOixp4EKZuhpxP6sF-gLQCxsAGOypciFlvE361MufVWiklg5KEa6S4Zxv89ApG8GAHBjbW-2q71kw=w1920"
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 40%" }}
-          alt="Jim Corbett tiger"
+          src="https://lh3.googleusercontent.com/pw/AP1GczMzVfUi5BmeHI9pcQIdHDc4z2g7AclAsm-ENN0GSY_Ms6avuZn1bRSAqkmi8zmJFztgUQyrULS6pdrtlllpFpg5gt305krxwgtd_3_OGxM-SlC4YYqs=w1920"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 30%" }}
+          alt="Snow Leopard"
         />
         {/* Fade into dark background on the left */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, #0A0A0A 0%, rgba(10,10,10,0.55) 30%, transparent 65%)" }} />
