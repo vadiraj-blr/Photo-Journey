@@ -9,7 +9,7 @@ export default function Slide13Bharatpur() {
       <div style={{ position: "absolute", top: 0, left: 0, width: "50vw", height: "100%", overflow: "hidden" }}>
         <img
           src="https://lh3.googleusercontent.com/pw/AP1GczNOhoYanEyXCmx1DdewlfPb2fJ9gqMuS6qjNblzlFuENEd1DuW8nCjimYFcigJmHgTL_nkYRP70LW0flTpfjOCg5Yx3LOBPUKTJ_QWhuDxxKpNst2Ox=w1920"
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "28.9% 0.0%" }}
           alt="Bharatpur bird sanctuary"
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, transparent 60%, rgba(245,243,239,0.95) 100%)" }} />
