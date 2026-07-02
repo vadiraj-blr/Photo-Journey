@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
-import { useGetFeaturedTrips, useListTrips, useGetTripStats } from "@workspace/api-client-react";
+import { useListTrips, useGetTripStats } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import SubscribeSection from "../components/subscribe-section";
+import FeaturedTripSection from "../components/featured-trip-section";
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -48,7 +48,6 @@ function useHeroSlideshow(heroAlbumUrl: string | null | undefined) {
 }
 
 export default function Home() {
-  const { data: featuredTrips } = useGetFeaturedTrips();
   const { data: allTrips } = useListTrips();
   const { data: stats } = useGetTripStats();
   const { data: settings } = useLandingSettings();
@@ -60,8 +59,7 @@ export default function Home() {
   const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroAlbumUrl);
 
   const hasSlideshowAlbum = slideshowPhotos.length > 0;
-  const fallbackTrip = featuredTrips?.[0] || allTrips?.[0];
-  const staticHeroUrl = settings?.heroImageUrl || fallbackTrip?.coverImageUrl || "";
+  const staticHeroUrl = settings?.heroImageUrl || allTrips?.[0]?.coverImageUrl || "";
 
   return (
     <div className="w-full bg-stone-50">
@@ -143,7 +141,7 @@ export default function Home() {
         </motion.button>
       </section>
 
-      <SubscribeSection />
+      <FeaturedTripSection />
 
       {/* Grid Section */}
       <section className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
