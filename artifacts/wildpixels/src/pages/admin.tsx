@@ -684,7 +684,10 @@ function TripFormFields({
         >
           <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${form.featured ? "translate-x-5" : "translate-x-1"}`} />
         </div>
-        <span className="text-sm text-white/70">Featured on homepage</span>
+        <div>
+          <span className="text-sm text-white/70">Featured on homepage</span>
+          <p className="text-[11px] text-white/35 mt-0.5">Only one trip can be featured at a time — enabling this will remove the badge from any other trip.</p>
+        </div>
       </label>
     </>
   );

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, tripsTable, photosTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, ne } from "drizzle-orm";
 import { notifySubscribers } from "../lib/notify";
 
 const router = Router();
@@ -173,6 +173,11 @@ router.post("/", async (req, res) => {
   if (!title || !location || !country || !month || !year) {
     return res.status(400).json({ error: "title, location, country, month and year are required" });
   }
+  // Enforce single-featured: clear all others before inserting a featured trip
+  if (featured) {
+    await db.update(tripsTable).set({ featured: false });
+  }
+
   const [created] = await db
     .insert(tripsTable)
     .values({
@@ -242,6 +247,11 @@ router.patch("/:id", async (req, res) => {
         updates[key] = req.body[key];
       }
     }
+  }
+
+  // Enforce single-featured: if this trip is being set to featured, clear all others first
+  if (updates.featured === true) {
+    await db.update(tripsTable).set({ featured: false }).where(ne(tripsTable.id, id));
   }
 
   if (Object.keys(updates).length > 0) {
