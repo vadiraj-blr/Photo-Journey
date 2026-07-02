@@ -21,13 +21,13 @@ export default function Slide07Tigers() {
           F2 and<br />Her Cubs
         </h2>
         <p style={{ fontSize: "1.35vw", fontWeight: 300, color: "#9A9890", marginTop: "3vh", lineHeight: 1.75, maxWidth: "40vw" }}>
-          F2 is one of Tadoba's most celebrated tigresses — a seasoned hunter operating deep in the teak forests of Gothangaon. In June 2025, she was raising two cubs, teaching them to stalk through the bamboo thickets beside the Irai River.
+          F2 is one of Tadoba's most celebrated tigresses — a seasoned hunter operating deep in the teak forests of Gothangaon. In June 2025, she was raising four cubs, teaching them to stalk through the bamboo thickets beside the Irai River.
         </p>
         <p style={{ fontSize: "1.35vw", fontWeight: 300, color: "#9A9890", marginTop: "1.5vh", lineHeight: 1.75, maxWidth: "40vw" }}>
           To witness a tigress coaching her young — to see intelligence and tenderness in an apex predator — is to understand why wild places must be protected.
         </p>
         <div style={{ marginTop: "3.5vh", display: "flex", gap: "3vw" }}>
-          {[["Tadoba", "Tiger Reserve"], ["Teak Forest", "Habitat"], ["2 Cubs", "Observed"]].map(([v, l]) => (
+          {[["Tadoba", "Tiger Reserve"], ["Teak Forest", "Habitat"], ["4 Cubs", "Observed"]].map(([v, l]) => (
             <div key={l} style={{ borderLeft: "2px solid #333330", paddingLeft: "1.2vw" }}>
               <div style={{ fontSize: "1.1vw", fontWeight: 700, color: "#F5F3EF" }}>{v}</div>
               <div style={{ fontSize: "0.75vw", color: "#555550", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: "0.4vh" }}>{l}</div>
