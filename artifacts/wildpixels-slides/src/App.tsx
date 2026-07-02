@@ -30,9 +30,31 @@ function SlideEditor() {
 
   const [adjustMode, setAdjustMode] = useState(false);
   const [photoPositions, setPhotoPositions] = useState<{ x: string; y: string; label: string }[]>([]);
+  const [saveStates, setSaveStates] = useState<Record<number, "idle" | "saving" | "saved" | "error">>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const cleanupRef = useRef<(() => void)[]>([]);
   const adjustModeRef = useRef(false);
+
+  const savePhoto = async (imageIndex: number, x: string, y: string) => {
+    const slide = slides[currentIndex];
+    if (!slide) return;
+    const filepath = `artifacts/wildpixels-slides/${slide.filepath}`;
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    setSaveStates((prev) => ({ ...prev, [imageIndex]: "saving" }));
+    try {
+      const res = await fetch(`${base}/api/slides/photo-position`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filepath, imageIndex, x, y }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setSaveStates((prev) => ({ ...prev, [imageIndex]: "saved" }));
+      setTimeout(() => setSaveStates((prev) => ({ ...prev, [imageIndex]: "idle" })), 2000);
+    } catch {
+      setSaveStates((prev) => ({ ...prev, [imageIndex]: "error" }));
+      setTimeout(() => setSaveStates((prev) => ({ ...prev, [imageIndex]: "idle" })), 2500);
+    }
+  };
 
   // Keep ref in sync with state so navigation handlers can read it
   useEffect(() => {
@@ -342,45 +364,90 @@ function SlideEditor() {
           {photoPositions.map(
             (p, i) =>
               p && (
-                <div
-                  key={i}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: "0.9vh",
-                    gap: "1vw",
-                  }}
-                >
-                  <span style={{ fontSize: "0.68vw", color: "#555550" }}>{p.label}</span>
-                  <span style={{ fontSize: "0.78vw", color: "#F5F3EF", fontWeight: 600 }}>
-                    {p.x}% {p.y}%
-                  </span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigator.clipboard?.writeText(`${p.x}% ${p.y}%`);
-                    }}
+                <div key={i} style={{ marginBottom: "1vh" }}>
+                  <div
                     style={{
-                      fontSize: "0.62vw",
-                      color: "#C4862A",
-                      background: "none",
-                      border: "1px solid #2A2A28",
-                      borderRadius: "3px",
-                      padding: "0.25vh 0.55vw",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      letterSpacing: "0.08em",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "0.8vw",
                     }}
                   >
-                    copy
-                  </button>
+                    <span style={{ fontSize: "0.68vw", color: "#555550" }}>{p.label}</span>
+                    <span style={{ fontSize: "0.78vw", color: "#F5F3EF", fontWeight: 600 }}>
+                      {p.x}% {p.y}%
+                    </span>
+                    <div style={{ display: "flex", gap: "0.4vw" }}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard?.writeText(`${p.x}% ${p.y}%`);
+                        }}
+                        style={{
+                          fontSize: "0.62vw",
+                          color: "#888880",
+                          background: "none",
+                          border: "1px solid #2A2A28",
+                          borderRadius: "3px",
+                          padding: "0.25vh 0.55vw",
+                          cursor: "pointer",
+                          fontFamily: "inherit",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        copy
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          savePhoto(i, p.x, p.y);
+                        }}
+                        disabled={saveStates[i] === "saving"}
+                        style={{
+                          fontSize: "0.62vw",
+                          color:
+                            saveStates[i] === "saved"
+                              ? "#5A9A5A"
+                              : saveStates[i] === "error"
+                                ? "#C04040"
+                                : "#C4862A",
+                          background:
+                            saveStates[i] === "saved"
+                              ? "rgba(90,154,90,0.12)"
+                              : saveStates[i] === "error"
+                                ? "rgba(192,64,64,0.12)"
+                                : "rgba(196,134,42,0.12)",
+                          border: `1px solid ${
+                            saveStates[i] === "saved"
+                              ? "#3A6A3A"
+                              : saveStates[i] === "error"
+                                ? "#6A3030"
+                                : "#4A3010"
+                          }`,
+                          borderRadius: "3px",
+                          padding: "0.25vh 0.55vw",
+                          cursor: saveStates[i] === "saving" ? "wait" : "pointer",
+                          fontFamily: "inherit",
+                          letterSpacing: "0.08em",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        {saveStates[i] === "saving"
+                          ? "saving…"
+                          : saveStates[i] === "saved"
+                            ? "✓ saved"
+                            : saveStates[i] === "error"
+                              ? "✕ error"
+                              : "save"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ),
           )}
           <div
             style={{
-              marginTop: "0.8vh",
+              marginTop: "0.4vh",
               fontSize: "0.6vw",
               color: "#333330",
               borderTop: "1px solid #181816",
@@ -388,9 +455,7 @@ function SlideEditor() {
               lineHeight: 1.5,
             }}
           >
-            Drag any photo to reposition.
-            <br />
-            Copy the value and share it to lock it in.
+            Drag to reposition · Save writes directly to the file.
           </div>
         </div>
       )}

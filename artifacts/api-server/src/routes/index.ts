@@ -8,6 +8,7 @@ import contactRouter from "./contact";
 import articlesRouter from "./articles";
 import subscribeRouter from "./subscribe";
 import authRouter from "./auth";
+import slidesRouter from "./slides";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -37,5 +38,6 @@ router.use("/articles", authForMutations, articlesRouter);
 router.use("/subscribe", subscribeRouter);
 router.use("/unsubscribe", subscribeRouter);
 router.use("/subscribers", authForMutations, subscribeRouter);
+router.use("/slides", slidesRouter);
 
 export default router;
