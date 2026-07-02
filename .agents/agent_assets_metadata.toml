@@ -71,3 +71,9 @@ id = "IfDpse482KHuQBr4eLGkH"
 uri = "file://.local/outputs/Photo-Journey.pdf"
 type = "pdf"
 title = "Photo Journey.pdf"
+
+[[outputs]]
+id = "QuhoSfYpxKIwOj9K1W6Wr"
+uri = "file://.local/outputs/Wildpixels---Portfolio.pptx"
+type = "slides"
+title = "Wildpixels – Portfolio (PPTX)"

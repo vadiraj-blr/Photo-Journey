@@ -6,7 +6,7 @@ export default function SlideWebsite() {
       <div style={{ position: "absolute", top: 0, right: 0, width: "46vw", height: "100%" }}>
         <img
           src="https://lh3.googleusercontent.com/pw/AP1GczMzVfUi5BmeHI9pcQIdHDc4z2g7AclAsm-ENN0GSY_Ms6avuZn1bRSAqkmi8zmJFztgUQyrULS6pdrtlllpFpg5gt305krxwgtd_3_OGxM-SlC4YYqs=w1920"
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 30%" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "39.6% 0.0%" }}
           alt="Snow Leopard"
         />
         {/* Fade into dark background on the left */}
