@@ -184,7 +184,18 @@ function SlideEditor() {
       setPhotoPositions(initialPositions);
 
       imgs.forEach((img, idx) => {
-        img.style.cursor = "grab";
+        // Inject a transparent drag-handle div on top of the image's container
+        // so it sits above any gradient overlays that would otherwise eat pointer events.
+        const container = img.parentElement as HTMLElement;
+        const savedContainerPos = container.style.position;
+        if (!savedContainerPos || savedContainerPos === "static") {
+          container.style.position = "relative";
+        }
+
+        const handle = document.createElement("div");
+        handle.style.cssText =
+          "position:absolute;inset:0;z-index:500;cursor:grab;touch-action:none;";
+        container.appendChild(handle);
 
         let isDragging = false;
         let startX = 0;
@@ -200,8 +211,8 @@ function SlideEditor() {
           startY = e.clientY;
           const cs = window.getComputedStyle(img);
           [startPosX, startPosY] = parsePos(cs);
-          img.style.cursor = "grabbing";
-          img.setPointerCapture(e.pointerId);
+          handle.style.cursor = "grabbing";
+          handle.setPointerCapture(e.pointerId);
         };
 
         const onMove = (e: PointerEvent) => {
@@ -242,18 +253,22 @@ function SlideEditor() {
 
         const onUp = () => {
           isDragging = false;
-          img.style.cursor = "grab";
+          handle.style.cursor = "grab";
         };
 
-        img.addEventListener("pointerdown", onDown);
-        img.addEventListener("pointermove", onMove);
-        img.addEventListener("pointerup", onUp);
+        handle.addEventListener("pointerdown", onDown);
+        handle.addEventListener("pointermove", onMove);
+        handle.addEventListener("pointerup", onUp);
 
         cleanupRef.current.push(() => {
-          img.removeEventListener("pointerdown", onDown);
-          img.removeEventListener("pointermove", onMove);
-          img.removeEventListener("pointerup", onUp);
-          img.style.cursor = "";
+          handle.removeEventListener("pointerdown", onDown);
+          handle.removeEventListener("pointermove", onMove);
+          handle.removeEventListener("pointerup", onUp);
+          handle.remove();
+          img.style.objectPosition = "";
+          if (!savedContainerPos || savedContainerPos === "static") {
+            container.style.position = savedContainerPos;
+          }
         });
       });
     }, 80);
