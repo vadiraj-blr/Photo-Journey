@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
+import { EnvBanner } from "@/components/env-banner";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -36,8 +37,9 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0e0e0e] flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+    <div className="min-h-screen bg-[#0e0e0e] flex flex-col items-center justify-center">
+      <EnvBanner />
+      <div className="w-full max-w-sm flex-1 flex flex-col items-center justify-center p-4">
         {/* Logo / branding */}
         <div className="text-center mb-10">
           <p className="text-xs font-mono uppercase tracking-[0.25em] text-amber-500 mb-2">Wildpixels</p>

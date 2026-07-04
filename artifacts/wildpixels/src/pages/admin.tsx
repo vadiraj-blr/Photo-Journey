@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useListTrips } from "@workspace/api-client-react";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { EnvBanner } from "@/components/env-banner";
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -1749,14 +1750,19 @@ export default function Admin() {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen bg-[#0D0D0D] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#0D0D0D] flex flex-col items-center justify-center">
+        <EnvBanner />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D0D] text-white px-4 py-12">
+    <div className="min-h-screen bg-[#0D0D0D] text-white">
+      <EnvBanner />
+      <div className="px-4 py-12">
       <div className="max-w-4xl mx-auto">
         <div className="mb-10 flex items-start justify-between gap-4">
           <div>
@@ -1861,6 +1867,7 @@ export default function Admin() {
           onCreated={() => { refresh(); setAdding(false); }}
         />
       )}
+      </div>
     </div>
   );
 }
