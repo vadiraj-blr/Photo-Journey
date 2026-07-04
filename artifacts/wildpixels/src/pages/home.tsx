@@ -2,8 +2,46 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { useListTrips, useGetTripStats } from "@workspace/api-client-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import FeaturedTripSection from "../components/featured-trip-section";
+
+const MONTH_INDEX: Record<string, number> = {
+  january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+  july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+};
+
+type SortOption = "date-desc" | "date-asc" | "title-asc" | "title-desc";
+
+const SORT_OPTIONS: { value: SortOption; label: string }[] = [
+  { value: "date-desc", label: "Newest First" },
+  { value: "date-asc", label: "Oldest First" },
+  { value: "title-asc", label: "Title A–Z" },
+  { value: "title-desc", label: "Title Z–A" },
+];
+
+function tripDateValue(trip: { year: number; month: string }): number {
+  const monthIdx = MONTH_INDEX[trip.month?.toLowerCase()?.trim()] ?? 0;
+  return trip.year * 12 + monthIdx;
+}
+
+function sortTrips<T extends { title: string; year: number; month: string }>(
+  trips: T[],
+  sortBy: SortOption,
+): T[] {
+  const sorted = [...trips];
+  switch (sortBy) {
+    case "date-asc":
+      return sorted.sort((a, b) => tripDateValue(a) - tripDateValue(b));
+    case "date-desc":
+      return sorted.sort((a, b) => tripDateValue(b) - tripDateValue(a));
+    case "title-asc":
+      return sorted.sort((a, b) => a.title.localeCompare(b.title));
+    case "title-desc":
+      return sorted.sort((a, b) => b.title.localeCompare(a.title));
+    default:
+      return sorted;
+  }
+}
 
 interface LandingSettings {
   heroImageUrl: string;
@@ -51,10 +89,12 @@ export default function Home() {
   const { data: allTrips } = useListTrips();
   const { data: stats } = useGetTripStats();
   const { data: settings } = useLandingSettings();
+  const [sortBy, setSortBy] = useState<SortOption>("date-desc");
 
   const heroTagline = settings?.heroTagline || "Enter the Wild.";
   const limit = settings?.tripsOnHomepage ?? 0;
-  const displayedTrips = limit > 0 ? (allTrips ?? []).slice(0, limit) : (allTrips ?? []);
+  const sortedTrips = useMemo(() => sortTrips(allTrips ?? [], sortBy), [allTrips, sortBy]);
+  const displayedTrips = limit > 0 ? sortedTrips.slice(0, limit) : sortedTrips;
 
   const { photos: slideshowPhotos, index: slideshowIndex } = useHeroSlideshow(settings?.heroAlbumUrl);
 
@@ -144,7 +184,21 @@ export default function Home() {
       <FeaturedTripSection />
 
       {/* Grid Section */}
-      <section className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
+      <section id="trip-grid" className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
+        <div className="flex justify-end mb-10">
+          <label className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-stone-500">
+            Sort by
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="bg-transparent border border-stone-300 text-stone-800 text-[10px] font-mono uppercase tracking-widest px-3 py-2 focus:outline-none focus:border-amber-500 cursor-pointer"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </label>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
           {displayedTrips.map((trip, idx) => (
             <motion.div
