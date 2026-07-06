@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/wildpixels-countdown/"
+title = "Wildpixels – Launch Countdown"
+version = "1.0.0"
+id = "artifacts/wildpixels-countdown"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/wildpixels-countdown/" ]
+localPort = 26003
+
+[services.development]
+run = "pnpm --filter @workspace/wildpixels-countdown run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wildpixels-countdown", "run", "build" ]
+publicDir = "artifacts/wildpixels-countdown/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26003"
+BASE_PATH = "/wildpixels-countdown/"
