@@ -30,6 +30,60 @@ uri = "file://artifacts/wildpixels/public/images/texture-1.png"
 type = "image"
 title = "Abstract golden light nature"
 
+[[generated]]
+id = "D3_rhfSXM67epAPia54ah"
+uri = "file://public/tiger-eye.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "WsxEGuOwQPQHwDKZLvHt2"
+uri = "file://public/photographer-dawn.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "i0NKxKSTfAQOtXQAgF8j5"
+uri = "file://public/landscape-wide.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "c6EsCfQB-eg9HDl6TcrzN"
+uri = "file://public/photo-mosaic.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "fe57ZMakIp88-QvqUGN5x"
+uri = "file://public/journal-page.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "6ciByyM0Ux2PhJGD1iaRf"
+uri = "file://public/portrait-silhouette.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "TpWi_N5wtBlzkm3UEjgbZ"
+uri = "file://public/gear-flatlay.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "fEQBnyGk2hDggsYQC1zT4"
+uri = "file://public/leopard-eye.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "pF-gLQ2bnHaVKQIK1Nbt4"
+uri = "file://public/collage-hero.png"
+type = "image"
+title = "generated_image"
+
 [[outputs]]
 id = "3A-j6YWBkVOf93XcgBQ6j"
 uri = "file://artifacts/wildpixels-video/public/images/lion-dark.jpg"

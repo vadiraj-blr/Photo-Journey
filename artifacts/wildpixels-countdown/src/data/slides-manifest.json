@@ -1,1 +1,106 @@
-[]
+[
+{
+"id": "b7c1e2a0-0001-4000-8000-000000000001",
+"position": 1,
+"filepath": "src/pages/slides/Slide01Cover.tsx",
+"title": "Something Wild Is Coming",
+"description": "Teaser #1 — cover, dark tiger-eye close-up, minimal type",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0002-4000-8000-000000000002",
+"position": 2,
+"filepath": "src/pages/slides/Slide02Origin.tsx",
+"title": "Two Years. One Obsession.",
+"description": "Teaser #2 — origin story, photographer silhouette on jungle trail at dawn",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0003-4000-8000-000000000003",
+"position": 3,
+"filepath": "src/pages/slides/Slide03Scale.tsx",
+"title": "18 Places. Countless Mornings.",
+"description": "Teaser #3 — scale of the work, wide landscape shot",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0004-4000-8000-000000000004",
+"position": 4,
+"filepath": "src/pages/slides/Slide04Archive.tsx",
+"title": "1,195 Frames. One Site.",
+"description": "Teaser #4 — the photo archive being built, mosaic background",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0005-4000-8000-000000000005",
+"position": 5,
+"filepath": "src/pages/slides/Slide05TripStories.tsx",
+"title": "Every Trip Gets Its Story",
+"description": "Teaser #5 — trip narratives feature tease, journal motif",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0006-4000-8000-000000000006",
+"position": 6,
+"filepath": "src/pages/slides/Slide06Bio.tsx",
+"title": "Meet the Man Behind the Lens",
+"description": "Teaser #6 — Vadiraj bio tease, portrait silhouette",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0007-4000-8000-000000000007",
+"position": 7,
+"filepath": "src/pages/slides/Slide07TravelTips.tsx",
+"title": "Know Before You Go",
+"description": "Teaser #7 — travel tips feature, gear flat lay",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0008-4000-8000-000000000008",
+"position": 8,
+"filepath": "src/pages/slides/Slide08Community.tsx",
+"title": "Tell Us What You See",
+"description": "Teaser #8 — comments and reactions feature tease, leopard eye backdrop",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0009-4000-8000-000000000009",
+"position": 9,
+"filepath": "src/pages/slides/Slide09Gallery.tsx",
+"title": "A Gallery Worth Getting Lost In",
+"description": "Teaser #9 — visual-heavy montage slide, minimal text",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0010-4000-8000-000000000010",
+"position": 10,
+"filepath": "src/pages/slides/Slide10Countdown3.tsx",
+"title": "3 Days.",
+"description": "Teaser #10 — countdown marker, large numeral",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0011-4000-8000-000000000011",
+"position": 11,
+"filepath": "src/pages/slides/Slide11Countdown2.tsx",
+"title": "2 Days.",
+"description": "Teaser #11 — countdown marker, large numeral",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0012-4000-8000-000000000012",
+"position": 12,
+"filepath": "src/pages/slides/Slide12Countdown1.tsx",
+"title": "1 Day.",
+"description": "Teaser #12 — countdown marker, large numeral",
+"speakerNotes": ""
+},
+{
+"id": "b7c1e2a0-0013-4000-8000-000000000013",
+"position": 13,
+"filepath": "src/pages/slides/Slide13Launch.tsx",
+"title": "Wildpixels Is Live",
+"description": "Teaser #13 — launch slide, tiger-eye motif, full circle",
+"speakerNotes": ""
+}
+]
