@@ -4,7 +4,7 @@
 "position": 1,
 "filepath": "src/pages/slides/Slide01Cover.tsx",
 "title": "Something Wild Is Coming",
-"description": "Teaser #1 — cover, dark tiger-eye close-up, minimal type",
+"description": "Teaser #1 — cover, F2 tigress and cubs (Tadoba), minimal type",
 "speakerNotes": ""
 },
 {
@@ -12,7 +12,7 @@
 "position": 2,
 "filepath": "src/pages/slides/Slide02Origin.tsx",
 "title": "Two Years. One Obsession.",
-"description": "Teaser #2 — origin story, photographer silhouette on jungle trail at dawn",
+"description": "Teaser #2 — origin story, Kabini jungle at dawn",
 "speakerNotes": ""
 },
 {
@@ -20,7 +20,7 @@
 "position": 3,
 "filepath": "src/pages/slides/Slide03Scale.tsx",
 "title": "18 Places. Countless Mornings.",
-"description": "Teaser #3 — scale of the work, wide landscape shot",
+"description": "Teaser #3 — scale of the work, sloth bear at Daroji Bear Sanctuary near Hampi",
 "speakerNotes": ""
 },
 {
@@ -28,7 +28,7 @@
 "position": 4,
 "filepath": "src/pages/slides/Slide04Archive.tsx",
 "title": "1,195 Frames. One Site.",
-"description": "Teaser #4 — the photo archive being built, mosaic background",
+"description": "Teaser #4 — the photo archive being built, Kaziranga expedition backdrop",
 "speakerNotes": ""
 },
 {
@@ -36,7 +36,7 @@
 "position": 5,
 "filepath": "src/pages/slides/Slide05TripStories.tsx",
 "title": "Every Trip Gets Its Story",
-"description": "Teaser #5 — trip narratives feature tease, journal motif",
+"description": "Teaser #5 — trip narratives feature tease, Himalayan Monal backdrop",
 "speakerNotes": ""
 },
 {
@@ -44,7 +44,7 @@
 "position": 6,
 "filepath": "src/pages/slides/Slide06Bio.tsx",
 "title": "Meet the Man Behind the Lens",
-"description": "Teaser #6 — Vadiraj bio tease, portrait silhouette",
+"description": "Teaser #6 — Vadiraj bio tease, one-horned rhino (Kaziranga) backdrop",
 "speakerNotes": ""
 },
 {
@@ -52,7 +52,7 @@
 "position": 7,
 "filepath": "src/pages/slides/Slide07TravelTips.tsx",
 "title": "Know Before You Go",
-"description": "Teaser #7 — travel tips feature, gear flat lay",
+"description": "Teaser #7 — travel tips feature, Bharatpur birds backdrop",
 "speakerNotes": ""
 },
 {
@@ -60,7 +60,7 @@
 "position": 8,
 "filepath": "src/pages/slides/Slide08Community.tsx",
 "title": "Tell Us What You See",
-"description": "Teaser #8 — comments and reactions feature tease, leopard eye backdrop",
+"description": "Teaser #8 — comments and reactions feature tease, snow leopard backdrop",
 "speakerNotes": ""
 },
 {
@@ -68,7 +68,7 @@
 "position": 9,
 "filepath": "src/pages/slides/Slide09Gallery.tsx",
 "title": "A Gallery Worth Getting Lost In",
-"description": "Teaser #9 — visual-heavy montage slide, minimal text",
+"description": "Teaser #9 — visual-heavy slide, Gir lion backdrop, minimal text",
 "speakerNotes": ""
 },
 {
@@ -100,7 +100,7 @@
 "position": 13,
 "filepath": "src/pages/slides/Slide13Launch.tsx",
 "title": "Wildpixels Is Live",
-"description": "Teaser #13 — launch slide, tiger-eye motif, full circle",
+"description": "Teaser #13 — launch slide, F2 tigress and cubs (Tadoba), full circle",
 "speakerNotes": ""
 }
 ]

@@ -1,0 +1,2 @@
+- [Wildpixels real photo library](wildpixels-photo-library.md) — reuse existing lh3.googleusercontent.com URLs across decks instead of generating placeholder images.
+- [IG-safe slide layout](ig-safe-slide-layout.md) — how to make a fixed 16:9 slide deck safely croppable to Instagram square/portrait posts.
