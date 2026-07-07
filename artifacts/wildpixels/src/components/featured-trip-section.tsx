@@ -30,7 +30,7 @@ export default function FeaturedTripSection() {
         >
           <div className="h-px w-8 bg-amber-500" />
           <span className="text-[10px] font-mono uppercase tracking-[0.28em] text-amber-500">
-            Wild Through My Lens
+            Fresh from the Field
           </span>
         </motion.div>
 

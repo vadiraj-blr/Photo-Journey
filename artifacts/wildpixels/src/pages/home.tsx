@@ -185,7 +185,11 @@ export default function Home() {
 
       {/* Grid Section */}
       <section id="trip-grid" className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
-        <div className="flex justify-end mb-10">
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <h2 className="text-3xl md:text-4xl font-serif text-stone-900 leading-tight">Trip Reports</h2>
+            <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-stone-400 mt-2">Field journals from India's wild places</p>
+          </div>
           <label className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-stone-500">
             Sort by
             <select
