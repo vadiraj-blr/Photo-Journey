@@ -1,2 +1,4 @@
 - [Wildpixels real photo library](wildpixels-photo-library.md) — reuse existing lh3.googleusercontent.com URLs across decks instead of generating placeholder images.
 - [IG-safe slide layout](ig-safe-slide-layout.md) — how to make a fixed 16:9 slide deck safely croppable to Instagram square/portrait posts.
+- [Mobile app API pattern](mobile-api-pattern.md) — Expo app uses direct fetch+useQuery (not generated hooks) because TripDetail has extra fields (galleryPhotoUrls, travelTips) not in OpenAPI spec.
+- [Mobile dark theme setup](mobile-dark-theme.md) — colors.ts dark palette lives under the `light` key only; app.json userInterfaceStyle:dark ensures always-dark. No separate `dark` key needed.

@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/wildpixels-mobile/"
+title = "Wildpixels Mobile"
+version = "1.0.0"
+id = "artifacts/wildpixels-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/wildpixels-mobile/" ]
+localPort = 18869
+
+[services.development]
+run = "pnpm --filter @workspace/wildpixels-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/wildpixels-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/wildpixels-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "18869"
+BASE_PATH = "/wildpixels-mobile/"

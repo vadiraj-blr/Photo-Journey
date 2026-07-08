@@ -84,6 +84,12 @@ uri = "file://public/collage-hero.png"
 type = "image"
 title = "generated_image"
 
+[[generated]]
+id = "j_5-2rAQl9v_oc2EvuQJM"
+uri = "file://artifacts/wildpixels-mobile/assets/images/icon.png"
+type = "image"
+title = "wildpixels-mobile-icon"
+
 [[outputs]]
 id = "3A-j6YWBkVOf93XcgBQ6j"
 uri = "file://artifacts/wildpixels-video/public/images/lion-dark.jpg"
