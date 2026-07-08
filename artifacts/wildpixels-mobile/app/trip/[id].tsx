@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
+import * as ScreenOrientation from "expo-screen-orientation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -15,6 +16,7 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -73,7 +75,22 @@ function LightboxModal({
 }) {
   const [index, setIndex] = useState(startIndex);
   const insets = useSafeAreaInsets();
+  const { width: screenW, height: screenH } = useWindowDimensions();
+  const isLandscape = screenW > screenH;
   const photo = photos[index];
+
+  useEffect(() => {
+    if (Platform.OS !== "web") {
+      ScreenOrientation.unlockAsync().catch(() => {});
+    }
+    return () => {
+      if (Platform.OS !== "web") {
+        ScreenOrientation.lockAsync(
+          ScreenOrientation.OrientationLock.PORTRAIT_UP
+        ).catch(() => {});
+      }
+    };
+  }, []);
 
   return (
     <Modal
@@ -82,26 +99,43 @@ function LightboxModal({
       animationType="fade"
       onRequestClose={onClose}
       statusBarTranslucent
+      supportedOrientations={["portrait", "landscape"]}
     >
-      <View style={lb.overlay}>
+      <View style={[lb.overlay, { width: screenW, height: screenH }]}>
         <Pressable
           onPress={onClose}
-          style={[lb.closeBtn, { top: (Platform.OS === "web" ? 67 : insets.top) + 8 }]}
+          style={[
+            lb.closeBtn,
+            isLandscape
+              ? { top: 12, right: (insets.right || 0) + 12 }
+              : { top: (Platform.OS === "web" ? 67 : insets.top) + 8 },
+          ]}
         >
           <Feather name="x" size={22} color="#EDE8DC" />
         </Pressable>
 
         <Image
           source={{ uri: photo.url }}
-          style={lb.image}
+          style={{ width: screenW, height: screenH }}
           resizeMode="contain"
         />
 
-        {photo.caption ? (
+        {photo.caption && !isLandscape ? (
           <Text style={lb.caption}>{photo.caption}</Text>
         ) : null}
 
-        <View style={[lb.navRow, { bottom: insets.bottom + 24 }]}>
+        <View
+          style={[
+            lb.navRow,
+            isLandscape
+              ? {
+                  bottom: (insets.bottom || 0) + 12,
+                  left: (insets.left || 0) + 16,
+                  right: (insets.right || 0) + 16,
+                }
+              : { bottom: insets.bottom + 24 },
+          ]}
+        >
           <Pressable
             onPress={() => setIndex((i) => Math.max(0, i - 1))}
             style={[lb.navBtn, index === 0 && lb.navBtnDisabled]}
