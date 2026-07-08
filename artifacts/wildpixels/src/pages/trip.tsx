@@ -334,6 +334,8 @@ function Lightbox({
 }) {
   const [current, setCurrent] = useState(startIndex);
   const [dir, setDir] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [speed, setSpeed] = useState<"slow" | "medium" | "fast">("medium");
 
   const prev = useCallback(() => {
     setDir(-1);
@@ -350,10 +352,19 @@ function Lightbox({
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowLeft") prev();
       if (e.key === "ArrowRight") next();
+      if (e.key === " ") { e.preventDefault(); setIsPlaying((p) => !p); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose, prev, next]);
+
+  // Auto-advance slideshow
+  const SPEED_MS: Record<typeof speed, number> = { slow: 5000, medium: 3000, fast: 1500 };
+  useEffect(() => {
+    if (!isPlaying || photos.length <= 1) return;
+    const interval = setInterval(next, SPEED_MS[speed]);
+    return () => clearInterval(interval);
+  }, [isPlaying, speed, next, photos.length]);
 
   // Prevent body scroll while open
   useEffect(() => {
@@ -397,6 +408,45 @@ function Lightbox({
         className="flex-1 flex items-center justify-center relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Slideshow controls — top center of image */}
+        {photos.length > 1 && (
+          <div
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-black/60 backdrop-blur-sm border border-white/15 rounded-full px-2 py-1.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setIsPlaying((p) => !p)}
+              className="flex items-center gap-1.5 pl-2.5 pr-3 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest text-white hover:bg-white/10 transition-colors"
+              aria-label={isPlaying ? "Pause slideshow" : "Play slideshow"}
+            >
+              {isPlaying ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="6" y="5" width="4" height="14" rx="1" />
+                  <rect x="14" y="5" width="4" height="14" rx="1" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              )}
+              {isPlaying ? "Pause" : "Slideshow"}
+            </button>
+            <div className="w-px h-4 bg-white/15" />
+            {(["slow", "medium", "fast"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setSpeed(s)}
+                className={`px-2.5 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest transition-colors ${
+                  speed === s ? "bg-amber-500 text-black" : "text-white/50 hover:text-white hover:bg-white/10"
+                }`}
+                aria-label={`${s} speed`}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Prev button */}
         <button
           onClick={prev}
