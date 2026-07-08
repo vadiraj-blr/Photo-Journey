@@ -1,9 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
+  Animated,
   Dimensions,
   Image,
   Platform,
@@ -13,6 +13,7 @@ import {
   Text,
   View,
 } from "react-native";
+import Svg, { Circle, Line } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
@@ -27,17 +28,13 @@ interface Settings {
   heroTagline?: string;
   aboutBio?: string;
   aboutPortraitUrl?: string;
+  highlightPhotoUrls?: string[];
 }
 
 interface Stats {
   tripCount: number;
   countryCount: number;
   photoCount: number;
-}
-
-interface GalleryPhoto {
-  url: string;
-  caption?: string | null;
 }
 
 interface Trip {
@@ -51,7 +48,51 @@ interface Trip {
   storySummary?: string | null;
   coverImageUrl: string;
   tags: string[];
-  galleryPhotoUrls?: GalleryPhoto[];
+}
+
+// Camera-lens SVG — matches the website nav logo exactly
+function CameraLogo({ color = "#EDE8DC", size = 36 }: { color?: string; size?: number }) {
+  const s = size;
+  const cx = s / 2;
+  const r = cx - cx * (1 / 28);
+  const sw = (1.2 / 28) * s;
+  const innerR = (4.5 / 28) * s;
+  const tick = (4.5 / 28) * s;
+  return (
+    <Svg width={s} height={s} viewBox={`0 0 ${s} ${s}`}>
+      <Circle cx={cx} cy={cx} r={r} stroke={color} strokeWidth={sw} />
+      <Circle cx={cx} cy={cx} r={innerR} fill={color} />
+      <Line x1={cx} y1={sw / 2} x2={cx} y2={tick} stroke={color} strokeWidth={sw} strokeLinecap="round" />
+      <Line x1={cx} y1={s - tick} x2={cx} y2={s - sw / 2} stroke={color} strokeWidth={sw} strokeLinecap="round" />
+      <Line x1={sw / 2} y1={cx} x2={tick} y2={cx} stroke={color} strokeWidth={sw} strokeLinecap="round" />
+      <Line x1={s - tick} y1={cx} x2={s - sw / 2} y2={cx} stroke={color} strokeWidth={sw} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+function HeroCycler({ photos }: { photos: string[] }) {
+  const [current, setCurrent] = useState(0);
+  const opacity = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (photos.length < 2) return;
+    const interval = setInterval(() => {
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 0, duration: 600, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ]).start();
+      setCurrent((i) => (i + 1) % photos.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [photos.length, opacity]);
+
+  if (!photos.length) return null;
+
+  return (
+    <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
+      <Image source={{ uri: photos[current] }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+    </Animated.View>
+  );
 }
 
 export default function HomeScreen() {
@@ -69,38 +110,24 @@ export default function HomeScreen() {
     queryFn: () => fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
   });
 
-  const { data: featured, isLoading: featuredLoading } = useQuery<Trip[]>({
+  const { data: featured } = useQuery<Trip[]>({
     queryKey: ["featured"],
     queryFn: () => fetch(`${BASE}/api/trips/featured`).then((r) => r.json()),
   });
 
-  const { data: allTrips } = useQuery<Trip[]>({
-    queryKey: ["trips"],
-    queryFn: () => fetch(`${BASE}/api/trips`).then((r) => r.json()),
-  });
+  const heroPhotos: string[] = Array.isArray(settings?.highlightPhotoUrls)
+    ? settings!.highlightPhotoUrls.slice(0, 10)
+    : [];
 
   const featuredTrip = featured?.[0] ?? null;
-
-  const excerpt = featuredTrip
-    ? (
-        featuredTrip.storySummary?.trim() ||
-        featuredTrip.story?.slice(0, 200)?.trim()
-      )?.replace(/\s+\S*$/, "") + "…"
+  const rawExcerpt =
+    featuredTrip?.storySummary?.trim() ||
+    featuredTrip?.story?.slice(0, 220)?.trim();
+  const excerpt = rawExcerpt
+    ? rawExcerpt.length > 220
+      ? rawExcerpt.slice(0, 217).replace(/\s+\S*$/, "") + "…"
+      : rawExcerpt
     : null;
-
-  // Collect admin-selected photos (galleryPhotoUrls only, no Google Photos fallback)
-  const adminPhotos: { url: string; tripId: number }[] = [];
-  if (allTrips) {
-    for (const trip of allTrips) {
-      if (Array.isArray(trip.galleryPhotoUrls) && trip.galleryPhotoUrls.length > 0) {
-        for (const photo of trip.galleryPhotoUrls) {
-          adminPhotos.push({ url: photo.url, tripId: trip.id });
-        }
-      }
-    }
-  }
-  // Take up to 9 photos, sampled across trips
-  const displayPhotos = adminPhotos.slice(0, 9);
 
   return (
     <ScrollView
@@ -108,58 +135,22 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Featured trip hero */}
+      {/* ── Hero with photo cycler ── */}
       <View style={[styles.hero, { height: SH * 0.72 }]}>
-        {featuredLoading || !featuredTrip ? (
-          <View style={[styles.heroPlaceholder, { backgroundColor: colors.card }]}>
-            {featuredLoading && <ActivityIndicator color={colors.primary} />}
-          </View>
-        ) : (
-          <Image
-            source={{ uri: featuredTrip.coverImageUrl }}
-            style={StyleSheet.absoluteFill}
-            resizeMode="cover"
-          />
-        )}
-
-        {/* Dark gradient overlay */}
+        <HeroCycler photos={heroPhotos} />
         <View style={styles.heroGradient} />
 
-        {/* Brand mark at top */}
-        <View style={[styles.brandBlock, { paddingTop: topPad + 16 }]}>
-          <Text style={styles.brandName}>WILDPIXELS</Text>
+        {/* Brand mark — camera SVG + Wildpixels wordmark */}
+        <View style={[styles.brandBlock, { paddingTop: topPad + 20 }]}>
+          <View style={styles.brandRow}>
+            <CameraLogo color="#EDE8DC" size={32} />
+            <Text style={styles.brandName}>Wildpixels</Text>
+          </View>
           <View style={[styles.brandLine, { backgroundColor: colors.primary }]} />
           <Text style={styles.tagline}>
             {settings?.heroTagline ?? "Wild through my lens"}
           </Text>
         </View>
-
-        {/* Featured trip info at bottom */}
-        {featuredTrip && (
-          <View style={styles.featuredOverlay}>
-            <View style={styles.featuredBadgeRow}>
-              <View style={[styles.featuredDot, { backgroundColor: colors.primary }]} />
-              <Text style={[styles.featuredBadge, { color: colors.primary }]}>
-                FRESH FROM THE FIELD · {featuredTrip.month} {featuredTrip.year}
-              </Text>
-            </View>
-            <Text style={styles.featuredTitle} numberOfLines={2}>
-              {featuredTrip.title}
-            </Text>
-            <Text style={styles.featuredLocation}>
-              {featuredTrip.location}, {featuredTrip.country}
-            </Text>
-            <Pressable
-              onPress={() => router.push(`/trip/${featuredTrip.id}` as never)}
-              style={[styles.featuredBtn, { borderColor: colors.primary }]}
-            >
-              <Text style={[styles.featuredBtnText, { color: colors.primary }]}>
-                READ THE STORY
-              </Text>
-              <Feather name="arrow-right" size={13} color={colors.primary} />
-            </Pressable>
-          </View>
-        )}
 
         {/* Scroll hint */}
         <View style={styles.scrollHint}>
@@ -167,110 +158,122 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Stats strip */}
+      {/* ── Stats strip ── */}
       {stats && (
         <View style={[styles.statsStrip, { borderColor: colors.border }]}>
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{stats.tripCount}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
-              EXPEDITIONS
-            </Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>EXPEDITIONS</Text>
           </View>
           <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{stats.countryCount}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
-              COUNTRIES
-            </Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>COUNTRIES</Text>
           </View>
           <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{stats.photoCount}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
-              PHOTOS
-            </Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>PHOTOS</Text>
           </View>
         </View>
       )}
 
-      {/* About section */}
+      {/* ── About section ── */}
       <View style={styles.aboutSection}>
         <View style={styles.aboutLeft}>
           {settings?.aboutPortraitUrl ? (
-            <Image
-              source={{ uri: settings.aboutPortraitUrl }}
-              style={styles.portrait}
-              resizeMode="cover"
-            />
+            <Image source={{ uri: settings.aboutPortraitUrl }} style={styles.portrait} resizeMode="cover" />
           ) : (
-            <View
-              style={[
-                styles.portrait,
-                styles.portraitPlaceholder,
-                { backgroundColor: colors.secondary },
-              ]}
-            >
+            <View style={[styles.portrait, styles.portraitPlaceholder, { backgroundColor: colors.secondary }]}>
               <Feather name="user" size={36} color={colors.mutedForeground} />
             </View>
           )}
-          <View
-            style={[styles.portraitDot, { backgroundColor: colors.primary }]}
-          />
+          <View style={[styles.portraitDot, { backgroundColor: colors.primary }]} />
         </View>
         <View style={styles.aboutRight}>
-          <Text style={[styles.aboutName, { color: colors.foreground }]}>
-            Vadiraj BK
-          </Text>
-          <Text style={[styles.aboutRole, { color: colors.mutedForeground }]}>
-            India Wildlife Photographer
-          </Text>
+          <Text style={[styles.aboutName, { color: colors.foreground }]}>Vadiraj BK</Text>
+          <Text style={[styles.aboutRole, { color: colors.mutedForeground }]}>India Wildlife Photographer</Text>
           {settings?.aboutBio ? (
-            <Text
-              style={[styles.aboutBio, { color: colors.foreground }]}
-              numberOfLines={5}
-            >
+            <Text style={[styles.aboutBio, { color: colors.foreground }]} numberOfLines={5}>
               {settings.aboutBio}
             </Text>
           ) : null}
         </View>
       </View>
 
-      {/* Admin-selected trip photos */}
-      {displayPhotos.length > 0 && (
-        <View style={styles.gallerySection}>
-          <View style={styles.gallerySectionHeader}>
-            <Text style={[styles.gallerySectionLabel, { color: colors.mutedForeground }]}>
-              SELECTED HIGHLIGHTS
+      {/* ── Featured trip card ── */}
+      {featuredTrip && (
+        <View style={[styles.featuredSection, { borderTopColor: colors.border }]}>
+          {/* Section label */}
+          <View style={styles.featuredLabelRow}>
+            <View style={[styles.featuredLabelLine, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.featuredLabelText, { color: colors.primary }]}>
+              FRESH FROM THE FIELD
             </Text>
-            <View style={[styles.gallerySectionLine, { backgroundColor: colors.border }]} />
           </View>
-          <View style={styles.photoGrid}>
-            {displayPhotos.map((photo, i) => (
-              <Pressable
-                key={i}
-                onPress={() => router.push(`/trip/${photo.tripId}` as never)}
-                style={styles.photoCell}
-              >
-                <Image
-                  source={{ uri: photo.url }}
-                  style={styles.photoCellImage}
-                  resizeMode="cover"
-                />
-              </Pressable>
-            ))}
+
+          {/* Cover image */}
+          <Pressable
+            onPress={() => router.push(`/trip/${featuredTrip.id}` as never)}
+            style={styles.featuredImgWrap}
+          >
+            <Image
+              source={{ uri: featuredTrip.coverImageUrl }}
+              style={styles.featuredImg}
+              resizeMode="cover"
+            />
+            {/* Location badge */}
+            <View style={[styles.featuredLocationBadge, { backgroundColor: "rgba(8,8,8,0.82)" }]}>
+              <Text style={[styles.featuredLocationText, { color: colors.primary }]}>
+                {featuredTrip.location}, {featuredTrip.country}
+              </Text>
+            </View>
+          </Pressable>
+
+          {/* Text content */}
+          <View style={styles.featuredBody}>
+            <Text style={[styles.featuredMeta, { color: colors.mutedForeground }]}>
+              Featured Expedition · {featuredTrip.month} {featuredTrip.year}
+            </Text>
+            <Text style={[styles.featuredTitle, { color: colors.foreground }]}>
+              {featuredTrip.title}
+            </Text>
+            {excerpt ? (
+              <Text style={[styles.featuredExcerpt, { color: colors.mutedForeground }]}>
+                {excerpt}
+              </Text>
+            ) : null}
+            {(featuredTrip.tags?.length ?? 0) > 0 && (
+              <View style={styles.featuredTags}>
+                {featuredTrip.tags.slice(0, 3).map((tag) => (
+                  <View key={tag} style={[styles.featuredTag, { borderColor: colors.border }]}>
+                    <Text style={[styles.featuredTagText, { color: colors.mutedForeground }]}>
+                      {tag}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+            <Pressable
+              onPress={() => router.push(`/trip/${featuredTrip.id}` as never)}
+              style={styles.readStoryBtn}
+            >
+              <Text style={[styles.readStoryText, { color: colors.primary }]}>
+                Read the Story
+              </Text>
+              <Feather name="arrow-right" size={14} color={colors.primary} />
+            </Pressable>
           </View>
         </View>
       )}
 
-      {/* CTA */}
+      {/* ── CTA ── */}
       <View style={styles.ctaBlock}>
         <Pressable
           onPress={() => router.push("/(tabs)/portfolio" as never)}
           style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
         >
-          <Text
-            style={[styles.ctaBtnText, { color: colors.primaryForeground }]}
-          >
+          <Text style={[styles.ctaBtnText, { color: colors.primaryForeground }]}>
             VIEW ALL TRIPS
           </Text>
           <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
@@ -280,111 +283,49 @@ export default function HomeScreen() {
   );
 }
 
-const CELL = (SW - 4) / 3;
-
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
+  // Hero
   hero: { width: SW, position: "relative", overflow: "hidden" },
-  heroPlaceholder: {
-    ...StyleSheet.absoluteFillObject,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  heroGradient: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(8,8,8,0.45)",
-  },
+  heroGradient: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(8,8,8,0.42)" },
   brandBlock: {
     position: "absolute",
     left: 0,
     right: 0,
     alignItems: "center",
-    gap: 12,
+    gap: 14,
     paddingHorizontal: 24,
   },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   brandName: {
     color: "#EDE8DC",
-    fontSize: 14,
+    fontSize: 30,
     fontWeight: "700" as const,
-    letterSpacing: 9,
     fontFamily: "Inter_700Bold",
+    letterSpacing: 0.5,
+    fontStyle: "italic",
   },
   brandLine: { width: 40, height: 1 },
   tagline: {
     color: "rgba(237,232,220,0.85)",
-    fontSize: 22,
+    fontSize: 20,
     fontStyle: "italic",
     textAlign: "center",
-    lineHeight: 30,
+    lineHeight: 28,
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
   },
-
-  featuredOverlay: {
-    position: "absolute",
-    bottom: 44,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-  },
-  featuredBadgeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
-  },
-  featuredDot: { width: 5, height: 5, borderRadius: 3 },
-  featuredBadge: {
-    fontSize: 9,
-    letterSpacing: 2.5,
-    fontWeight: "600" as const,
-    fontFamily: "Inter_600SemiBold",
-  },
-  featuredTitle: {
-    color: "#EDE8DC",
-    fontSize: 28,
-    fontWeight: "700" as const,
-    fontFamily: "Inter_700Bold",
-    lineHeight: 34,
-    marginBottom: 6,
-  },
-  featuredLocation: {
-    color: "rgba(237,232,220,0.6)",
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
-    letterSpacing: 0.3,
-    marginBottom: 16,
-  },
-  featuredBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  featuredBtnText: {
-    fontSize: 10,
-    letterSpacing: 2.5,
-    fontWeight: "600" as const,
-    fontFamily: "Inter_600SemiBold",
-  },
-
   scrollHint: {
     position: "absolute",
-    bottom: 16,
+    bottom: 20,
     left: 0,
     right: 0,
     alignItems: "center",
   },
 
-  statsStrip: {
-    flexDirection: "row",
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-  },
+  // Stats
+  statsStrip: { flexDirection: "row", borderTopWidth: 1, borderBottomWidth: 1 },
   statItem: { flex: 1, alignItems: "center", paddingVertical: 18 },
   statNum: {
     color: "#F0A015",
@@ -393,86 +334,62 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
     marginBottom: 4,
   },
-  statLbl: {
-    fontSize: 8,
-    letterSpacing: 2.5,
-    fontWeight: "600" as const,
-    fontFamily: "Inter_600SemiBold",
-  },
+  statLbl: { fontSize: 8, letterSpacing: 2.5, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
   statDiv: { width: 1 },
 
-  aboutSection: {
-    flexDirection: "row",
-    padding: 24,
-    gap: 20,
-  },
+  // About
+  aboutSection: { flexDirection: "row", padding: 24, gap: 20 },
   aboutLeft: { position: "relative", alignSelf: "flex-start" },
   portrait: { width: 88, height: 88, borderRadius: 44 },
   portraitPlaceholder: { alignItems: "center", justifyContent: "center" },
   portraitDot: {
-    position: "absolute",
-    bottom: 4,
-    right: 4,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    borderWidth: 2,
-    borderColor: "#080808",
+    position: "absolute", bottom: 4, right: 4,
+    width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: "#080808",
   },
   aboutRight: { flex: 1 },
-  aboutName: {
-    fontSize: 17,
-    fontWeight: "600" as const,
-    fontFamily: "Inter_600SemiBold",
-    marginBottom: 3,
+  aboutName: { fontSize: 17, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold", marginBottom: 3 },
+  aboutRole: { fontSize: 11, letterSpacing: 0.3, fontFamily: "Inter_400Regular", marginBottom: 10 },
+  aboutBio: { fontSize: 13, lineHeight: 20, fontFamily: "Inter_400Regular" },
+
+  // Featured trip
+  featuredSection: { borderTopWidth: 1, paddingTop: 24, paddingBottom: 8 },
+  featuredLabelRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, marginBottom: 16 },
+  featuredLabelLine: { width: 24, height: 1.5 },
+  featuredLabelText: { fontSize: 9, letterSpacing: 3.5, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
+  featuredImgWrap: {
+    marginHorizontal: 16,
+    aspectRatio: 4 / 3,
+    overflow: "hidden",
+    position: "relative",
+    marginBottom: 16,
   },
-  aboutRole: {
-    fontSize: 11,
-    letterSpacing: 0.3,
-    fontFamily: "Inter_400Regular",
+  featuredImg: { width: "100%", height: "100%" },
+  featuredLocationBadge: {
+    position: "absolute",
+    bottom: 12,
+    left: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  featuredLocationText: { fontSize: 9, letterSpacing: 2, fontFamily: "Inter_600SemiBold", fontWeight: "600" as const },
+  featuredBody: { paddingHorizontal: 16 },
+  featuredMeta: { fontSize: 10, letterSpacing: 2, fontFamily: "Inter_400Regular", marginBottom: 8 },
+  featuredTitle: {
+    fontSize: 26,
+    fontWeight: "700" as const,
+    fontFamily: "Inter_700Bold",
+    lineHeight: 32,
     marginBottom: 10,
   },
-  aboutBio: {
-    fontSize: 13,
-    lineHeight: 20,
-    fontFamily: "Inter_400Regular",
-  },
+  featuredExcerpt: { fontSize: 13, lineHeight: 21, fontFamily: "Inter_400Regular", marginBottom: 14 },
+  featuredTags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 16 },
+  featuredTag: { borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3 },
+  featuredTagText: { fontSize: 9, letterSpacing: 1.5, fontFamily: "Inter_600SemiBold", fontWeight: "600" as const },
+  readStoryBtn: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 16 },
+  readStoryText: { fontSize: 13, fontFamily: "Inter_600SemiBold", fontWeight: "600" as const, letterSpacing: 0.3 },
 
-  gallerySection: { marginBottom: 24 },
-  gallerySectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    gap: 12,
-    marginBottom: 12,
-  },
-  gallerySectionLabel: {
-    fontSize: 9,
-    letterSpacing: 3,
-    fontWeight: "600" as const,
-    fontFamily: "Inter_600SemiBold",
-  },
-  gallerySectionLine: { flex: 1, height: 1 },
-  photoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 2,
-  },
-  photoCell: { width: CELL, height: CELL, overflow: "hidden" },
-  photoCellImage: { width: "100%", height: "100%" },
-
-  ctaBlock: { paddingHorizontal: 24, marginBottom: 16 },
-  ctaBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    gap: 10,
-  },
-  ctaBtnText: {
-    fontSize: 12,
-    fontWeight: "700" as const,
-    letterSpacing: 3,
-    fontFamily: "Inter_700Bold",
-  },
+  // CTA
+  ctaBlock: { paddingHorizontal: 24, marginTop: 8, marginBottom: 16 },
+  ctaBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 16, gap: 10 },
+  ctaBtnText: { fontSize: 12, fontWeight: "700" as const, letterSpacing: 3, fontFamily: "Inter_700Bold" },
 });
