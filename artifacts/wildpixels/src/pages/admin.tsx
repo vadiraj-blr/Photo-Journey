@@ -1710,6 +1710,187 @@ function ContactSettingsPanel() {
   );
 }
 
+// ── Dashboard ────────────────────────────────────────────────────────────────
+
+interface DashboardData {
+  totalTrips: number;
+  totalPhotos: number;
+  totalCountries: number;
+  totalSubscribers: number;
+  newSubscribers30d: number;
+  totalComments: number;
+  totalLikes: number;
+  totalPageViews: number;
+  recentComments: { id: number; name: string; body: string; created_at: string; trip_id: number; trip_title: string }[];
+  perTripEngagement: { id: number; title: string; location: string; month: string; year: number; likes: number; dislikes: number; comments: number; engagement: number }[];
+  pageViewStats: { trip_id: number; trip_title: string; view_count: string; avg_seconds: string }[];
+}
+
+function formatSeconds(s: number): string {
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  const rem = s % 60;
+  return rem > 0 ? `${m}m ${rem}s` : `${m}m`;
+}
+
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
+  return (
+    <div className="bg-white/4 border border-white/8 rounded-xl px-5 py-4">
+      <p className="text-[10px] font-mono uppercase tracking-widest text-white/35 mb-1">{label}</p>
+      <p className="text-2xl font-serif font-bold text-white">{value}</p>
+      {sub && <p className="text-xs text-white/30 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function DashboardPanel() {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const { data, isLoading, isError, refetch } = useQuery<DashboardData>({
+    queryKey: ["admin-dashboard"],
+    queryFn: () =>
+      fetch(`${base}/api/admin/dashboard`, { credentials: "include" }).then((r) => {
+        if (!r.ok) throw new Error("Failed to load dashboard");
+        return r.json();
+      }),
+    staleTime: 60_000,
+  });
+
+  return (
+    <div className="mb-16">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-amber-500/70 mb-1">Overview</p>
+          <h2 className="text-xl font-serif font-bold text-white">Dashboard</h2>
+        </div>
+        <button
+          onClick={() => refetch()}
+          className="text-[11px] font-mono uppercase tracking-widest text-white/30 hover:text-white/60 transition-colors px-3 py-1.5 rounded-lg border border-white/8 hover:border-white/20"
+        >
+          Refresh
+        </button>
+      </div>
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-16">
+          <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+        </div>
+      )}
+
+      {isError && (
+        <div className="text-sm text-white/40 py-8 text-center">Could not load dashboard data.</div>
+      )}
+
+      {data && (
+        <>
+          {/* KPI Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+            <StatCard label="Subscribers" value={data.totalSubscribers} sub={data.newSubscribers30d > 0 ? `+${data.newSubscribers30d} this month` : undefined} />
+            <StatCard label="Total Likes" value={data.totalLikes} />
+            <StatCard label="Comments" value={data.totalComments} />
+            <StatCard label="Trip Reports" value={data.totalTrips} />
+            <StatCard label="Photos" value={data.totalPhotos.toLocaleString()} />
+            <StatCard label="Page Views" value={data.totalPageViews.toLocaleString()} />
+          </div>
+
+          {/* Engagement table */}
+          <div className="mb-8">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-white/35 mb-3">Engagement by Trip</p>
+            <div className="rounded-xl border border-white/8 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/8 bg-white/3">
+                    <th className="text-left px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Trip</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Likes</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Comments</th>
+                    <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.perTripEngagement.map((trip, i) => (
+                    <tr key={trip.id} className={`border-b border-white/4 last:border-0 ${i === 0 ? "bg-amber-500/5" : ""}`}>
+                      <td className="px-4 py-3">
+                        <span className="text-white/80 font-medium">{trip.title}</span>
+                        <span className="text-white/30 text-xs ml-2">{trip.location} · {trip.year}</span>
+                      </td>
+                      <td className="px-4 py-3 text-right text-white/60">{trip.likes}</td>
+                      <td className="px-4 py-3 text-right text-white/60">{trip.comments}</td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full ${trip.engagement > 0 ? "text-amber-400 bg-amber-500/10" : "text-white/20"}`}>
+                          {trip.engagement}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {data.perTripEngagement.length === 0 && (
+                    <tr><td colSpan={4} className="px-4 py-6 text-center text-white/25 text-xs">No engagement data yet</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Time on page + Recent comments side by side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Time on page */}
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/35 mb-3">Avg. Time on Trip Page</p>
+              <div className="rounded-xl border border-white/8 overflow-hidden">
+                {data.pageViewStats.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-white/25 text-xs">No page view data yet — visitors to trip reports will appear here.</p>
+                ) : (
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/8 bg-white/3">
+                        <th className="text-left px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Trip</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Views</th>
+                        <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Avg Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.pageViewStats.map((row) => (
+                        <tr key={row.trip_id} className="border-b border-white/4 last:border-0">
+                          <td className="px-4 py-2.5 text-white/70 truncate max-w-[160px]">{row.trip_title ?? "Unknown"}</td>
+                          <td className="px-4 py-2.5 text-right text-white/45 text-xs">{Number(row.view_count)}</td>
+                          <td className="px-4 py-2.5 text-right">
+                            <span className="text-xs font-mono text-amber-400/80">{formatSeconds(Number(row.avg_seconds))}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+
+            {/* Recent comments */}
+            <div>
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/35 mb-3">Recent Comments</p>
+              <div className="rounded-xl border border-white/8 overflow-hidden divide-y divide-white/4">
+                {data.recentComments.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-white/25 text-xs">No comments yet.</p>
+                ) : (
+                  data.recentComments.map((c) => (
+                    <div key={c.id} className="px-4 py-3">
+                      <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <span className="text-xs font-semibold text-white/70">{c.name}</span>
+                        <span className="text-[10px] font-mono text-white/25 flex-shrink-0">{c.trip_title}</span>
+                      </div>
+                      <p className="text-xs text-white/40 leading-relaxed line-clamp-2">{c.body}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Divider */}
+      <div className="mt-12 border-t border-white/6" />
+    </div>
+  );
+}
+
 export default function Admin() {
   const { data: trips, isLoading } = useListTrips();
   const queryClient = useQueryClient();
@@ -1779,6 +1960,9 @@ export default function Admin() {
             Sign out
           </button>
         </div>
+
+        {/* Dashboard */}
+        <DashboardPanel />
 
         {/* Landing Page Settings */}
         <LandingSettingsPanel trips={typedTrips} />

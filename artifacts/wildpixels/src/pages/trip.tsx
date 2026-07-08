@@ -528,11 +528,39 @@ export default function Trip() {
   const tripId = Number(id);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const queryClient = useQueryClient();
+  const entryTimeRef = useRef<number>(Date.now());
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   // Always start at the top of the page when entering a trip
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [tripId]);
+
+  // Track time spent on this trip page — send beacon on leave
+  useEffect(() => {
+    if (!tripId) return;
+    entryTimeRef.current = Date.now();
+
+    const send = () => {
+      const seconds = Math.round((Date.now() - entryTimeRef.current) / 1000);
+      if (seconds < 2) return; // ignore accidental bounces
+      const payload = JSON.stringify({ tripId, path: window.location.pathname, seconds });
+      const url = `${base}/api/analytics/pageview`;
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url, new Blob([payload], { type: "application/json" }));
+      } else {
+        fetch(url, { method: "POST", body: payload, headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
+      }
+    };
+
+    window.addEventListener("pagehide", send);
+    window.addEventListener("beforeunload", send);
+    return () => {
+      send();
+      window.removeEventListener("pagehide", send);
+      window.removeEventListener("beforeunload", send);
+    };
+  }, [tripId, base]);
 
   // Use already-cached list data as instant placeholder so the hero shows
   // immediately without any spinner when navigating from the trip grid.

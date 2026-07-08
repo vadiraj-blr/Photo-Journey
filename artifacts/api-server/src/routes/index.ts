@@ -9,6 +9,8 @@ import articlesRouter from "./articles";
 import subscribeRouter from "./subscribe";
 import authRouter from "./auth";
 import slidesRouter from "./slides";
+import analyticsRouter from "./analytics";
+import dashboardRouter from "./dashboard";
 import { requireAuth } from "../middlewares/requireAuth";
 
 const router: IRouter = Router();
@@ -39,5 +41,7 @@ router.use("/subscribe", subscribeRouter);
 router.use("/unsubscribe", subscribeRouter);
 router.use("/subscribers", authForMutations, subscribeRouter);
 router.use("/slides", slidesRouter);
+router.use("/analytics", analyticsRouter);
+router.use("/admin/dashboard", dashboardRouter);
 
 export default router;
