@@ -1,9 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import {
-  Animated,
+  ActivityIndicator,
   Dimensions,
   Image,
   Platform,
@@ -27,8 +27,6 @@ interface Settings {
   heroTagline?: string;
   aboutBio?: string;
   aboutPortraitUrl?: string;
-  aboutTitle?: string;
-  highlightPhotoUrls?: string[];
 }
 
 interface Stats {
@@ -37,41 +35,23 @@ interface Stats {
   photoCount: number;
 }
 
-function HeroCycler({ photos }: { photos: string[] }) {
-  const [current, setCurrent] = useState(0);
-  const opacity = useRef(new Animated.Value(1)).current;
+interface GalleryPhoto {
+  url: string;
+  caption?: string | null;
+}
 
-  useEffect(() => {
-    if (photos.length < 2) return;
-    const interval = setInterval(() => {
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      setCurrent((i) => (i + 1) % photos.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [photos.length, opacity]);
-
-  if (!photos.length) return null;
-
-  return (
-    <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
-      <Image
-        source={{ uri: photos[current] }}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-      />
-    </Animated.View>
-  );
+interface Trip {
+  id: number;
+  title: string;
+  location: string;
+  country: string;
+  month: string;
+  year: number;
+  story?: string | null;
+  storySummary?: string | null;
+  coverImageUrl: string;
+  tags: string[];
+  galleryPhotoUrls?: GalleryPhoto[];
 }
 
 export default function HomeScreen() {
@@ -89,10 +69,38 @@ export default function HomeScreen() {
     queryFn: () => fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
   });
 
-  const heroPhotos: string[] =
-    Array.isArray(settings?.highlightPhotoUrls)
-      ? settings!.highlightPhotoUrls.slice(0, 8)
-      : [];
+  const { data: featured, isLoading: featuredLoading } = useQuery<Trip[]>({
+    queryKey: ["featured"],
+    queryFn: () => fetch(`${BASE}/api/trips/featured`).then((r) => r.json()),
+  });
+
+  const { data: allTrips } = useQuery<Trip[]>({
+    queryKey: ["trips"],
+    queryFn: () => fetch(`${BASE}/api/trips`).then((r) => r.json()),
+  });
+
+  const featuredTrip = featured?.[0] ?? null;
+
+  const excerpt = featuredTrip
+    ? (
+        featuredTrip.storySummary?.trim() ||
+        featuredTrip.story?.slice(0, 200)?.trim()
+      )?.replace(/\s+\S*$/, "") + "…"
+    : null;
+
+  // Collect admin-selected photos (galleryPhotoUrls only, no Google Photos fallback)
+  const adminPhotos: { url: string; tripId: number }[] = [];
+  if (allTrips) {
+    for (const trip of allTrips) {
+      if (Array.isArray(trip.galleryPhotoUrls) && trip.galleryPhotoUrls.length > 0) {
+        for (const photo of trip.galleryPhotoUrls) {
+          adminPhotos.push({ url: photo.url, tripId: trip.id });
+        }
+      }
+    }
+  }
+  // Take up to 9 photos, sampled across trips
+  const displayPhotos = adminPhotos.slice(0, 9);
 
   return (
     <ScrollView
@@ -100,12 +108,24 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Full-screen hero */}
+      {/* Featured trip hero */}
       <View style={[styles.hero, { height: SH * 0.72 }]}>
-        <HeroCycler photos={heroPhotos} />
+        {featuredLoading || !featuredTrip ? (
+          <View style={[styles.heroPlaceholder, { backgroundColor: colors.card }]}>
+            {featuredLoading && <ActivityIndicator color={colors.primary} />}
+          </View>
+        ) : (
+          <Image
+            source={{ uri: featuredTrip.coverImageUrl }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+          />
+        )}
+
         {/* Dark gradient overlay */}
         <View style={styles.heroGradient} />
-        {/* Brand mark */}
+
+        {/* Brand mark at top */}
         <View style={[styles.brandBlock, { paddingTop: topPad + 16 }]}>
           <Text style={styles.brandName}>WILDPIXELS</Text>
           <View style={[styles.brandLine, { backgroundColor: colors.primary }]} />
@@ -113,6 +133,34 @@ export default function HomeScreen() {
             {settings?.heroTagline ?? "Wild through my lens"}
           </Text>
         </View>
+
+        {/* Featured trip info at bottom */}
+        {featuredTrip && (
+          <View style={styles.featuredOverlay}>
+            <View style={styles.featuredBadgeRow}>
+              <View style={[styles.featuredDot, { backgroundColor: colors.primary }]} />
+              <Text style={[styles.featuredBadge, { color: colors.primary }]}>
+                FRESH FROM THE FIELD · {featuredTrip.month} {featuredTrip.year}
+              </Text>
+            </View>
+            <Text style={styles.featuredTitle} numberOfLines={2}>
+              {featuredTrip.title}
+            </Text>
+            <Text style={styles.featuredLocation}>
+              {featuredTrip.location}, {featuredTrip.country}
+            </Text>
+            <Pressable
+              onPress={() => router.push(`/trip/${featuredTrip.id}` as never)}
+              style={[styles.featuredBtn, { borderColor: colors.primary }]}
+            >
+              <Text style={[styles.featuredBtnText, { color: colors.primary }]}>
+                READ THE STORY
+              </Text>
+              <Feather name="arrow-right" size={13} color={colors.primary} />
+            </Pressable>
+          </View>
+        )}
+
         {/* Scroll hint */}
         <View style={styles.scrollHint}>
           <Feather name="chevron-down" size={20} color="rgba(237,232,220,0.5)" />
@@ -155,11 +203,19 @@ export default function HomeScreen() {
               resizeMode="cover"
             />
           ) : (
-            <View style={[styles.portrait, styles.portraitPlaceholder, { backgroundColor: colors.secondary }]}>
+            <View
+              style={[
+                styles.portrait,
+                styles.portraitPlaceholder,
+                { backgroundColor: colors.secondary },
+              ]}
+            >
               <Feather name="user" size={36} color={colors.mutedForeground} />
             </View>
           )}
-          <View style={[styles.portraitDot, { backgroundColor: colors.primary }]} />
+          <View
+            style={[styles.portraitDot, { backgroundColor: colors.primary }]}
+          />
         </View>
         <View style={styles.aboutRight}>
           <Text style={[styles.aboutName, { color: colors.foreground }]}>
@@ -179,17 +235,30 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Highlight thumbnails */}
-      {heroPhotos.length > 0 && (
-        <View style={styles.thumbGrid}>
-          {heroPhotos.slice(0, 6).map((url, i) => (
-            <Image
-              key={i}
-              source={{ uri: url }}
-              style={styles.thumb}
-              resizeMode="cover"
-            />
-          ))}
+      {/* Admin-selected trip photos */}
+      {displayPhotos.length > 0 && (
+        <View style={styles.gallerySection}>
+          <View style={styles.gallerySectionHeader}>
+            <Text style={[styles.gallerySectionLabel, { color: colors.mutedForeground }]}>
+              SELECTED HIGHLIGHTS
+            </Text>
+            <View style={[styles.gallerySectionLine, { backgroundColor: colors.border }]} />
+          </View>
+          <View style={styles.photoGrid}>
+            {displayPhotos.map((photo, i) => (
+              <Pressable
+                key={i}
+                onPress={() => router.push(`/trip/${photo.tripId}` as never)}
+                style={styles.photoCell}
+              >
+                <Image
+                  source={{ uri: photo.url }}
+                  style={styles.photoCellImage}
+                  resizeMode="cover"
+                />
+              </Pressable>
+            ))}
+          </View>
         </View>
       )}
 
@@ -199,7 +268,9 @@ export default function HomeScreen() {
           onPress={() => router.push("/(tabs)/portfolio" as never)}
           style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
         >
-          <Text style={[styles.ctaBtnText, { color: colors.primaryForeground }]}>
+          <Text
+            style={[styles.ctaBtnText, { color: colors.primaryForeground }]}
+          >
             VIEW ALL TRIPS
           </Text>
           <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
@@ -209,13 +280,20 @@ export default function HomeScreen() {
   );
 }
 
+const CELL = (SW - 4) / 3;
+
 const styles = StyleSheet.create({
   container: { flex: 1 },
 
   hero: { width: SW, position: "relative", overflow: "hidden" },
+  heroPlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   heroGradient: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(8,8,8,0.38)",
+    backgroundColor: "rgba(8,8,8,0.45)",
   },
   brandBlock: {
     position: "absolute",
@@ -242,9 +320,61 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
     letterSpacing: 0.3,
   },
+
+  featuredOverlay: {
+    position: "absolute",
+    bottom: 44,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+  },
+  featuredBadgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
+  },
+  featuredDot: { width: 5, height: 5, borderRadius: 3 },
+  featuredBadge: {
+    fontSize: 9,
+    letterSpacing: 2.5,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+  },
+  featuredTitle: {
+    color: "#EDE8DC",
+    fontSize: 28,
+    fontWeight: "700" as const,
+    fontFamily: "Inter_700Bold",
+    lineHeight: 34,
+    marginBottom: 6,
+  },
+  featuredLocation: {
+    color: "rgba(237,232,220,0.6)",
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    letterSpacing: 0.3,
+    marginBottom: 16,
+  },
+  featuredBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  featuredBtnText: {
+    fontSize: 10,
+    letterSpacing: 2.5,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+  },
+
   scrollHint: {
     position: "absolute",
-    bottom: 20,
+    bottom: 16,
     left: 0,
     right: 0,
     alignItems: "center",
@@ -308,17 +438,28 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
 
-  thumbGrid: {
+  gallerySection: { marginBottom: 24 },
+  gallerySectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    gap: 12,
+    marginBottom: 12,
+  },
+  gallerySectionLabel: {
+    fontSize: 9,
+    letterSpacing: 3,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+  },
+  gallerySectionLine: { flex: 1, height: 1 },
+  photoGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 2,
-    paddingHorizontal: 16,
-    marginBottom: 24,
   },
-  thumb: {
-    width: (SW - 32 - 10) / 3,
-    height: (SW - 32 - 10) / 3,
-  },
+  photoCell: { width: CELL, height: CELL, overflow: "hidden" },
+  photoCellImage: { width: "100%", height: "100%" },
 
   ctaBlock: { paddingHorizontal: 24, marginBottom: 16 },
   ctaBtn: {
