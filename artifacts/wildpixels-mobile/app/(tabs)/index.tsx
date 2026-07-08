@@ -1,15 +1,14 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
+  Animated,
   Dimensions,
-  FlatList,
   Image,
   Platform,
   Pressable,
-  RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -18,326 +17,321 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 
-const { width: SW } = Dimensions.get("window");
-const CARD_W = (SW - 3) / 2;
+const { width: SW, height: SH } = Dimensions.get("window");
 
 const BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}`
   : "";
 
-interface Trip {
-  id: number;
-  title: string;
-  location: string;
-  country: string;
-  month: string;
-  year: number;
-  coverImageUrl: string;
+interface Settings {
+  heroTagline?: string;
+  aboutBio?: string;
+  aboutPortraitUrl?: string;
+  aboutTitle?: string;
+  highlightPhotoUrls?: string[];
+}
+
+interface Stats {
+  tripCount: number;
+  countryCount: number;
   photoCount: number;
-  tags: string[];
-  featured: boolean;
 }
 
-function FloatingBrand() {
-  const insets = useSafeAreaInsets();
-  const top = Platform.OS === "web" ? 67 : insets.top;
-  return (
-    <View
-      pointerEvents="none"
-      style={[styles.floatingBrand, { top }]}
-    >
-      <Text style={styles.brandText}>WILDPIXELS</Text>
-    </View>
-  );
-}
+function HeroCycler({ photos }: { photos: string[] }) {
+  const [current, setCurrent] = useState(0);
+  const opacity = useRef(new Animated.Value(1)).current;
 
-function FeaturedHero({ trip, topOffset }: { trip: Trip; topOffset: number }) {
+  useEffect(() => {
+    if (photos.length < 2) return;
+    const interval = setInterval(() => {
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      setCurrent((i) => (i + 1) % photos.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [photos.length, opacity]);
+
+  if (!photos.length) return null;
+
   return (
-    <Pressable
-      onPress={() => router.push(`/trip/${trip.id}` as never)}
-      style={[styles.hero, { marginTop: topOffset }]}
-    >
+    <Animated.View style={[StyleSheet.absoluteFill, { opacity }]}>
       <Image
-        source={{ uri: trip.coverImageUrl }}
-        style={styles.heroImage}
+        source={{ uri: photos[current] }}
+        style={StyleSheet.absoluteFill}
         resizeMode="cover"
       />
-      <View style={styles.heroGradient} />
-      <View style={styles.heroContent}>
-        <View style={styles.featuredBadge}>
-          <Text style={styles.featuredBadgeText}>FEATURED</Text>
-        </View>
-        <Text style={styles.heroTitle} numberOfLines={2}>
-          {trip.title}
-        </Text>
-        <View style={styles.heroMeta}>
-          <Text style={styles.heroLocation}>
-            {trip.location}
-          </Text>
-          <Text style={styles.heroDot}> · </Text>
-          <Text style={styles.heroYear}>{trip.year}</Text>
-        </View>
-      </View>
-    </Pressable>
+    </Animated.View>
   );
 }
 
-function TripCard({ trip }: { trip: Trip }) {
-  return (
-    <Pressable
-      onPress={() => router.push(`/trip/${trip.id}` as never)}
-      style={[styles.card, { width: CARD_W }]}
-    >
-      <Image
-        source={{ uri: trip.coverImageUrl }}
-        style={styles.cardImage}
-        resizeMode="cover"
-      />
-      <View style={styles.cardOverlay}>
-        <Text style={styles.cardLocation} numberOfLines={1}>
-          {trip.location.toUpperCase()}
-        </Text>
-        <Text style={styles.cardTitle} numberOfLines={2}>
-          {trip.title}
-        </Text>
-        <View style={styles.cardFooter}>
-          <Text style={styles.cardYear}>{trip.year}</Text>
-          <View style={styles.cardPhotoCount}>
-            <Feather name="camera" size={9} color="rgba(237,232,220,0.55)" />
-            <Text style={styles.cardPhotoCountText}>{trip.photoCount}</Text>
-          </View>
-        </View>
-      </View>
-    </Pressable>
-  );
-}
-
-export default function PortfolioScreen() {
+export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const topOffset = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 67 : insets.top;
 
-  const { data: trips, isLoading, isError, refetch } = useQuery<Trip[]>({
-    queryKey: ["trips"],
-    queryFn: () => fetch(`${BASE}/api/trips`).then((r) => r.json()),
+  const { data: settings } = useQuery<Settings>({
+    queryKey: ["settings"],
+    queryFn: () => fetch(`${BASE}/api/settings`).then((r) => r.json()),
   });
 
-  const featured = trips?.find((t) => t.featured) ?? trips?.[0];
-  const rest = trips?.filter((t) => t.id !== featured?.id) ?? [];
+  const { data: stats } = useQuery<Stats>({
+    queryKey: ["tripStats"],
+    queryFn: () => fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
+  });
 
-  if (isLoading && !trips) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <ActivityIndicator color={colors.primary} size="large" />
-      </View>
-    );
-  }
-
-  if (isError) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Feather name="wifi-off" size={32} color={colors.mutedForeground} />
-        <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
-          Could not load trips
-        </Text>
-        <Pressable
-          onPress={() => refetch()}
-          style={[styles.retryBtn, { borderColor: colors.primary }]}
-        >
-          <Text style={[styles.retryText, { color: colors.primary }]}>
-            Retry
-          </Text>
-        </Pressable>
-      </View>
-    );
-  }
+  const heroPhotos: string[] =
+    Array.isArray(settings?.highlightPhotoUrls)
+      ? settings!.highlightPhotoUrls.slice(0, 8)
+      : [];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <FlatList
-        data={rest}
-        numColumns={2}
-        keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={
-          <>
-            {featured && (
-              <FeaturedHero trip={featured} topOffset={topOffset + 50} />
-            )}
-            <View style={styles.sectionHead}>
-              <Text style={styles.sectionTitle}>TRIP REPORTS</Text>
-              <View style={styles.sectionLine} />
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={{ paddingBottom: insets.bottom + 90 }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Full-screen hero */}
+      <View style={[styles.hero, { height: SH * 0.72 }]}>
+        <HeroCycler photos={heroPhotos} />
+        {/* Dark gradient overlay */}
+        <View style={styles.heroGradient} />
+        {/* Brand mark */}
+        <View style={[styles.brandBlock, { paddingTop: topPad + 16 }]}>
+          <Text style={styles.brandName}>WILDPIXELS</Text>
+          <View style={[styles.brandLine, { backgroundColor: colors.primary }]} />
+          <Text style={styles.tagline}>
+            {settings?.heroTagline ?? "Wild through my lens"}
+          </Text>
+        </View>
+        {/* Scroll hint */}
+        <View style={styles.scrollHint}>
+          <Feather name="chevron-down" size={20} color="rgba(237,232,220,0.5)" />
+        </View>
+      </View>
+
+      {/* Stats strip */}
+      {stats && (
+        <View style={[styles.statsStrip, { borderColor: colors.border }]}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>{stats.tripCount}</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
+              EXPEDITIONS
+            </Text>
+          </View>
+          <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>{stats.countryCount}</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
+              COUNTRIES
+            </Text>
+          </View>
+          <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
+          <View style={styles.statItem}>
+            <Text style={styles.statNum}>{stats.photoCount}</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>
+              PHOTOS
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* About section */}
+      <View style={styles.aboutSection}>
+        <View style={styles.aboutLeft}>
+          {settings?.aboutPortraitUrl ? (
+            <Image
+              source={{ uri: settings.aboutPortraitUrl }}
+              style={styles.portrait}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={[styles.portrait, styles.portraitPlaceholder, { backgroundColor: colors.secondary }]}>
+              <Feather name="user" size={36} color={colors.mutedForeground} />
             </View>
-          </>
-        }
-        renderItem={({ item }) => <TripCard trip={item} />}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingBottom: insets.bottom + 90 },
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={isLoading}
-            onRefresh={refetch}
-            tintColor={colors.primary}
-          />
-        }
-        scrollEnabled={!!rest.length}
-        showsVerticalScrollIndicator={false}
-      />
-      <FloatingBrand />
-    </View>
+          )}
+          <View style={[styles.portraitDot, { backgroundColor: colors.primary }]} />
+        </View>
+        <View style={styles.aboutRight}>
+          <Text style={[styles.aboutName, { color: colors.foreground }]}>
+            Vadiraj BK
+          </Text>
+          <Text style={[styles.aboutRole, { color: colors.mutedForeground }]}>
+            India Wildlife Photographer
+          </Text>
+          {settings?.aboutBio ? (
+            <Text
+              style={[styles.aboutBio, { color: colors.foreground }]}
+              numberOfLines={5}
+            >
+              {settings.aboutBio}
+            </Text>
+          ) : null}
+        </View>
+      </View>
+
+      {/* Highlight thumbnails */}
+      {heroPhotos.length > 0 && (
+        <View style={styles.thumbGrid}>
+          {heroPhotos.slice(0, 6).map((url, i) => (
+            <Image
+              key={i}
+              source={{ uri: url }}
+              style={styles.thumb}
+              resizeMode="cover"
+            />
+          ))}
+        </View>
+      )}
+
+      {/* CTA */}
+      <View style={styles.ctaBlock}>
+        <Pressable
+          onPress={() => router.push("/(tabs)/portfolio" as never)}
+          style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
+        >
+          <Text style={[styles.ctaBtnText, { color: colors.primaryForeground }]}>
+            VIEW ALL TRIPS
+          </Text>
+          <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
-  },
-  errorText: { fontSize: 15 },
-  retryBtn: {
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    borderWidth: 1,
-    marginTop: 4,
-  },
-  retryText: { fontSize: 14, fontWeight: "600" as const },
 
-  floatingBrand: {
+  hero: { width: SW, position: "relative", overflow: "hidden" },
+  heroGradient: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(8,8,8,0.38)",
+  },
+  brandBlock: {
     position: "absolute",
     left: 0,
     right: 0,
     alignItems: "center",
-    paddingVertical: 12,
-    zIndex: 20,
+    gap: 12,
+    paddingHorizontal: 24,
   },
-  brandText: {
+  brandName: {
     color: "#EDE8DC",
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "700" as const,
-    letterSpacing: 7,
+    letterSpacing: 9,
     fontFamily: "Inter_700Bold",
   },
+  brandLine: { width: 40, height: 1 },
+  tagline: {
+    color: "rgba(237,232,220,0.85)",
+    fontSize: 22,
+    fontStyle: "italic",
+    textAlign: "center",
+    lineHeight: 30,
+    fontFamily: "Inter_400Regular",
+    letterSpacing: 0.3,
+  },
+  scrollHint: {
+    position: "absolute",
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
 
-  hero: { width: SW, height: 440, marginBottom: 2 },
-  heroImage: { width: "100%", height: "100%" },
-  heroGradient: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 200,
-    backgroundColor: "rgba(0,0,0,0)",
+  statsStrip: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
   },
-  heroContent: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 20,
-    paddingBottom: 24,
-    backgroundColor: "rgba(8,8,8,0.5)",
+  statItem: { flex: 1, alignItems: "center", paddingVertical: 18 },
+  statNum: {
+    color: "#F0A015",
+    fontSize: 24,
+    fontWeight: "700" as const,
+    fontFamily: "Inter_700Bold",
+    marginBottom: 4,
   },
-  featuredBadge: {
-    backgroundColor: "#F0A015",
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+  statLbl: {
+    fontSize: 8,
+    letterSpacing: 2.5,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+  },
+  statDiv: { width: 1 },
+
+  aboutSection: {
+    flexDirection: "row",
+    padding: 24,
+    gap: 20,
+  },
+  aboutLeft: { position: "relative", alignSelf: "flex-start" },
+  portrait: { width: 88, height: 88, borderRadius: 44 },
+  portraitPlaceholder: { alignItems: "center", justifyContent: "center" },
+  portraitDot: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: "#080808",
+  },
+  aboutRight: { flex: 1 },
+  aboutName: {
+    fontSize: 17,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 3,
+  },
+  aboutRole: {
+    fontSize: 11,
+    letterSpacing: 0.3,
+    fontFamily: "Inter_400Regular",
     marginBottom: 10,
   },
-  featuredBadgeText: {
-    color: "#080808",
-    fontSize: 9,
-    fontWeight: "700" as const,
-    letterSpacing: 2.5,
-    fontFamily: "Inter_700Bold",
-  },
-  heroTitle: {
-    color: "#EDE8DC",
-    fontSize: 26,
-    fontWeight: "600" as const,
-    lineHeight: 32,
-    letterSpacing: 0.2,
-    fontFamily: "Inter_600SemiBold",
-    marginBottom: 8,
-  },
-  heroMeta: { flexDirection: "row", alignItems: "center" },
-  heroLocation: {
-    color: "rgba(237,232,220,0.75)",
-    fontSize: 12,
-    letterSpacing: 0.5,
+  aboutBio: {
+    fontSize: 13,
+    lineHeight: 20,
     fontFamily: "Inter_400Regular",
   },
-  heroDot: { color: "rgba(237,232,220,0.4)", fontSize: 12 },
-  heroYear: {
-    color: "#F0A015",
-    fontSize: 12,
-    fontFamily: "Inter_500Medium",
-  },
 
-  sectionHead: {
+  thumbGrid: {
     flexDirection: "row",
-    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 2,
     paddingHorizontal: 16,
-    paddingTop: 22,
-    paddingBottom: 14,
-    gap: 14,
+    marginBottom: 24,
   },
-  sectionTitle: {
-    color: "#8A8478",
-    fontSize: 10,
-    fontWeight: "600" as const,
-    letterSpacing: 3.5,
-    fontFamily: "Inter_600SemiBold",
+  thumb: {
+    width: (SW - 32 - 10) / 3,
+    height: (SW - 32 - 10) / 3,
   },
-  sectionLine: { flex: 1, height: 1, backgroundColor: "#252525" },
 
-  row: { gap: 2, paddingHorizontal: 2 },
-  listContent: { paddingBottom: 100 },
-
-  card: { height: 190, marginBottom: 2, overflow: "hidden" },
-  cardImage: { width: "100%", height: "100%" },
-  cardOverlay: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 10,
-    backgroundColor: "rgba(0,0,0,0.52)",
-  },
-  cardLocation: {
-    color: "rgba(237,232,220,0.55)",
-    fontSize: 9,
-    letterSpacing: 1,
-    marginBottom: 3,
-    fontFamily: "Inter_400Regular",
-  },
-  cardTitle: {
-    color: "#EDE8DC",
-    fontSize: 12,
-    fontWeight: "600" as const,
-    lineHeight: 16,
-    fontFamily: "Inter_600SemiBold",
-  },
-  cardFooter: {
+  ctaBlock: { paddingHorizontal: 24, marginBottom: 16 },
+  ctaBtn: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 6,
+    justifyContent: "center",
+    paddingVertical: 16,
+    gap: 10,
   },
-  cardYear: {
-    color: "#F0A015",
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
-  },
-  cardPhotoCount: { flexDirection: "row", alignItems: "center", gap: 3 },
-  cardPhotoCountText: {
-    color: "rgba(237,232,220,0.55)",
-    fontSize: 9,
-    fontFamily: "Inter_400Regular",
+  ctaBtnText: {
+    fontSize: 12,
+    fontWeight: "700" as const,
+    letterSpacing: 3,
+    fontFamily: "Inter_700Bold",
   },
 });

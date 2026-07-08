@@ -21,12 +21,14 @@ const BASE = process.env.EXPO_PUBLIC_DOMAIN
   : "";
 
 interface Settings {
-  aboutText?: string;
+  aboutTitle?: string;
+  aboutBio?: string;
+  aboutPortraitUrl?: string;
   contactEmail?: string;
   contactPhone?: string;
   contactLocation?: string;
-  instagramUrl?: string;
-  facebookUrl?: string;
+  contactInstagram?: string;
+  contactFacebook?: string;
   highlightPhotoUrls?: string[];
 }
 
@@ -36,13 +38,7 @@ interface Stats {
   photoCount: number;
 }
 
-function StatPill({
-  value,
-  label,
-}: {
-  value: number | string;
-  label: string;
-}) {
+function StatPill({ value, label }: { value: number | string; label: string }) {
   return (
     <View style={styles.statPill}>
       <Text style={styles.statValue}>{value}</Text>
@@ -64,10 +60,12 @@ function ContactRow({
   return (
     <Pressable
       onPress={onPress}
-      style={styles.contactRow}
+      style={[styles.contactRow, { borderBottomColor: colors.border }]}
       disabled={!onPress}
     >
-      <View style={[styles.contactIcon, { backgroundColor: colors.secondary }]}>
+      <View
+        style={[styles.contactIcon, { backgroundColor: colors.secondary }]}
+      >
         <Feather name={icon as never} size={16} color={colors.primary} />
       </View>
       <Text style={[styles.contactText, { color: colors.foreground }]}>
@@ -97,10 +95,11 @@ export default function AboutScreen() {
 
   const { data: stats } = useQuery<Stats>({
     queryKey: ["tripStats"],
-    queryFn: () => fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
+    queryFn: () =>
+      fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
   });
 
-  const portrait = settings?.highlightPhotoUrls?.[0];
+  const portrait = settings?.aboutPortraitUrl;
 
   return (
     <ScrollView
@@ -130,7 +129,12 @@ export default function AboutScreen() {
             <Feather name="user" size={48} color={colors.mutedForeground} />
           </View>
         )}
-        <View style={[styles.portraitAccent, { backgroundColor: colors.primary }]} />
+        <View
+          style={[
+            styles.portraitAccent,
+            { backgroundColor: colors.primary },
+          ]}
+        />
       </View>
 
       {/* Name & title */}
@@ -138,42 +142,79 @@ export default function AboutScreen() {
         <Text style={[styles.name, { color: colors.foreground }]}>
           Vadiraj BK
         </Text>
-        <Text style={[styles.title, { color: colors.mutedForeground }]}>
-          India Wildlife Photographer
-        </Text>
+        {settings?.aboutTitle ? (
+          <Text style={[styles.title, { color: colors.mutedForeground }]}>
+            {settings.aboutTitle}
+          </Text>
+        ) : (
+          <Text style={[styles.title, { color: colors.mutedForeground }]}>
+            India Wildlife Photographer
+          </Text>
+        )}
       </View>
 
       {/* Stats */}
       {stats && (
         <View style={[styles.statsRow, { borderColor: colors.border }]}>
           <StatPill value={stats.tripCount} label="Trips" />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View
+            style={[
+              styles.statDivider,
+              { backgroundColor: colors.border },
+            ]}
+          />
           <StatPill value={stats.countryCount} label="Countries" />
-          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <View
+            style={[
+              styles.statDivider,
+              { backgroundColor: colors.border },
+            ]}
+          />
           <StatPill value={stats.photoCount} label="Photos" />
         </View>
       )}
 
       {/* Bio */}
       {settingsLoading ? (
-        <ActivityIndicator
-          color={colors.primary}
-          style={styles.bioLoader}
-        />
-      ) : settings?.aboutText ? (
+        <ActivityIndicator color={colors.primary} style={styles.bioLoader} />
+      ) : settings?.aboutBio ? (
         <View style={styles.bioBlock}>
-          <View style={[styles.bioAccent, { backgroundColor: colors.primary }]} />
+          <View
+            style={[styles.bioAccent, { backgroundColor: colors.primary }]}
+          />
           <Text style={[styles.bio, { color: colors.foreground }]}>
-            {settings.aboutText}
+            {settings.aboutBio}
           </Text>
         </View>
       ) : null}
+
+      {/* Highlight photos strip */}
+      {settings?.highlightPhotoUrls && settings.highlightPhotoUrls.length > 0 && (
+        <View style={styles.highlightStrip}>
+          {settings.highlightPhotoUrls.slice(0, 4).map((url, i) => (
+            <Image
+              key={i}
+              source={{ uri: url }}
+              style={styles.highlightThumb}
+              resizeMode="cover"
+            />
+          ))}
+        </View>
+      )}
 
       {/* Contact */}
       <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
         CONTACT
       </Text>
-      <View style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+      <View
+        style={[
+          styles.contactCard,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          },
+        ]}
+      >
         {settings?.contactLocation && (
           <ContactRow icon="map-pin" text={settings.contactLocation} />
         )}
@@ -193,18 +234,26 @@ export default function AboutScreen() {
             onPress={() => Linking.openURL(`tel:${settings.contactPhone}`)}
           />
         )}
-        {settings?.instagramUrl && (
+        {settings?.contactInstagram && (
           <ContactRow
             icon="instagram"
-            text="Instagram"
-            onPress={() => Linking.openURL(settings.instagramUrl!)}
+            text={`@${settings.contactInstagram}`}
+            onPress={() =>
+              Linking.openURL(
+                `https://instagram.com/${settings.contactInstagram}`
+              )
+            }
           />
         )}
-        {settings?.facebookUrl && (
+        {settings?.contactFacebook && (
           <ContactRow
             icon="facebook"
-            text="Facebook"
-            onPress={() => Linking.openURL(settings.facebookUrl!)}
+            text={settings.contactFacebook}
+            onPress={() =>
+              Linking.openURL(
+                `https://facebook.com/${settings.contactFacebook}`
+              )
+            }
           />
         )}
       </View>
@@ -221,16 +270,22 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: 24 },
 
-  portraitWrap: { alignSelf: "center", marginBottom: 20, position: "relative" },
-  portrait: { width: 120, height: 120, borderRadius: 60 },
+  portraitWrap: {
+    alignSelf: "center",
+    marginBottom: 20,
+    position: "relative",
+  },
+  portrait: { width: 130, height: 130, borderRadius: 65 },
   portraitPlaceholder: { alignItems: "center", justifyContent: "center" },
   portraitAccent: {
     position: "absolute",
-    bottom: 4,
-    right: 4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    bottom: 6,
+    right: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: "#080808",
   },
 
   nameBlock: { alignItems: "center", marginBottom: 28 },
@@ -239,12 +294,13 @@ const styles = StyleSheet.create({
     fontWeight: "600" as const,
     letterSpacing: 0.3,
     fontFamily: "Inter_600SemiBold",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   title: {
-    fontSize: 13,
+    fontSize: 12,
     letterSpacing: 0.5,
     fontFamily: "Inter_400Regular",
+    textAlign: "center",
   },
 
   statsRow: {
@@ -269,13 +325,23 @@ const styles = StyleSheet.create({
   statDivider: { width: 1 },
 
   bioLoader: { marginVertical: 20 },
-  bioBlock: { flexDirection: "row", gap: 14, marginBottom: 32 },
+  bioBlock: { flexDirection: "row", gap: 14, marginBottom: 28 },
   bioAccent: { width: 2, borderRadius: 1 },
   bio: {
     flex: 1,
     fontSize: 14,
     lineHeight: 22,
     fontFamily: "Inter_400Regular",
+  },
+
+  highlightStrip: {
+    flexDirection: "row",
+    gap: 4,
+    marginBottom: 32,
+  },
+  highlightThumb: {
+    flex: 1,
+    height: 80,
   },
 
   sectionLabel: {
@@ -297,6 +363,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 12,
+    borderBottomWidth: 1,
   },
   contactIcon: {
     width: 34,
@@ -305,11 +372,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  contactText: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-  },
+  contactText: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular" },
 
   footer: {
     textAlign: "center",

@@ -13,11 +13,22 @@ function NativeTabLayout() {
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
-        <Icon sf={{ default: "square.grid.2x2", selected: "square.grid.2x2.fill" }} />
+        <Icon sf={{ default: "house", selected: "house.fill" }} />
+        <Label>Home</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="portfolio">
+        <Icon
+          sf={{
+            default: "square.grid.2x2",
+            selected: "square.grid.2x2.fill",
+          }}
+        />
         <Label>Portfolio</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="about">
-        <Icon sf={{ default: "person.circle", selected: "person.circle.fill" }} />
+        <Icon
+          sf={{ default: "person.circle", selected: "person.circle.fill" }}
+        />
         <Label>About</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
@@ -65,10 +76,26 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          title: "Home",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="house" tintColor={color} size={22} />
+            ) : (
+              <Feather name="home" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="portfolio"
+        options={{
           title: "Portfolio",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="square.grid.2x2" tintColor={color} size={22} />
+              <SymbolView
+                name="square.grid.2x2"
+                tintColor={color}
+                size={22}
+              />
             ) : (
               <Feather name="grid" size={22} color={color} />
             ),
@@ -80,7 +107,11 @@ function ClassicTabLayout() {
           title: "About",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="person.circle" tintColor={color} size={22} />
+              <SymbolView
+                name="person.circle"
+                tintColor={color}
+                size={22}
+              />
             ) : (
               <Feather name="user" size={22} color={color} />
             ),

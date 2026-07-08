@@ -2,11 +2,10 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router, useLocalSearchParams } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  FlatList,
   Image,
   Modal,
   Platform,
@@ -41,13 +40,12 @@ interface TripDetail {
   month: string;
   year: number;
   story?: string | null;
-  storySummary?: string | null;
   coverImageUrl: string;
   photoCount: number;
   tags: string[];
   featured: boolean;
   galleryPhotoUrls?: GalleryPhoto[];
-  travelTips?: string[];
+  travelTips?: string | string[] | null;
 }
 
 interface Reaction {
@@ -73,8 +71,8 @@ function LightboxModal({
   onClose: () => void;
 }) {
   const [index, setIndex] = useState(startIndex);
-  const photo = photos[index];
   const insets = useSafeAreaInsets();
+  const photo = photos[index];
 
   return (
     <Modal
@@ -87,7 +85,7 @@ function LightboxModal({
       <View style={lb.overlay}>
         <Pressable
           onPress={onClose}
-          style={[lb.closeBtn, { top: insets.top + 8 }]}
+          style={[lb.closeBtn, { top: (Platform.OS === "web" ? 67 : insets.top) + 8 }]}
         >
           <Feather name="x" size={22} color="#EDE8DC" />
         </Pressable>
@@ -114,8 +112,13 @@ function LightboxModal({
             {index + 1} / {photos.length}
           </Text>
           <Pressable
-            onPress={() => setIndex((i) => Math.min(photos.length - 1, i + 1))}
-            style={[lb.navBtn, index === photos.length - 1 && lb.navBtnDisabled]}
+            onPress={() =>
+              setIndex((i) => Math.min(photos.length - 1, i + 1))
+            }
+            style={[
+              lb.navBtn,
+              index === photos.length - 1 && lb.navBtnDisabled,
+            ]}
             disabled={index === photos.length - 1}
           >
             <Feather name="chevron-right" size={24} color="#EDE8DC" />
@@ -139,7 +142,7 @@ function GalleryGrid({
     rows.push(photos.slice(i, i + 3));
   }
   return (
-    <View>
+    <View style={styles.galleryWrap}>
       {rows.map((row, ri) => (
         <View key={ri} style={styles.galleryRow}>
           {row.map((photo, ci) => {
@@ -178,16 +181,27 @@ function CommentItem({ comment }: { comment: Comment }) {
   return (
     <View style={[styles.commentItem, { borderBottomColor: colors.border }]}>
       <View style={styles.commentHeader}>
-        <View style={[styles.commentAvatar, { backgroundColor: colors.secondary }]}>
-          <Text style={[styles.commentAvatarText, { color: colors.primary }]}>
+        <View
+          style={[
+            styles.commentAvatar,
+            { backgroundColor: colors.secondary },
+          ]}
+        >
+          <Text
+            style={[styles.commentAvatarText, { color: colors.primary }]}
+          >
             {comment.name.charAt(0).toUpperCase()}
           </Text>
         </View>
         <View style={styles.commentMeta}>
-          <Text style={[styles.commentName, { color: colors.foreground }]}>
+          <Text
+            style={[styles.commentName, { color: colors.foreground }]}
+          >
             {comment.name}
           </Text>
-          <Text style={[styles.commentDate, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.commentDate, { color: colors.mutedForeground }]}
+          >
             {formatted}
           </Text>
         </View>
@@ -210,7 +224,6 @@ export default function TripDetailScreen() {
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [liked, setLiked] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
 
   const { data: trip, isLoading, isError } = useQuery<TripDetail>({
     queryKey: ["trip", id],
@@ -239,9 +252,7 @@ export default function TripDetailScreen() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "like" }),
       }).then((r) => r.json()),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["reactions", id] });
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reactions", id] }),
   });
 
   const commentMutation = useMutation({
@@ -276,20 +287,34 @@ export default function TripDetailScreen() {
         <Text style={[styles.errorText, { color: colors.mutedForeground }]}>
           Trip not found
         </Text>
-        <Pressable onPress={() => router.back()} style={[styles.retryBtn, { borderColor: colors.primary }]}>
-          <Text style={[styles.retryText, { color: colors.primary }]}>Go back</Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.retryBtn, { borderColor: colors.primary }]}
+        >
+          <Text style={[styles.retryText, { color: colors.primary }]}>
+            Go back
+          </Text>
         </Pressable>
       </View>
     );
   }
 
-  const gallery = trip.galleryPhotoUrls ?? [];
-  const likeCount = (reactions?.likes ?? 0) + (liked ? 0 : 0);
+  // gallery: normalize to GalleryPhoto[]
+  const gallery: GalleryPhoto[] = Array.isArray(trip.galleryPhotoUrls)
+    ? trip.galleryPhotoUrls
+    : [];
+
+  // travelTips: API returns a plain string (not array)
+  const tips =
+    typeof trip.travelTips === "string" && trip.travelTips.trim()
+      ? trip.travelTips.trim()
+      : Array.isArray(trip.travelTips) && trip.travelTips.length > 0
+      ? trip.travelTips.join("\n")
+      : null;
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <KeyboardAwareScrollView
-        ref={scrollRef as never}
         style={styles.screen}
         contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
         showsVerticalScrollIndicator={false}
@@ -304,16 +329,24 @@ export default function TripDetailScreen() {
             resizeMode="cover"
           />
           <View style={styles.coverOverlay}>
-            <View style={styles.coverTags}>
-              {trip.tags.slice(0, 3).map((tag) => (
-                <View
-                  key={tag}
-                  style={[styles.tag, { backgroundColor: "rgba(240,160,21,0.18)", borderColor: "rgba(240,160,21,0.35)" }]}
-                >
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
+            {trip.tags.length > 0 && (
+              <View style={styles.coverTags}>
+                {trip.tags.slice(0, 3).map((tag) => (
+                  <View
+                    key={tag}
+                    style={[
+                      styles.tag,
+                      {
+                        backgroundColor: "rgba(240,160,21,0.18)",
+                        borderColor: "rgba(240,160,21,0.35)",
+                      },
+                    ]}
+                  >
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
             <Text style={styles.coverTitle}>{trip.title}</Text>
             <Text style={styles.coverMeta}>
               {trip.location} · {trip.month} {trip.year}
@@ -327,45 +360,65 @@ export default function TripDetailScreen() {
             <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
               THE STORY
             </Text>
-            <View style={[styles.storyAccent, { backgroundColor: colors.primary }]} />
+            <View
+              style={[styles.storyAccent, { backgroundColor: colors.primary }]}
+            />
             <Text style={[styles.story, { color: colors.foreground }]}>
               {trip.story}
             </Text>
           </View>
         ) : null}
 
-        {/* Travel tips */}
-        {trip.travelTips && trip.travelTips.length > 0 && (
+        {/* Field notes / travel tips */}
+        {tips ? (
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+            <Text
+              style={[styles.sectionLabel, { color: colors.mutedForeground }]}
+            >
               FIELD NOTES
             </Text>
             <View
               style={[
                 styles.tipsCard,
-                { backgroundColor: colors.card, borderColor: colors.border },
+                {
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                },
               ]}
             >
-              {trip.travelTips.map((tip, i) => (
-                <View key={i} style={styles.tipRow}>
-                  <View style={[styles.tipDot, { backgroundColor: colors.primary }]} />
-                  <Text style={[styles.tipText, { color: colors.foreground }]}>
-                    {tip}
-                  </Text>
-                </View>
-              ))}
+              <View style={styles.tipRow}>
+                <View
+                  style={[
+                    styles.tipDot,
+                    { backgroundColor: colors.primary },
+                  ]}
+                />
+                <Text style={[styles.tipText, { color: colors.foreground }]}>
+                  {tips}
+                </Text>
+              </View>
             </View>
           </View>
-        )}
+        ) : null}
 
-        {/* Gallery */}
+        {/* Expedition gallery */}
         {gallery.length > 0 && (
           <View style={styles.section}>
             <View style={styles.galleryHeader}>
-              <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+              <Text
+                style={[
+                  styles.sectionLabel,
+                  { color: colors.mutedForeground },
+                ]}
+              >
                 EXPEDITION GALLERY
               </Text>
-              <Text style={[styles.galleryCount, { color: colors.mutedForeground }]}>
+              <Text
+                style={[
+                  styles.galleryCount,
+                  { color: colors.mutedForeground },
+                ]}
+              >
                 {gallery.length} photos
               </Text>
             </View>
@@ -376,11 +429,14 @@ export default function TripDetailScreen() {
           </View>
         )}
 
-        {/* Reactions */}
+        {/* Reactions bar */}
         <View
           style={[
             styles.reactionsBar,
-            { borderTopColor: colors.border, borderBottomColor: colors.border },
+            {
+              borderTopColor: colors.border,
+              borderBottomColor: colors.border,
+            },
           ]}
         >
           <Pressable
@@ -397,34 +453,48 @@ export default function TripDetailScreen() {
               name="heart"
               size={22}
               color={liked ? "#F0A015" : colors.mutedForeground}
-              fill={liked ? "#F0A015" : "transparent"}
             />
             <Text
               style={[
                 styles.likeCount,
-                { color: liked ? colors.primary : colors.mutedForeground },
+                {
+                  color: liked ? colors.primary : colors.mutedForeground,
+                },
               ]}
             >
               {(reactions?.likes ?? 0) + (liked ? 1 : 0)}
             </Text>
           </Pressable>
           <View style={styles.reactSpacer} />
-          <Feather name="message-circle" size={18} color={colors.mutedForeground} />
-          <Text style={[styles.commentCount, { color: colors.mutedForeground }]}>
+          <Feather
+            name="message-circle"
+            size={18}
+            color={colors.mutedForeground}
+          />
+          <Text
+            style={[styles.commentCount, { color: colors.mutedForeground }]}
+          >
             {comments?.length ?? 0}
           </Text>
         </View>
 
         {/* Comments */}
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+          <Text
+            style={[styles.sectionLabel, { color: colors.mutedForeground }]}
+          >
             COMMENTS
           </Text>
 
           {comments && comments.length > 0 ? (
             comments.map((c) => <CommentItem key={c.id} comment={c} />)
           ) : (
-            <Text style={[styles.noComments, { color: colors.mutedForeground }]}>
+            <Text
+              style={[
+                styles.noComments,
+                { color: colors.mutedForeground },
+              ]}
+            >
               Be the first to leave a comment.
             </Text>
           )}
@@ -433,10 +503,18 @@ export default function TripDetailScreen() {
           <View
             style={[
               styles.commentForm,
-              { backgroundColor: colors.card, borderColor: colors.border },
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+              },
             ]}
           >
-            <Text style={[styles.formLabel, { color: colors.mutedForeground }]}>
+            <Text
+              style={[
+                styles.formLabel,
+                { color: colors.mutedForeground },
+              ]}
+            >
               LEAVE A COMMENT
             </Text>
             <TextInput
@@ -470,7 +548,6 @@ export default function TripDetailScreen() {
                   borderColor: colors.border,
                 },
               ]}
-              returnKeyType="send"
             />
             <Pressable
               onPress={() => {
@@ -495,7 +572,10 @@ export default function TripDetailScreen() {
               ]}
             >
               {commentMutation.isPending ? (
-                <ActivityIndicator color={colors.primaryForeground} size="small" />
+                <ActivityIndicator
+                  color={colors.primaryForeground}
+                  size="small"
+                />
               ) : (
                 <Text
                   style={[
@@ -551,10 +631,7 @@ const lb = StyleSheet.create({
     backgroundColor: "rgba(37,37,37,0.7)",
     borderRadius: 20,
   },
-  image: {
-    width: SW,
-    height: SW * 1.2,
-  },
+  image: { width: SW, height: SW * 1.2 },
   caption: {
     color: "rgba(237,232,220,0.7)",
     fontSize: 13,
@@ -611,7 +688,12 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     backgroundColor: "rgba(8,8,8,0.55)",
   },
-  coverTags: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
+  coverTags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 10,
+  },
   tag: {
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -666,11 +748,7 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
 
-  tipsCard: {
-    borderWidth: 1,
-    padding: 16,
-    gap: 12,
-  },
+  tipsCard: { borderWidth: 1, padding: 16 },
   tipRow: { flexDirection: "row", gap: 10, alignItems: "flex-start" },
   tipDot: { width: 5, height: 5, borderRadius: 3, marginTop: 8 },
   tipText: {
@@ -680,16 +758,14 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_400Regular",
   },
 
+  galleryWrap: { marginHorizontal: -16 },
   galleryHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  galleryCount: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-  },
+  galleryCount: { fontSize: 11, fontFamily: "Inter_400Regular" },
   galleryRow: { flexDirection: "row", gap: 2, marginBottom: 2 },
   galleryCell: { overflow: "hidden" },
   galleryCellImage: { width: "100%", height: "100%" },
@@ -725,11 +801,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  commentAvatarText: { fontSize: 16, fontWeight: "700" as const, fontFamily: "Inter_700Bold" },
+  commentAvatarText: {
+    fontSize: 16,
+    fontWeight: "700" as const,
+    fontFamily: "Inter_700Bold",
+  },
   commentMeta: { justifyContent: "center" },
-  commentName: { fontSize: 13, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
-  commentDate: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
-  commentText: { fontSize: 14, lineHeight: 21, fontFamily: "Inter_400Regular" },
+  commentName: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    fontFamily: "Inter_600SemiBold",
+  },
+  commentDate: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    marginTop: 2,
+  },
+  commentText: {
+    fontSize: 14,
+    lineHeight: 21,
+    fontFamily: "Inter_400Regular",
+  },
 
   commentForm: { marginTop: 20, padding: 16, borderWidth: 1, gap: 12 },
   formLabel: {
@@ -751,5 +843,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  submitText: { fontSize: 13, fontWeight: "600" as const, letterSpacing: 1, fontFamily: "Inter_600SemiBold" },
+  submitText: {
+    fontSize: 13,
+    fontWeight: "600" as const,
+    letterSpacing: 1,
+    fontFamily: "Inter_600SemiBold",
+  },
 });
