@@ -336,6 +336,12 @@ function Lightbox({
   const [dir, setDir] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<"slow" | "medium" | "fast">("medium");
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  // Reset load state whenever the displayed photo changes
+  useEffect(() => {
+    setImgLoaded(false);
+  }, [current]);
 
   const prev = useCallback(() => {
     setDir(-1);
@@ -358,13 +364,13 @@ function Lightbox({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose, prev, next]);
 
-  // Auto-advance slideshow
+  // Auto-advance slideshow — only starts counting down once the current image has fully loaded
   const SPEED_MS: Record<typeof speed, number> = { slow: 5000, medium: 3000, fast: 1500 };
   useEffect(() => {
-    if (!isPlaying || photos.length <= 1) return;
-    const interval = setInterval(next, SPEED_MS[speed]);
-    return () => clearInterval(interval);
-  }, [isPlaying, speed, next, photos.length]);
+    if (!isPlaying || !imgLoaded || photos.length <= 1) return;
+    const timeout = setTimeout(next, SPEED_MS[speed]);
+    return () => clearTimeout(timeout);
+  }, [isPlaying, imgLoaded, speed, next, photos.length]);
 
   // Prevent body scroll while open
   useEffect(() => {
@@ -476,6 +482,7 @@ function Lightbox({
             alt={`Photo ${current + 1}`}
             className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
             draggable={false}
+            onLoad={() => setImgLoaded(true)}
           />
         </AnimatePresence>
 
