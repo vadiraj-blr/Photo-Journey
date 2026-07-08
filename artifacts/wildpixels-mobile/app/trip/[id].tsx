@@ -46,6 +46,7 @@ interface TripDetail {
   featured: boolean;
   galleryPhotoUrls?: GalleryPhoto[];
   travelTips?: string | string[] | null;
+  googlePhotosUrl?: string | null;
 }
 
 interface Reaction {
@@ -231,6 +232,19 @@ export default function TripDetailScreen() {
     enabled: !!id,
   });
 
+  const hasPinnedGallery =
+    Array.isArray(trip?.galleryPhotoUrls) && trip.galleryPhotoUrls.length > 0;
+
+  const { data: googlePhotosData, isLoading: gLoading } = useQuery<{
+    photos: string[];
+  }>({
+    queryKey: ["google-photos", id],
+    queryFn: () =>
+      fetch(`${BASE}/api/trips/${id}/google-photos`).then((r) => r.json()),
+    enabled: !!id && !!trip && !hasPinnedGallery && !!trip.googlePhotosUrl,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const { data: reactions } = useQuery<Reaction>({
     queryKey: ["reactions", id],
     queryFn: () =>
@@ -299,10 +313,17 @@ export default function TripDetailScreen() {
     );
   }
 
-  // gallery: normalize to GalleryPhoto[]
-  const gallery: GalleryPhoto[] = Array.isArray(trip.galleryPhotoUrls)
+  // gallery: pinned selection first, fall back to all Google Photos
+  const pinnedGallery: GalleryPhoto[] = Array.isArray(trip.galleryPhotoUrls)
     ? trip.galleryPhotoUrls
     : [];
+  const googleGallery: GalleryPhoto[] =
+    !hasPinnedGallery && Array.isArray(googlePhotosData?.photos)
+      ? googlePhotosData.photos.map((url) => ({ url }))
+      : [];
+  const gallery: GalleryPhoto[] =
+    pinnedGallery.length > 0 ? pinnedGallery : googleGallery;
+  const galleryLoading = !hasPinnedGallery && !!trip.googlePhotosUrl && gLoading;
 
   // travelTips: API returns a plain string (not array)
   const tips =
@@ -402,7 +423,7 @@ export default function TripDetailScreen() {
         ) : null}
 
         {/* Expedition gallery */}
-        {gallery.length > 0 && (
+        {(gallery.length > 0 || galleryLoading) && (
           <View style={styles.section}>
             <View style={styles.galleryHeader}>
               <Text
@@ -413,19 +434,30 @@ export default function TripDetailScreen() {
               >
                 EXPEDITION GALLERY
               </Text>
-              <Text
-                style={[
-                  styles.galleryCount,
-                  { color: colors.mutedForeground },
-                ]}
-              >
-                {gallery.length} photos
-              </Text>
+              {gallery.length > 0 && (
+                <Text
+                  style={[
+                    styles.galleryCount,
+                    { color: colors.mutedForeground },
+                  ]}
+                >
+                  {gallery.length} photos
+                </Text>
+              )}
             </View>
-            <GalleryGrid
-              photos={gallery}
-              onPress={(i) => setLightboxIndex(i)}
-            />
+            {galleryLoading ? (
+              <View style={styles.galleryLoading}>
+                <ActivityIndicator color={colors.primary} />
+                <Text style={[styles.galleryLoadingText, { color: colors.mutedForeground }]}>
+                  Loading photos…
+                </Text>
+              </View>
+            ) : (
+              <GalleryGrid
+                photos={gallery}
+                onPress={(i) => setLightboxIndex(i)}
+              />
+            )}
           </View>
         )}
 
@@ -766,6 +798,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   galleryCount: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  galleryLoading: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 24,
+  },
+  galleryLoadingText: { fontSize: 13, fontFamily: "Inter_400Regular" },
   galleryRow: { flexDirection: "row", gap: 2, marginBottom: 2 },
   galleryCell: { overflow: "hidden" },
   galleryCellImage: { width: "100%", height: "100%" },
