@@ -198,6 +198,13 @@ export default function HomeScreen() {
               {settings.aboutBio}
             </Text>
           ) : null}
+          <Pressable
+            onPress={() => router.push("/(tabs)/about" as never)}
+            style={styles.readMoreBtn}
+          >
+            <Text style={[styles.readMoreText, { color: colors.primary }]}>Read more</Text>
+            <Feather name="arrow-right" size={12} color={colors.primary} />
+          </Pressable>
         </View>
       </View>
 
@@ -349,7 +356,9 @@ const styles = StyleSheet.create({
   aboutRight: { flex: 1 },
   aboutName: { fontSize: 17, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold", marginBottom: 3 },
   aboutRole: { fontSize: 11, letterSpacing: 0.3, fontFamily: "Inter_400Regular", marginBottom: 10 },
-  aboutBio: { fontSize: 13, lineHeight: 20, fontFamily: "Inter_400Regular" },
+  aboutBio: { fontSize: 13, lineHeight: 20, fontFamily: "Inter_400Regular", marginBottom: 8 },
+  readMoreBtn: { flexDirection: "row", alignItems: "center", gap: 4, alignSelf: "flex-start" },
+  readMoreText: { fontSize: 12, fontFamily: "Inter_600SemiBold", fontWeight: "600" as const },
 
   // Featured trip
   featuredSection: { borderTopWidth: 1, paddingTop: 24, paddingBottom: 8 },
