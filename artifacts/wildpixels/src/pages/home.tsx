@@ -188,9 +188,9 @@ export default function Home() {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-3xl md:text-4xl font-serif text-stone-900 leading-tight">Trip Reports</h2>
-            <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-stone-400 mt-2">Field journals from India's wild places</p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-stone-600 mt-2">Field journals from India's wild places</p>
           </div>
-          <label className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-stone-500">
+          <label className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-stone-600">
             Sort by
             <select
               value={sortBy}
@@ -222,7 +222,7 @@ export default function Home() {
                   />
                 </div>
                 <h3 className="text-2xl font-serif text-stone-900 mb-2">{trip.title}</h3>
-                <p className="text-stone-700 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
+                <p className="text-stone-600 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
               </Link>
             </motion.div>
           ))}

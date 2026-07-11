@@ -167,7 +167,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
 
       {/* Section header */}
       <div className="flex items-center gap-4 mb-8">
-        <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Field Notes</p>
+        <p className="text-xs font-mono uppercase tracking-widest text-stone-600">Field Notes</p>
         <div className="flex-1 h-px bg-stone-200" />
         {comments.length > 0 && (
           <span className="text-[10px] font-mono text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">{comments.length}</span>
@@ -218,7 +218,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
 
         {/* Footer row */}
         <div className="flex items-center justify-between gap-4 px-4 pb-4">
-          <span className="text-[11px] text-stone-300 font-mono">{body.length}/1000</span>
+          <span className="text-[11px] text-stone-500 font-mono">{body.length}/1000</span>
           <button
             type="submit"
             disabled={submitting}
@@ -263,7 +263,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <p className="text-stone-400 text-sm">Be the first to leave a field note.</p>
+          <p className="text-stone-600 text-sm">Be the first to leave a field note.</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -395,12 +395,12 @@ function Lightbox({
         className="flex items-center justify-between px-5 py-4 flex-shrink-0 z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-xs font-mono uppercase tracking-widest text-white/40">
+        <span className="text-xs font-mono uppercase tracking-widest text-white/75">
           {current + 1} / {photos.length}
         </span>
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-white/60 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/8 border border-transparent hover:border-white/15"
+          className="flex items-center gap-2 text-white/85 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/8 border border-transparent hover:border-white/15"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -675,7 +675,7 @@ export default function Trip() {
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.2 }}
           onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50 hover:text-white transition-colors duration-300 cursor-pointer"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/80 hover:text-white transition-colors duration-300 cursor-pointer"
           aria-label="Scroll down"
         >
           <span className="text-[10px] font-mono uppercase tracking-widest">Scroll</span>
@@ -692,7 +692,7 @@ export default function Trip() {
 
       {/* Story Section */}
       {trip.story && (
-        <section className="max-w-[720px] mx-auto px-6 py-24 md:py-32">
+        <section className="max-w-[1600px] mx-auto px-6 md:px-12 py-24 md:py-32">
           {/* Summary pull-quote */}
           {(trip as typeof trip & { storySummary?: string | null }).storySummary && (
             <motion.blockquote
@@ -738,8 +738,8 @@ export default function Trip() {
       {showPinnedGallery && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-stone-200" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-600">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-300" />
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {pinnedGallery.map((item, i) => {
@@ -780,8 +780,8 @@ export default function Trip() {
       {showAllGooglePhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-stone-200" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-600">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-300" />
           </div>
 
           {gLoading ? (
@@ -828,8 +828,8 @@ export default function Trip() {
       {showDbPhotos && (
         <section className="max-w-[1600px] mx-auto px-6 md:px-12 pb-32">
           <div className="flex items-center gap-4 mb-10">
-            <p className="text-xs font-mono uppercase tracking-widest text-stone-400">Expedition Gallery</p>
-            <div className="flex-1 h-px bg-stone-200" />
+            <p className="text-xs font-mono uppercase tracking-widest text-stone-600">Expedition Gallery</p>
+            <div className="flex-1 h-px bg-stone-300" />
           </div>
           <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
             {dbPhotos.map((photo, i) => (
