@@ -702,7 +702,7 @@ export default function Trip() {
               transition={{ duration: 0.9 }}
               className="relative mb-16 pl-7 border-l-[3px] border-amber-500"
             >
-              <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-stone-700">
+              <p className="text-xl md:text-2xl italic leading-relaxed text-stone-700 [font-family:var(--font-prose)]">
                 {(trip as typeof trip & { storySummary?: string | null }).storySummary}
               </p>
             </motion.blockquote>
@@ -721,7 +721,7 @@ export default function Trip() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-60px" }}
                   transition={{ duration: 0.8, delay: i === 0 ? 0 : 0.05 }}
-                  className={`text-lg md:text-xl font-serif leading-loose text-stone-900 ${
+                  className={`text-[1.0625rem] md:text-lg leading-[1.9] text-stone-800 [font-family:var(--font-prose)] ${
                     i === 0
                       ? "first-letter:text-6xl first-letter:font-serif first-letter:text-amber-600 first-letter:float-left first-letter:mr-4 first-letter:leading-none first-letter:-mt-1"
                       : ""

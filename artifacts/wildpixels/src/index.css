@@ -52,6 +52,7 @@
 
   --font-sans: var(--app-font-sans);
   --font-serif: var(--app-font-serif);
+  --font-prose: var(--app-font-prose);
   --font-mono: var(--app-font-mono);
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -103,6 +104,7 @@
 
   --app-font-sans: 'DM Sans', sans-serif;
   --app-font-serif: 'Cormorant Garamond', Georgia, serif;
+  --app-font-prose: 'Lora', Georgia, serif;
   --app-font-mono: 'DM Mono', Menlo, monospace;
   --radius: 0rem;
 }
@@ -394,15 +396,16 @@
   /* Field note markdown body */
   .prose-wildpixels {
     color: rgb(28 25 23);
+    font-family: var(--font-prose, 'Lora', Georgia, serif);
     font-size: 1.0625rem;
-    line-height: 1.85;
+    line-height: 1.9;
     font-weight: 400;
   }
   .prose-wildpixels h1,
   .prose-wildpixels h2,
   .prose-wildpixels h3,
   .prose-wildpixels h4 {
-    font-family: var(--font-serif, serif);
+    font-family: var(--font-serif, 'Cormorant Garamond', Georgia, serif);
     color: rgb(28 25 23);
     font-weight: 700;
     margin-top: 2.5rem;
@@ -412,7 +415,7 @@
   .prose-wildpixels h1 { font-size: 2rem; }
   .prose-wildpixels h2 { font-size: 1.5rem; }
   .prose-wildpixels h3 { font-size: 1.2rem; }
-  .prose-wildpixels p { margin-bottom: 1.4rem; }
+  .prose-wildpixels p { margin-bottom: 1.5rem; }
   .prose-wildpixels a {
     color: rgb(180 83 9);
     text-decoration: underline;
@@ -425,9 +428,9 @@
     border-left: 2px solid rgb(217 119 6 / 0.5);
     padding-left: 1.25rem;
     margin: 2rem 0;
-    color: rgb(120 113 108);
+    color: rgb(87 83 78);
     font-style: italic;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
   .prose-wildpixels ul,
   .prose-wildpixels ol {

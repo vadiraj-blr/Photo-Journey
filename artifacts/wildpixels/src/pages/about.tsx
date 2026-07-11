@@ -273,7 +273,7 @@ export default function About() {
           className="flex flex-col gap-8"
         >
           <h1 className="text-5xl md:text-7xl font-serif tracking-tight leading-tight text-amber-600">{aboutTitle}</h1>
-          <div className="space-y-5 text-base text-stone-900 font-sans font-normal leading-relaxed">
+          <div className="space-y-5 text-[1.0625rem] text-stone-800 leading-[1.9] [font-family:var(--font-prose)]">
             {paragraphs.map((para, i) => <p key={i}>{para}</p>)}
           </div>
         </motion.div>
