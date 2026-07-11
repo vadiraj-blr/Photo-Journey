@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -77,6 +77,14 @@ export default function PortfolioScreen() {
   const insets = useSafeAreaInsets();
   const topOffset = Platform.OS === "web" ? 67 : insets.top;
 
+  useEffect(() => {
+    fetch(`${BASE}/api/analytics/pageview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: "mobile", path: "portfolio" }),
+    }).catch(() => {});
+  }, []);
+
   const {
     data: trips,
     isLoading,
@@ -139,6 +147,14 @@ export default function PortfolioScreen() {
           styles.listContent,
           { paddingBottom: insets.bottom + 90 },
         ]}
+        ListFooterComponent={
+          <View style={styles.footerBlock}>
+            <Text style={[styles.footerBrand, { color: colors.mutedForeground }]}>WILDPIXELS</Text>
+            <Text style={[styles.footerCopy, { color: colors.mutedForeground }]}>
+              © {new Date().getFullYear()} Vadiraj BK · All rights reserved
+            </Text>
+          </View>
+        }
         refreshControl={
           <RefreshControl
             refreshing={isLoading}
@@ -227,4 +243,9 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontFamily: "Inter_400Regular",
   },
+
+  // Footer
+  footerBlock: { alignItems: "center", gap: 5, paddingVertical: 24 },
+  footerBrand: { fontSize: 11, letterSpacing: 6, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
+  footerCopy: { fontSize: 10, letterSpacing: 0.3, fontFamily: "Inter_400Regular" },
 });

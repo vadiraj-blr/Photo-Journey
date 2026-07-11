@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -10,6 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,7 +36,17 @@ interface Settings {
 interface Stats {
   tripCount: number;
   countryCount: number;
+  placeCount: number;
   photoCount: number;
+}
+
+interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  coverImageUrl?: string;
+  publishedAt?: string;
 }
 
 function StatPill({ value, label }: { value: number | string; label: string }) {
@@ -47,37 +58,28 @@ function StatPill({ value, label }: { value: number | string; label: string }) {
   );
 }
 
-function ContactRow({
+function ContactChip({
   icon,
-  text,
+  label,
   onPress,
 }: {
   icon: string;
-  text: string;
+  label: string;
   onPress?: () => void;
 }) {
   const colors = useColors();
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.contactRow, { borderBottomColor: colors.border }]}
+      style={[styles.contactChip, { backgroundColor: colors.card, borderColor: colors.border }]}
       disabled={!onPress}
     >
-      <View
-        style={[styles.contactIcon, { backgroundColor: colors.secondary }]}
-      >
-        <Feather name={icon as never} size={16} color={colors.primary} />
+      <View style={[styles.chipIcon, { backgroundColor: colors.secondary }]}>
+        <Feather name={icon as never} size={14} color={colors.primary} />
       </View>
-      <Text style={[styles.contactText, { color: colors.foreground }]}>
-        {text}
+      <Text style={[styles.chipLabel, { color: colors.foreground }]} numberOfLines={1}>
+        {label}
       </Text>
-      {onPress && (
-        <Feather
-          name="chevron-right"
-          size={16}
-          color={colors.mutedForeground}
-        />
-      )}
     </Pressable>
   );
 }
@@ -86,6 +88,17 @@ export default function AboutScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+
+  const [email, setEmail] = useState("");
+  const [subscribeStatus, setSubscribeStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+
+  useEffect(() => {
+    fetch(`${BASE}/api/analytics/pageview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: "mobile", path: "about" }),
+    }).catch(() => {});
+  }, []);
 
   const { data: settings, isLoading: settingsLoading } =
     useQuery<Settings>({
@@ -99,7 +112,29 @@ export default function AboutScreen() {
       fetch(`${BASE}/api/trips/stats`).then((r) => r.json()),
   });
 
+  const { data: articles } = useQuery<Article[]>({
+    queryKey: ["articles"],
+    queryFn: () => fetch(`${BASE}/api/articles`).then((r) => r.json()),
+  });
+
   const portrait = settings?.aboutPortraitUrl;
+  const recentArticles = (articles ?? []).slice(0, 2);
+
+  async function handleSubscribe() {
+    const trimmed = email.trim();
+    if (!trimmed || !trimmed.includes("@")) return;
+    setSubscribeStatus("loading");
+    try {
+      const res = await fetch(`${BASE}/api/subscribe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      setSubscribeStatus(res.ok ? "done" : "error");
+    } catch {
+      setSubscribeStatus("error");
+    }
+  }
 
   return (
     <ScrollView
@@ -157,19 +192,9 @@ export default function AboutScreen() {
       {stats && (
         <View style={[styles.statsRow, { borderColor: colors.border }]}>
           <StatPill value={stats.tripCount} label="Trips" />
-          <View
-            style={[
-              styles.statDivider,
-              { backgroundColor: colors.border },
-            ]}
-          />
-          <StatPill value={stats.countryCount} label="Countries" />
-          <View
-            style={[
-              styles.statDivider,
-              { backgroundColor: colors.border },
-            ]}
-          />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
+          <StatPill value={stats.placeCount ?? stats.countryCount} label="Locations" />
+          <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
           <StatPill value={stats.photoCount} label="Photos" />
         </View>
       )}
@@ -179,9 +204,7 @@ export default function AboutScreen() {
         <ActivityIndicator color={colors.primary} style={styles.bioLoader} />
       ) : settings?.aboutBio ? (
         <View style={styles.bioBlock}>
-          <View
-            style={[styles.bioAccent, { backgroundColor: colors.primary }]}
-          />
+          <View style={[styles.bioAccent, { backgroundColor: colors.primary }]} />
           <Text style={[styles.bio, { color: colors.foreground }]}>
             {settings.aboutBio}
           </Text>
@@ -202,66 +225,151 @@ export default function AboutScreen() {
         </View>
       )}
 
+      {/* Journal */}
+      {recentArticles.length > 0 && (
+        <>
+          <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+            JOURNAL
+          </Text>
+          <View style={[styles.journalCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            {recentArticles.map((article, i) => (
+              <Pressable
+                key={article.id}
+                style={[
+                  styles.journalRow,
+                  { borderBottomColor: colors.border },
+                  i === recentArticles.length - 1 && { borderBottomWidth: 0 },
+                ]}
+                onPress={() => {
+                  const domain = process.env.EXPO_PUBLIC_DOMAIN ?? "";
+                  if (domain) Linking.openURL(`https://${domain}/field-notes/${article.slug}`);
+                }}
+              >
+                <View style={styles.journalText}>
+                  <Text style={[styles.journalTitle, { color: colors.foreground }]} numberOfLines={1}>
+                    {article.title}
+                  </Text>
+                  {article.excerpt ? (
+                    <Text style={[styles.journalExcerpt, { color: colors.mutedForeground }]} numberOfLines={2}>
+                      {article.excerpt}
+                    </Text>
+                  ) : null}
+                </View>
+                <Feather name="chevron-right" size={14} color={colors.mutedForeground} />
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
+
       {/* Contact */}
       <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
         CONTACT
       </Text>
-      <View
-        style={[
-          styles.contactCard,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-          },
-        ]}
-      >
+      <View style={[styles.contactCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
         {settings?.contactLocation && (
-          <ContactRow icon="map-pin" text={settings.contactLocation} />
+          <View style={[styles.contactLocRow, { borderBottomColor: colors.border }]}>
+            <Feather name="map-pin" size={13} color={colors.mutedForeground} />
+            <Text style={[styles.contactLocText, { color: colors.mutedForeground }]}>
+              {settings.contactLocation}
+            </Text>
+          </View>
         )}
-        {settings?.contactEmail && (
-          <ContactRow
-            icon="mail"
-            text={settings.contactEmail}
-            onPress={() =>
-              Linking.openURL(`mailto:${settings.contactEmail}`)
-            }
-          />
+        <View style={styles.contactChipsRow}>
+          {settings?.contactEmail && (
+            <ContactChip
+              icon="mail"
+              label={settings.contactEmail}
+              onPress={() => Linking.openURL(`mailto:${settings.contactEmail}`)}
+            />
+          )}
+          {settings?.contactPhone && (
+            <ContactChip
+              icon="phone"
+              label={settings.contactPhone}
+              onPress={() => Linking.openURL(`tel:${settings.contactPhone}`)}
+            />
+          )}
+          {settings?.contactInstagram && (
+            <ContactChip
+              icon="instagram"
+              label={`@${settings.contactInstagram}`}
+              onPress={() => Linking.openURL(`https://instagram.com/${settings.contactInstagram}`)}
+            />
+          )}
+          {settings?.contactFacebook && (
+            <ContactChip
+              icon="facebook"
+              label={settings.contactFacebook}
+              onPress={() => Linking.openURL(`https://facebook.com/${settings.contactFacebook}`)}
+            />
+          )}
+        </View>
+      </View>
+
+      {/* Subscribe */}
+      <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
+        STAY UPDATED
+      </Text>
+      <View style={[styles.subscribeCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <Text style={[styles.subscribeHeading, { color: colors.foreground }]}>
+          New expeditions in your inbox
+        </Text>
+        <Text style={[styles.subscribeSubtext, { color: colors.mutedForeground }]}>
+          Get notified when Vadiraj publishes a new trip report or field note.
+        </Text>
+        {subscribeStatus === "done" ? (
+          <View style={styles.subscribeSuccess}>
+            <Feather name="check-circle" size={18} color={colors.primary} />
+            <Text style={[styles.subscribeSuccessText, { color: colors.primary }]}>
+              You're subscribed!
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.subscribeRow}>
+            <TextInput
+              style={[
+                styles.subscribeInput,
+                { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground },
+              ]}
+              placeholder="your@email.com"
+              placeholderTextColor={colors.mutedForeground}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              editable={subscribeStatus !== "loading"}
+            />
+            <Pressable
+              style={[styles.subscribeBtn, { backgroundColor: colors.primary, opacity: subscribeStatus === "loading" ? 0.6 : 1 }]}
+              onPress={handleSubscribe}
+              disabled={subscribeStatus === "loading"}
+            >
+              {subscribeStatus === "loading" ? (
+                <ActivityIndicator size="small" color="#080808" />
+              ) : (
+                <Feather name="arrow-right" size={16} color="#080808" />
+              )}
+            </Pressable>
+          </View>
         )}
-        {settings?.contactPhone && (
-          <ContactRow
-            icon="phone"
-            text={settings.contactPhone}
-            onPress={() => Linking.openURL(`tel:${settings.contactPhone}`)}
-          />
-        )}
-        {settings?.contactInstagram && (
-          <ContactRow
-            icon="instagram"
-            text={`@${settings.contactInstagram}`}
-            onPress={() =>
-              Linking.openURL(
-                `https://instagram.com/${settings.contactInstagram}`
-              )
-            }
-          />
-        )}
-        {settings?.contactFacebook && (
-          <ContactRow
-            icon="facebook"
-            text={settings.contactFacebook}
-            onPress={() =>
-              Linking.openURL(
-                `https://facebook.com/${settings.contactFacebook}`
-              )
-            }
-          />
+        {subscribeStatus === "error" && (
+          <Text style={[styles.subscribeError, { color: "#E05555" }]}>
+            Something went wrong. Please try again.
+          </Text>
         )}
       </View>
 
-      {/* Brand footer */}
-      <Text style={[styles.footer, { color: colors.mutedForeground }]}>
-        WILDPIXELS
-      </Text>
+      {/* Brand footer with copyright */}
+      <View style={styles.footerBlock}>
+        <Text style={[styles.footerBrand, { color: colors.mutedForeground }]}>
+          WILDPIXELS
+        </Text>
+        <Text style={[styles.footerCopy, { color: colors.mutedForeground }]}>
+          © {new Date().getFullYear()} Vadiraj BK · All rights reserved
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -352,34 +460,140 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  contactCard: {
+  // Journal
+  journalCard: {
     borderWidth: 1,
-    marginBottom: 40,
+    marginBottom: 32,
     overflow: "hidden",
   },
-  contactRow: {
+  journalRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 10,
     borderBottomWidth: 1,
   },
-  contactIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  journalText: { flex: 1 },
+  journalTitle: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 3,
+  },
+  journalExcerpt: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontFamily: "Inter_400Regular",
+  },
+
+  // Contact — compact chip layout
+  contactCard: {
+    borderWidth: 1,
+    marginBottom: 32,
+    overflow: "hidden",
+    padding: 14,
+  },
+  contactLocRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingBottom: 12,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+  },
+  contactLocText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+  },
+  contactChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  contactChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+  },
+  chipIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
-  contactText: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular" },
+  chipLabel: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    maxWidth: 130,
+  },
 
-  footer: {
-    textAlign: "center",
+  // Subscribe
+  subscribeCard: {
+    borderWidth: 1,
+    marginBottom: 40,
+    padding: 16,
+  },
+  subscribeHeading: {
+    fontSize: 15,
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 6,
+  },
+  subscribeSubtext: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontFamily: "Inter_400Regular",
+    marginBottom: 14,
+  },
+  subscribeRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  subscribeInput: {
+    flex: 1,
+    height: 42,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    fontSize: 13,
+    fontFamily: "Inter_400Regular",
+  },
+  subscribeBtn: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  subscribeSuccess: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 10,
+  },
+  subscribeSuccessText: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+  },
+  subscribeError: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    marginTop: 8,
+  },
+
+  // Footer
+  footerBlock: { alignItems: "center", gap: 6, marginBottom: 8 },
+  footerBrand: {
     fontSize: 11,
     letterSpacing: 6,
     fontWeight: "600" as const,
     fontFamily: "Inter_600SemiBold",
-    marginBottom: 8,
+  },
+  footerCopy: {
+    fontSize: 10,
+    letterSpacing: 0.3,
+    fontFamily: "Inter_400Regular",
   },
 });

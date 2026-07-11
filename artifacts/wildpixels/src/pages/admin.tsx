@@ -1724,6 +1724,7 @@ interface DashboardData {
   recentComments: { id: number; name: string; body: string; created_at: string; trip_id: number; trip_title: string }[];
   perTripEngagement: { id: number; title: string; location: string; month: string; year: number; likes: number; dislikes: number; comments: number; engagement: number }[];
   pageViewStats: { trip_id: number; trip_title: string; view_count: string; avg_seconds: string }[];
+  mobileVisits: { total: number; byScreen: { screen: string; count: string }[] };
 }
 
 function formatSeconds(s: number): string {
@@ -1881,6 +1882,40 @@ function DashboardPanel() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Mobile App Visits */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-3">
+              <p className="text-[10px] font-mono uppercase tracking-widest text-white/35">Mobile App Visits</p>
+              <span className="text-xs font-mono text-amber-400/70 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                {(data.mobileVisits?.total ?? 0).toLocaleString()} total
+              </span>
+            </div>
+            {!data.mobileVisits?.total ? (
+              <p className="px-4 py-6 text-center text-white/25 text-xs border border-white/8 rounded-xl">No mobile visits recorded yet — visits will appear here once the app is used.</p>
+            ) : (
+              <div className="rounded-xl border border-white/8 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-white/8 bg-white/3">
+                      <th className="text-left px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Screen</th>
+                      <th className="text-right px-4 py-3 text-[10px] font-mono uppercase tracking-widest text-white/30 font-normal">Visits</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(data.mobileVisits?.byScreen ?? []).map((row) => (
+                      <tr key={row.screen} className="border-b border-white/4 last:border-0">
+                        <td className="px-4 py-2.5 text-white/70 capitalize">{row.screen.replace(/^\//, "")}</td>
+                        <td className="px-4 py-2.5 text-right">
+                          <span className="text-xs font-mono text-amber-400/80">{Number(row.count).toLocaleString()}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </>
       )}

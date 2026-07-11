@@ -103,6 +103,19 @@ router.get("/", requireAuth, async (_req, res) => {
       sql`SELECT COUNT(*) AS total FROM page_views`
     ).catch(() => ({ rows: [{ total: "0" }] }));
 
+    // ── Mobile app visit stats ────────────────────────────────────────────────
+    const mobileTotal = await db.execute(
+      sql`SELECT COUNT(*) AS total FROM page_views WHERE source = 'mobile'`
+    ).catch(() => ({ rows: [{ total: "0" }] }));
+
+    const mobileByScreen = await db.execute(
+      sql`SELECT path AS screen, COUNT(*) AS count
+          FROM page_views
+          WHERE source = 'mobile'
+          GROUP BY path
+          ORDER BY count DESC`
+    ).catch(() => ({ rows: [] }));
+
     res.json({
       totalTrips: trips.length,
       totalPhotos: photoCount,
@@ -115,6 +128,10 @@ router.get("/", requireAuth, async (_req, res) => {
       perTripEngagement,
       pageViewStats: pageViewStats.rows,
       totalPageViews: Number((totalPageViews.rows[0] as { total: string }).total),
+      mobileVisits: {
+        total: Number((mobileTotal.rows[0] as { total: string }).total),
+        byScreen: mobileByScreen.rows as { screen: string; count: string }[],
+      },
     });
   } catch (err) {
     console.error("Dashboard error:", err);

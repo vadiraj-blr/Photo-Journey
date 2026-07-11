@@ -100,6 +100,14 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
+  useEffect(() => {
+    fetch(`${BASE}/api/analytics/pageview`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ source: "mobile", path: "home" }),
+    }).catch(() => {});
+  }, []);
+
   const { data: settings } = useQuery<Settings>({
     queryKey: ["settings"],
     queryFn: () => fetch(`${BASE}/api/settings`).then((r) => r.json()),
@@ -286,6 +294,14 @@ export default function HomeScreen() {
           <Feather name="arrow-right" size={16} color={colors.primaryForeground} />
         </Pressable>
       </View>
+
+      {/* ── Footer copyright ── */}
+      <View style={styles.footerBlock}>
+        <Text style={[styles.footerBrand, { color: colors.mutedForeground }]}>WILDPIXELS</Text>
+        <Text style={[styles.footerCopy, { color: colors.mutedForeground }]}>
+          © {new Date().getFullYear()} Vadiraj BK · All rights reserved
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -404,4 +420,9 @@ const styles = StyleSheet.create({
   ctaBlock: { paddingHorizontal: 24, marginTop: 8, marginBottom: 16 },
   ctaBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 16, gap: 10 },
   ctaBtnText: { fontSize: 12, fontWeight: "700" as const, letterSpacing: 3, fontFamily: "Inter_700Bold" },
+
+  // Footer
+  footerBlock: { alignItems: "center", gap: 5, paddingVertical: 20, paddingBottom: 8 },
+  footerBrand: { fontSize: 11, letterSpacing: 6, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
+  footerCopy: { fontSize: 10, letterSpacing: 0.3, fontFamily: "Inter_400Regular" },
 });

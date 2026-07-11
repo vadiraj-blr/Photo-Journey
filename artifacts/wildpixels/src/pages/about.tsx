@@ -255,8 +255,8 @@ export default function About() {
               <span className="block text-xs uppercase tracking-widest text-amber-700">Expeditions</span>
             </div>
             <div className="space-y-2">
-              <span className="block text-4xl font-serif text-stone-900">{stats?.countryCount || 0}</span>
-              <span className="block text-xs uppercase tracking-widest text-amber-700">Countries</span>
+              <span className="block text-4xl font-serif text-stone-900">{(stats as typeof stats & { placeCount?: number })?.placeCount || 0}</span>
+              <span className="block text-xs uppercase tracking-widest text-amber-700">Locations</span>
             </div>
             <div className="space-y-2">
               <span className="block text-4xl font-serif text-stone-900">{stats?.photoCount || 0}</span>

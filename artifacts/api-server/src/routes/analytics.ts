@@ -12,20 +12,26 @@ async function ensureTable() {
       trip_id    INTEGER,
       path       TEXT NOT NULL,
       seconds_on_page NUMERIC NOT NULL DEFAULT 0,
+      source     TEXT NOT NULL DEFAULT 'web',
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
+  `);
+  // Add source column to existing tables
+  await db.execute(sql`
+    ALTER TABLE page_views ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'web'
   `);
 }
 ensureTable().catch(console.error);
 
-// POST /api/analytics/pageview  { tripId?, path, seconds }
-// Public endpoint — no auth required. Called via navigator.sendBeacon.
+// POST /api/analytics/pageview  { tripId?, path, seconds, source? }
+// Public endpoint — no auth required. Called via navigator.sendBeacon or fetch.
 router.post("/pageview", async (req, res) => {
   try {
-    const { tripId, path, seconds } = req.body as {
+    const { tripId, path, seconds, source } = req.body as {
       tripId?: number | null;
       path?: string;
       seconds?: number;
+      source?: string;
     };
 
     const safePath = typeof path === "string" ? path.slice(0, 200) : "/";
@@ -33,10 +39,11 @@ router.post("/pageview", async (req, res) => {
       ? Math.min(seconds, 3600)
       : 0;
     const safeTripId = typeof tripId === "number" && isFinite(tripId) ? tripId : null;
+    const safeSource = source === "mobile" ? "mobile" : "web";
 
     await db.execute(
-      sql`INSERT INTO page_views (trip_id, path, seconds_on_page)
-          VALUES (${safeTripId}, ${safePath}, ${safeSeconds})`
+      sql`INSERT INTO page_views (trip_id, path, seconds_on_page, source)
+          VALUES (${safeTripId}, ${safePath}, ${safeSeconds}, ${safeSource})`
     );
 
     res.status(204).end();
