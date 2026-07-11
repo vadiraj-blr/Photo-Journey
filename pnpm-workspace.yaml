@@ -165,4 +165,7 @@ overrides:
   uuid: ">=11.1.1"
   markdown-it: ">=14.2.0"
   linkify-it: ">=5.0.1"
-  "@babel/core": ">=7.29.6"
+  # Scope @babel/core CVE fix to the vite plugin path only — a global override
+  # breaks react-native-worklets which requires @babel/generator as a sibling.
+  # The mobile app pins @babel/core directly in its own package.json.
+  "@vitejs/plugin-react>@babel/core": ">=7.29.6"
