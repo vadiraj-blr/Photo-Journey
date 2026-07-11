@@ -2,7 +2,45 @@ import { Router } from "express";
 
 const router = Router();
 
+// ── In-memory rate limiter for login attempts ──────────────────────────────
+// Allows MAX_ATTEMPTS per WINDOW_MS per IP before returning 429.
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_ATTEMPTS = 5;
+
+interface RateEntry { count: number; windowStart: number }
+const loginLimitMap = new Map<string, RateEntry>();
+
+function isLoginRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = loginLimitMap.get(ip);
+
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
+    loginLimitMap.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+
+  if (entry.count >= MAX_ATTEMPTS) {
+    return true;
+  }
+
+  entry.count += 1;
+  return false;
+}
+
+// Periodically evict stale entries to avoid memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of loginLimitMap) {
+    if (now - entry.windowStart > WINDOW_MS) loginLimitMap.delete(key);
+  }
+}, WINDOW_MS);
+
 router.post("/login", (req, res) => {
+  const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+  if (isLoginRateLimited(ip)) {
+    return res.status(429).json({ error: "Too many login attempts. Please try again later." });
+  }
+
   const { email, password } = req.body as { email?: string; password?: string };
 
   const adminEmail = process.env["ADMIN_EMAIL"];

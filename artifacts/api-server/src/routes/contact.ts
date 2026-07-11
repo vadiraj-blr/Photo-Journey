@@ -5,6 +5,39 @@ import { sql } from "drizzle-orm";
 
 const router = Router();
 
+// ── In-memory rate limiter ─────────────────────────────────────────────────
+// Allows MAX_SUBMISSIONS per WINDOW_MS per IP address.
+const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_SUBMISSIONS = 3;
+
+interface RateEntry { count: number; windowStart: number }
+const rateLimitMap = new Map<string, RateEntry>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
+    rateLimitMap.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+
+  if (entry.count >= MAX_SUBMISSIONS) {
+    return true;
+  }
+
+  entry.count += 1;
+  return false;
+}
+
+// Periodically evict stale entries to avoid memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitMap) {
+    if (now - entry.windowStart > WINDOW_MS) rateLimitMap.delete(key);
+  }
+}, WINDOW_MS);
+
 async function getContactEmail(): Promise<string> {
   const result = await db.execute(
     sql`SELECT contact_email FROM landing_settings WHERE id = 1`
@@ -55,6 +88,11 @@ async function sendEmail(to: string, fromName: string, fromEmail: string, subjec
 
 router.post("/", async (req, res) => {
   try {
+    const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
+    if (isRateLimited(ip)) {
+      return res.status(429).json({ error: "Too many submissions. Please wait before trying again." });
+    }
+
     const { name, email, subject, message } = req.body as Record<string, string>;
 
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
