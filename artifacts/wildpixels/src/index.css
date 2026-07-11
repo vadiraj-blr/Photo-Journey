@@ -103,8 +103,8 @@
   --ring: 38 92% 42%;
 
   --app-font-sans: 'DM Sans', sans-serif;
-  --app-font-serif: 'Cormorant Garamond', Georgia, serif;
-  --app-font-prose: 'Lora', Georgia, serif;
+  --app-font-serif: 'Playfair Display', Georgia, serif;
+  --app-font-prose: 'Merriweather', Georgia, serif;
   --app-font-mono: 'DM Mono', Menlo, monospace;
   --radius: 0rem;
 }

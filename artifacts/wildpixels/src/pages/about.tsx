@@ -279,6 +279,66 @@ export default function About() {
         </motion.div>
       </div>
 
+      {/* Field Notes — right below Stories + portrait */}
+      {publishedArticles.length > 0 && (
+        <div className="max-w-[1200px] mx-auto px-6 md:px-12 mt-24">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7 }}
+            className="mb-12"
+          >
+            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-600 mb-3">Field Notes</p>
+            <h2 className="text-4xl md:text-5xl font-serif text-stone-900">From the Journal.</h2>
+          </motion.div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {publishedArticles.map((article, i) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.7, delay: (i % 3) * 0.1 }}
+              >
+                <Link href={`/field-notes/${article.slug}`}>
+                  <div className="group flex flex-col rounded-2xl border border-stone-200 bg-white hover:border-stone-400 hover:shadow-lg overflow-hidden transition-all duration-300 cursor-pointer h-full">
+                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-stone-100 flex-shrink-0">
+                      {article.cover_image_url ? (
+                        <img
+                          src={article.cover_image_url}
+                          alt={article.title}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg className="w-10 h-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col flex-1 p-6 gap-3">
+                      <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">{formatDate(article.created_at)}</p>
+                      <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
+                      {article.excerpt && (
+                        <p className="text-sm text-stone-700 leading-relaxed line-clamp-3 flex-1">{article.excerpt}</p>
+                      )}
+                      <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-stone-500 group-hover:text-amber-600 transition-colors mt-auto">
+                        Read article
+                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Places Word Map */}
       {placeWords.length > 0 && (
         <div className="mt-32 relative overflow-hidden bg-stone-100/60 py-16">
@@ -433,68 +493,6 @@ export default function About() {
         </motion.div>
       </div>
 
-      {/* Field Notes */}
-      {publishedArticles.length > 0 && (
-        <div className="max-w-[1200px] mx-auto px-6 md:px-12 mt-32">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="mb-12"
-          >
-            <p className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-600 mb-3">Field Notes</p>
-            <h2 className="text-4xl md:text-5xl font-serif text-stone-900">From the Journal.</h2>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {publishedArticles.map((article, i) => (
-              <motion.div
-                key={article.id}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-60px" }}
-                transition={{ duration: 0.7, delay: (i % 3) * 0.1 }}
-              >
-                <Link href={`/field-notes/${article.slug}`}>
-                  <div className="group flex flex-col rounded-2xl border border-stone-200 bg-white hover:border-stone-400 hover:shadow-lg overflow-hidden transition-all duration-300 cursor-pointer h-full">
-                    {/* Cover image */}
-                    <div className="relative w-full aspect-[4/3] overflow-hidden bg-stone-100 flex-shrink-0">
-                      {article.cover_image_url ? (
-                        <img
-                          src={article.cover_image_url}
-                          alt={article.title}
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-10 h-10 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card body */}
-                    <div className="flex flex-col flex-1 p-6 gap-3">
-                      <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">{formatDate(article.created_at)}</p>
-                      <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
-                      {article.excerpt && (
-                        <p className="text-sm text-stone-700 leading-relaxed line-clamp-3 flex-1">{article.excerpt}</p>
-                      )}
-                      <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-stone-500 group-hover:text-amber-600 transition-colors mt-auto">
-                        Read article
-                        <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Curated Highlights */}
       {highlights.length > 0 && (
