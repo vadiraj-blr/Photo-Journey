@@ -33,7 +33,7 @@ interface Settings {
 
 interface Stats {
   tripCount: number;
-  countryCount: number;
+  placeCount: number;
   photoCount: number;
 }
 
@@ -163,12 +163,12 @@ export default function HomeScreen() {
         <View style={[styles.statsStrip, { borderColor: colors.border }]}>
           <View style={styles.statItem}>
             <Text style={styles.statNum}>{stats.tripCount}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>EXPEDITIONS</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>TRIPS</Text>
           </View>
           <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{stats.countryCount}</Text>
-            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>COUNTRIES</Text>
+            <Text style={styles.statNum}>{stats.placeCount}</Text>
+            <Text style={[styles.statLbl, { color: colors.mutedForeground }]}>LOCATIONS</Text>
           </View>
           <View style={[styles.statDiv, { backgroundColor: colors.border }]} />
           <View style={styles.statItem}>
