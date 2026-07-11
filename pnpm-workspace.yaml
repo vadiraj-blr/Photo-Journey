@@ -169,3 +169,12 @@ overrides:
   # breaks react-native-worklets which requires @babel/generator as a sibling.
   # The mobile app pins @babel/core directly in its own package.json.
   "@vitejs/plugin-react>@babel/core": ">=7.29.6"
+
+packageExtensions:
+  # react-native-worklets@0.5.1's Babel plugin calls require('@babel/generator')
+  # internally but doesn't declare it as a dependency. pnpm's strict isolation
+  # means it can't find it even though it's installed elsewhere. Injecting it
+  # here makes pnpm link it into worklets' own node_modules.
+  "react-native-worklets":
+    dependencies:
+      "@babel/generator": "*"
