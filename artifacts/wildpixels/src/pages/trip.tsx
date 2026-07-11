@@ -140,7 +140,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
 
       {/* Reactions bar */}
       <div className="flex items-center gap-3 mb-14 p-4 rounded-2xl bg-white border border-stone-200">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mr-1">React</span>
+        <span className="text-[10px] font-mono uppercase tracking-widest text-stone-600 mr-1">React</span>
         <button
           onClick={() => react("like")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 ${voted === "like"
@@ -170,7 +170,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
         <p className="text-xs font-mono uppercase tracking-widest text-stone-600">Field Notes</p>
         <div className="flex-1 h-px bg-stone-200" />
         {comments.length > 0 && (
-          <span className="text-[10px] font-mono text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">{comments.length}</span>
+          <span className="text-[10px] font-mono text-stone-600 bg-stone-100 px-2 py-0.5 rounded-full">{comments.length}</span>
         )}
       </div>
 
@@ -281,7 +281,7 @@ function CommentsSection({ tripId }: { tripId: number }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2 mb-1.5">
                   <span className="text-sm font-semibold text-stone-800">{c.name}</span>
-                  <span className="text-[10px] text-stone-400 font-mono">
+                  <span className="text-[10px] text-stone-600 font-mono">
                     {new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
@@ -818,7 +818,7 @@ export default function Trip() {
             </div>
           ) : (
             <div className="text-center py-24">
-              <p className="text-stone-400 text-sm">Could not load photos from this album.</p>
+              <p className="text-stone-600 text-sm">Could not load photos from this album.</p>
             </div>
           )}
         </section>

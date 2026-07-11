@@ -130,7 +130,7 @@ function ContactForm({ toEmail }: { toEmail: string }) {
         <p className="text-stone-500 text-sm">{toEmail ? `Your message is on its way to Vadiraj.` : "Your message has been received."}</p>
         <button
           onClick={() => setDone(false)}
-          className="mt-6 text-xs text-stone-400 hover:text-stone-600 transition-colors underline underline-offset-2"
+          className="mt-6 text-xs text-stone-600 hover:text-stone-800 transition-colors underline underline-offset-2"
         >
           Send another message
         </button>
@@ -147,26 +147,26 @@ function ContactForm({ toEmail }: { toEmail: string }) {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-stone-100">
         <div className="px-5 py-4">
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Your Name</label>
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-600 mb-1.5">Your Name</label>
           <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             placeholder="Vadiraj Kulkarni" className={fieldCls} />
         </div>
         <div className="px-5 py-4">
-          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Your Email</label>
+          <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-600 mb-1.5">Your Email</label>
           <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
             placeholder="you@example.com" className={fieldCls} />
         </div>
       </div>
       <div className="border-t border-stone-100 px-5 py-4">
-        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Subject</label>
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-600 mb-1.5">Subject</label>
         <input value={form.subject} onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
           placeholder="Licensing enquiry / Collaboration / Just saying hi…" className={fieldCls} />
       </div>
       <div className="border-t border-stone-100 px-5 py-4">
-        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-1.5">Message</label>
+        <label className="block text-[10px] font-mono uppercase tracking-widest text-stone-600 mb-1.5">Message</label>
         <textarea required rows={5} maxLength={2000} value={form.message}
           onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}

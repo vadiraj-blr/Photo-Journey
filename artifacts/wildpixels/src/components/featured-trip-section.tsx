@@ -77,7 +77,7 @@ export default function FeaturedTripSection() {
             </h2>
 
             {displayExcerpt && (
-              <p className="text-stone-400 text-base leading-relaxed mb-8 max-w-lg">
+              <p className="text-stone-300 text-base leading-relaxed mb-8 max-w-lg">
                 {displayExcerpt}
               </p>
             )}
@@ -87,7 +87,7 @@ export default function FeaturedTripSection() {
                 {(trip.tags as string[]).slice(0, 4).map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] font-mono uppercase tracking-widest text-stone-500 border border-stone-700 px-3 py-1"
+                    className="text-[10px] font-mono uppercase tracking-widest text-stone-400 border border-stone-600 px-3 py-1"
                   >
                     {tag}
                   </span>

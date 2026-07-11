@@ -48,7 +48,7 @@ export default function FieldNote() {
   if (isError || !article) {
     return (
       <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-center gap-4 px-6">
-        <p className="text-stone-400 font-mono text-sm uppercase tracking-widest">Field note not found</p>
+        <p className="text-stone-600 font-mono text-sm uppercase tracking-widest">Field note not found</p>
         <Link href="/about" className="text-amber-600 text-sm hover:text-amber-500 transition-colors">
           ← Back to About
         </Link>

@@ -123,7 +123,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-xs text-stone-700 leading-relaxed max-w-[220px]">
               A personal visual journal of expeditions, wildlife, and landscapes across the world.
             </p>
-            <p className="text-[11px] font-mono text-stone-500 uppercase tracking-widest">The Personal Legend.</p>
+            <p className="text-[11px] font-mono text-stone-600 uppercase tracking-widest">The Personal Legend.</p>
           </div>
 
           {/* Subscribe CTA */}
@@ -155,7 +155,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <p className="text-xs text-stone-600 leading-relaxed">
               Images, text, and design on this site are the intellectual property of the photographer. Unauthorised reproduction is strictly prohibited.
             </p>
-            <p className="text-xs text-stone-500 mt-2">
+            <p className="text-xs text-stone-600 mt-2">
               Built with Wildpixels — a bespoke photography portfolio.
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom bar */}
         <div className="border-t border-stone-100 py-5 text-center">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-500">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">
             &copy; {new Date().getFullYear()} Vadiraj Photography &nbsp;·&nbsp; All Images Original Works &nbsp;·&nbsp; All Rights Reserved
           </p>
         </div>

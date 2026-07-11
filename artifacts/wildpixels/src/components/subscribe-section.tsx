@@ -49,7 +49,7 @@ export default function SubscribeSection() {
             <h2 className="text-3xl md:text-4xl font-serif text-white leading-tight mb-4">
               Never miss a story<br className="hidden md:block" /> from the wild.
             </h2>
-            <p className="text-stone-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-stone-300 text-sm leading-relaxed max-w-sm">
               Subscribe to get notified when a new field note or journey is published. One email at a time — no noise.
             </p>
           </div>
@@ -64,7 +64,7 @@ export default function SubscribeSection() {
                 </div>
                 <div>
                   <p className="text-white font-medium text-sm">You're subscribed.</p>
-                  <p className="text-stone-400 text-xs mt-0.5">Watch your inbox for new stories from the wild.</p>
+                  <p className="text-stone-300 text-xs mt-0.5">Watch your inbox for new stories from the wild.</p>
                 </div>
               </div>
             ) : (
