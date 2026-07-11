@@ -227,7 +227,7 @@ export default function HomeScreen() {
             <Image
               source={{ uri: featuredTrip.coverImageUrl }}
               style={styles.featuredImg}
-              resizeMode="cover"
+              resizeMode="contain"
             />
             {/* Location badge */}
             <View style={[styles.featuredLocationBadge, { backgroundColor: "rgba(8,8,8,0.82)" }]}>
@@ -367,12 +367,15 @@ const styles = StyleSheet.create({
   featuredLabelText: { fontSize: 9, letterSpacing: 3.5, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
   featuredImgWrap: {
     marginHorizontal: 0,
-    aspectRatio: 16 / 9,
+    aspectRatio: 4 / 3,
     overflow: "hidden",
     position: "relative",
     marginBottom: 16,
+    backgroundColor: "#080808",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  featuredImg: { width: "100%", height: "100%", alignSelf: "center" },
+  featuredImg: { width: "100%", height: "100%" },
   featuredLocationBadge: {
     position: "absolute",
     bottom: 12,

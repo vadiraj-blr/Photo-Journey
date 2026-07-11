@@ -47,7 +47,7 @@ function TripCard({ trip }: { trip: Trip }) {
       <Image
         source={{ uri: trip.coverImageUrl }}
         style={styles.cardImage}
-        resizeMode="cover"
+        resizeMode="contain"
       />
       <View style={styles.cardOverlay}>
         <Text style={styles.cardLocation} numberOfLines={1}>
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   row: { gap: 2, paddingHorizontal: 2 },
   listContent: {},
 
-  card: { height: 200, marginBottom: 2, overflow: "hidden" },
+  card: { height: 200, marginBottom: 2, overflow: "hidden", backgroundColor: "#080808" },
   cardImage: { width: "100%", height: "100%" },
   cardOverlay: {
     position: "absolute",
