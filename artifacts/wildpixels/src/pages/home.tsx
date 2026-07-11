@@ -187,7 +187,7 @@ export default function Home() {
       <section id="trip-grid" className="max-w-[1600px] mx-auto px-6 md:px-12 py-32">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <h2 className="text-3xl md:text-4xl font-serif text-stone-900 leading-tight">Trip Reports</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-semibold text-stone-900 leading-tight">Trip Reports</h2>
             <p className="text-[10px] font-mono uppercase tracking-[0.22em] text-stone-600 mt-2">Field journals from India's wild places</p>
           </div>
           <label className="flex items-center gap-3 text-[10px] font-mono uppercase tracking-widest text-stone-600">
@@ -221,7 +221,7 @@ export default function Home() {
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
                   />
                 </div>
-                <h3 className="text-2xl font-serif text-stone-900 mb-2">{trip.title}</h3>
+                <h3 className="text-2xl font-serif font-semibold text-stone-900 mb-2">{trip.title}</h3>
                 <p className="text-stone-600 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
               </Link>
             </motion.div>

@@ -105,7 +105,7 @@ export default function FieldNote() {
           <p className="text-xs font-mono uppercase tracking-widest text-amber-600 mb-4">
             {formatDate(article.created_at)}
           </p>
-          <h1 className="text-4xl md:text-6xl font-serif tracking-tight leading-tight mb-6 text-stone-900">
+          <h1 className="text-4xl md:text-6xl font-serif font-semibold tracking-tight leading-tight mb-6 text-stone-900">
             {article.title}
           </h1>
           {article.excerpt && (

@@ -72,7 +72,7 @@ export default function FeaturedTripSection() {
               Featured Expedition · {trip.month} {trip.year}
             </p>
 
-            <h2 className="text-4xl md:text-5xl font-serif text-stone-50 leading-tight mb-6">
+            <h2 className="text-4xl md:text-5xl font-serif font-semibold text-stone-50 leading-tight mb-6">
               {trip.title}
             </h2>
 

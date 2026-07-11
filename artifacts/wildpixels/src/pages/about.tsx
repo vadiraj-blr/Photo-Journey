@@ -477,7 +477,7 @@ export default function About() {
                     {/* Card body */}
                     <div className="flex flex-col flex-1 p-6 gap-3">
                       <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">{formatDate(article.created_at)}</p>
-                      <h3 className="text-xl font-serif text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
+                      <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
                       {article.excerpt && (
                         <p className="text-sm text-stone-700 leading-relaxed line-clamp-3 flex-1">{article.excerpt}</p>
                       )}
