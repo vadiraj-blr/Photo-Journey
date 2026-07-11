@@ -104,13 +104,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      <footer className="w-full border-t border-stone-200 mt-24 bg-white">
+      <footer className="w-full border-t border-stone-300 mt-24 bg-stone-50">
         <div className="max-w-[1200px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
 
           {/* Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-40">
+              <svg width="24" height="24" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-70">
                 <circle cx="14" cy="14" r="13" stroke="currentColor" strokeWidth="1.2"/>
                 <circle cx="14" cy="14" r="4.5" fill="currentColor"/>
                 <line x1="14" y1="1" x2="14" y2="5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
@@ -118,18 +118,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 <line x1="1" y1="14" x2="5.5" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                 <line x1="22.5" y1="14" x2="27" y2="14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
-              <span className="font-serif text-xl font-bold text-stone-700 tracking-tight">Wildpixels</span>
+              <span className="font-serif text-xl font-bold text-stone-900 tracking-tight">Wildpixels</span>
             </div>
-            <p className="text-xs text-stone-700 leading-relaxed max-w-[220px]">
+            <p className="text-xs text-stone-800 leading-relaxed max-w-[220px]">
               A personal visual journal of expeditions, wildlife, and landscapes across the world.
             </p>
-            <p className="text-[11px] font-mono text-stone-600 uppercase tracking-widest">The Personal Legend.</p>
+            <p className="text-[11px] font-mono text-stone-700 uppercase tracking-widest">The Personal Legend.</p>
           </div>
 
           {/* Subscribe CTA */}
           <div className="flex flex-col gap-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-amber-700 mb-1">Stay in the Loop</p>
-            <p className="text-xs text-stone-700 leading-relaxed">
+            <p className="text-xs text-stone-800 leading-relaxed">
               Get notified when a new field note or journey is published. No noise — just the good stuff.
             </p>
             <SubscribeFooterCta />
@@ -138,10 +138,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Rights */}
           <div className="flex flex-col gap-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-amber-700 mb-1">Rights &amp; Usage</p>
-            <p className="text-xs text-stone-700 leading-relaxed">
-              All photographs are original works by <strong className="text-stone-900">Vadiraj</strong> and are protected under copyright law.
+            <p className="text-xs text-stone-800 leading-relaxed">
+              All photographs are original works by <strong className="text-stone-900 font-semibold">Vadiraj</strong> and are protected under copyright law.
             </p>
-            <p className="text-xs text-stone-700 leading-relaxed">
+            <p className="text-xs text-stone-800 leading-relaxed">
               No image may be reproduced, distributed, or used commercially without explicit written permission from the photographer.
             </p>
           </div>
@@ -149,13 +149,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Legal */}
           <div className="flex flex-col gap-3">
             <p className="text-[10px] font-mono uppercase tracking-widest text-amber-700 mb-1">Legal</p>
-            <p className="text-xs text-stone-700 leading-relaxed">
+            <p className="text-xs text-stone-900 font-medium leading-relaxed">
               &copy; {new Date().getFullYear()} Vadiraj. All rights reserved.
             </p>
-            <p className="text-xs text-stone-600 leading-relaxed">
+            <p className="text-xs text-stone-800 leading-relaxed">
               Images, text, and design on this site are the intellectual property of the photographer. Unauthorised reproduction is strictly prohibited.
             </p>
-            <p className="text-xs text-stone-600 mt-2">
+            <p className="text-xs text-stone-700 mt-2">
               Built with Wildpixels — a bespoke photography portfolio.
             </p>
           </div>
@@ -163,8 +163,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-stone-100 py-5 text-center">
-          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">
+        <div className="border-t border-stone-300 py-5 text-center bg-stone-100">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-800">
             &copy; {new Date().getFullYear()} Vadiraj Photography &nbsp;·&nbsp; All Images Original Works &nbsp;·&nbsp; All Rights Reserved
           </p>
         </div>
