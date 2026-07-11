@@ -387,8 +387,7 @@ export default function TripDetailScreen() {
             style={[styles.cover, { height: SH * 0.48 }]}
             resizeMode="cover"
           />
-          {__DEV__ && (
-            <Pressable
+          <Pressable
               onPress={() => setShowCropEditor(true)}
               style={styles.cropBtn}
               hitSlop={8}
@@ -396,7 +395,6 @@ export default function TripDetailScreen() {
               <Feather name="crop" size={12} color="#080808" />
               <Text style={styles.cropBtnText}>SET CROP</Text>
             </Pressable>
-          )}
           <View style={styles.coverOverlay}>
             {trip.tags.length > 0 && (
               <View style={styles.coverTags}>
@@ -692,7 +690,7 @@ export default function TripDetailScreen() {
           onClose={() => setLightboxIndex(null)}
         />
       )}
-      {__DEV__ && trip && (
+      {trip && (
         <FocalPointEditor
           visible={showCropEditor}
           tripId={trip.id}

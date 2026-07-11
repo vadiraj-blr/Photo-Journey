@@ -141,7 +141,7 @@ export default function HomeScreen() {
         <View style={styles.heroGradient} />
 
         {/* Brand mark — camera SVG + Wildpixels wordmark */}
-        <View style={[styles.brandBlock, { paddingTop: topPad + 20 }]}>
+        <View style={[styles.brandBlock, { paddingTop: topPad - 20 }]}>
           <View style={styles.brandRow}>
             <CameraLogo color="#EDE8DC" size={32} />
             <Text style={styles.brandName}>Wildpixels</Text>
