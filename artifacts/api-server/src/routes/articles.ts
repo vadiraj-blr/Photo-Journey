@@ -20,11 +20,18 @@ async function getSiteUrl(): Promise<string> {
   return domain ? `https://${domain}` : "https://wildpixels.replit.app";
 }
 
-// GET /api/articles — list all articles (public)
-router.get("/", async (_req, res) => {
+function isAdminSession(req: import("express").Request): boolean {
+  return req.signedCookies?.["admin_session"] === "authenticated";
+}
+
+// GET /api/articles — list articles; authenticated admins see all, public sees published only
+router.get("/", async (req, res) => {
   try {
+    const admin = isAdminSession(req);
     const result = await db.execute(
-      sql`SELECT id, title, slug, excerpt, cover_image_url, published, created_at, updated_at FROM articles ORDER BY created_at DESC`
+      admin
+        ? sql`SELECT id, title, slug, excerpt, cover_image_url, published, created_at, updated_at FROM articles ORDER BY created_at DESC`
+        : sql`SELECT id, title, slug, excerpt, cover_image_url, published, created_at, updated_at FROM articles WHERE published = true ORDER BY created_at DESC`
     );
     res.json(result.rows);
   } catch (err) {
@@ -33,14 +40,16 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// GET /api/articles/:slug — single article by slug
+// GET /api/articles/:slug — single article by slug; drafts are 404 for unauthenticated callers
 router.get("/:slug", async (req, res) => {
   try {
+    const admin = isAdminSession(req);
     const result = await db.execute(
       sql`SELECT id, title, slug, excerpt, body, cover_image_url, published, created_at, updated_at FROM articles WHERE slug = ${req.params.slug}`
     );
-    const row = result.rows[0];
+    const row = result.rows[0] as Record<string, unknown> | undefined;
     if (!row) return res.status(404).json({ error: "Not found" });
+    if (!admin && !row.published) return res.status(404).json({ error: "Not found" });
     res.json(row);
   } catch (err) {
     console.error(err);
