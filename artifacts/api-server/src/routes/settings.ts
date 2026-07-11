@@ -30,27 +30,110 @@ async function getSettings() {
   };
 }
 
-async function fetchPhotosFromUrl(albumUrl: string): Promise<string[]> {
-  const resp = await fetch(albumUrl, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-      Accept: "text/html,application/xhtml+xml",
-    },
-    redirect: "follow",
-  });
-  if (!resp.ok) throw new Error(`Fetch returned ${resp.status}`);
-  const html = await resp.text();
-  const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
-  const rawMatches = html.match(urlPattern) ?? [];
-  const seen = new Set<string>();
-  const photos: string[] = [];
-  for (const url of rawMatches) {
-    if (seen.has(url)) continue;
-    seen.add(url);
-    photos.push(`${url}=w1920`);
+// Only allow Google Photos-specific origins. Generic redirector domains
+// (goo.gl) are excluded because they forward to arbitrary destinations.
+const ALLOWED_ALBUM_HOSTNAMES = new Set([
+  "photos.google.com",
+  "photos.app.goo.gl",
+]);
+
+const FETCH_TIMEOUT_MS = 10_000;
+const MAX_RESPONSE_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_REDIRECTS = 5;
+
+function validateAlbumUrl(raw: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error("Invalid album URL");
   }
-  return photos;
+  if (parsed.protocol !== "https:") {
+    throw new Error("Album URL must use HTTPS");
+  }
+  if (!ALLOWED_ALBUM_HOSTNAMES.has(parsed.hostname)) {
+    throw new Error(`Album URL hostname not allowed: ${parsed.hostname}`);
+  }
+  return parsed;
+}
+
+async function fetchPhotosFromUrl(albumUrl: string): Promise<string[]> {
+  const controller = new AbortController();
+  // The timer stays active through the entire operation (redirects + body
+  // reading) so a slow-drip response cannot keep a worker occupied indefinitely.
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+  try {
+    let resp: Response;
+    let currentUrl = albumUrl;
+    let redirectsFollowed = 0;
+
+    while (true) {
+      // eslint-disable-next-line no-await-in-loop
+      resp = await fetch(currentUrl, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Accept: "text/html,application/xhtml+xml",
+        },
+        redirect: "manual",
+        signal: controller.signal,
+      });
+
+      if (resp.status >= 300 && resp.status < 400) {
+        if (redirectsFollowed >= MAX_REDIRECTS) {
+          throw new Error("Too many redirects");
+        }
+        const location = resp.headers.get("location");
+        if (!location) throw new Error("Redirect response missing Location header");
+        // Resolve relative redirects and re-validate the destination host
+        const nextUrl = new URL(location, currentUrl);
+        validateAlbumUrl(nextUrl.toString()); // throws if destination is not allowed
+        currentUrl = nextUrl.toString();
+        redirectsFollowed++;
+        continue;
+      }
+
+      break;
+    }
+
+    if (!resp.ok) throw new Error(`Fetch returned ${resp.status}`);
+    const reader = resp.body?.getReader();
+    if (!reader) throw new Error("No response body");
+    const chunks: Uint8Array[] = [];
+    let totalBytes = 0;
+    while (true) {
+      // eslint-disable-next-line no-await-in-loop
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > MAX_RESPONSE_BYTES) {
+        await reader.cancel();
+        throw new Error("Album response exceeded size limit");
+      }
+      chunks.push(value);
+    }
+    const html = new TextDecoder().decode(
+      chunks.reduce((acc, c) => {
+        const merged = new Uint8Array(acc.byteLength + c.byteLength);
+        merged.set(acc);
+        merged.set(c, acc.byteLength);
+        return merged;
+      }, new Uint8Array(0))
+    );
+    const urlPattern = /https:\/\/lh3\.googleusercontent\.com\/pw\/[A-Za-z0-9_\-/]*/g;
+    const rawMatches = html.match(urlPattern) ?? [];
+    const seen = new Set<string>();
+    const photos: string[] = [];
+    for (const url of rawMatches) {
+      if (seen.has(url)) continue;
+      seen.add(url);
+      photos.push(`${url}=w1920`);
+    }
+    return photos;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 router.get("/", async (_req, res) => {
@@ -90,9 +173,15 @@ router.get("/highlight-photos", async (_req, res) => {
 
 router.get("/album-photos", async (req, res) => {
   try {
-    const url = (req.query.url as string)?.trim();
-    if (!url) return res.json({ photos: [] });
-    const photos = await fetchPhotosFromUrl(url);
+    const raw = (req.query.url as string)?.trim();
+    if (!raw) return res.json({ photos: [] });
+    let validated: URL;
+    try {
+      validated = validateAlbumUrl(raw);
+    } catch (err) {
+      return res.status(400).json({ error: (err as Error).message });
+    }
+    const photos = await fetchPhotosFromUrl(validated.toString());
     res.set("Cache-Control", "public, max-age=300");
     res.json({ photos });
   } catch (err) {
