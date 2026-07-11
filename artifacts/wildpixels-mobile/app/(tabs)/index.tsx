@@ -366,13 +366,13 @@ const styles = StyleSheet.create({
   featuredLabelLine: { width: 24, height: 1.5 },
   featuredLabelText: { fontSize: 9, letterSpacing: 3.5, fontWeight: "600" as const, fontFamily: "Inter_600SemiBold" },
   featuredImgWrap: {
-    marginHorizontal: 16,
-    aspectRatio: 4 / 3,
+    marginHorizontal: 0,
+    aspectRatio: 16 / 9,
     overflow: "hidden",
     position: "relative",
     marginBottom: 16,
   },
-  featuredImg: { width: "100%", height: "100%" },
+  featuredImg: { width: "100%", height: "100%", alignSelf: "center" },
   featuredLocationBadge: {
     position: "absolute",
     bottom: 12,
