@@ -22,6 +22,8 @@ function parseTrip(trip: typeof tripsTable.$inferSelect) {
     storySummary: (trip as typeof trip & { storySummary?: string | null }).storySummary ?? null,
     travelTips: (trip as typeof trip & { travelTips?: string | null }).travelTips ?? null,
     coverImageUrl: trip.coverImageUrl,
+    focalX: trip.focalX ?? 0.5,
+    focalY: trip.focalY ?? 0.5,
     photoCount: trip.photoCount,
     tags: JSON.parse(trip.tags || "[]"),
     featured: trip.featured,
@@ -232,6 +234,16 @@ router.patch("/:id", async (req, res) => {
   if ("storySummary" in req.body) {
     const val = req.body.storySummary ?? null;
     await db.execute(sql`UPDATE trips SET story_summary = ${val} WHERE id = ${id}`);
+  }
+
+  // Handle focalX/focalY via raw SQL
+  if ("focalX" in req.body) {
+    const val = parseFloat(req.body.focalX);
+    if (!isNaN(val)) await db.execute(sql`UPDATE trips SET focal_x = ${val} WHERE id = ${id}`);
+  }
+  if ("focalY" in req.body) {
+    const val = parseFloat(req.body.focalY);
+    if (!isNaN(val)) await db.execute(sql`UPDATE trips SET focal_y = ${val} WHERE id = ${id}`);
   }
 
   const allowed = ["title", "location", "country", "month", "year", "story", "travelTips", "coverImageUrl", "featured", "tags", "googlePhotosUrl", "galleryPhotoUrls"];

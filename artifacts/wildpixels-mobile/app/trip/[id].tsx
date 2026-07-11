@@ -22,6 +22,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { FocalPointEditor } from "@/components/FocalPointEditor";
 
 const { width: SW, height: SH } = Dimensions.get("window");
 
@@ -46,6 +47,8 @@ interface TripDetail {
   photoCount: number;
   tags: string[];
   featured: boolean;
+  focalX?: number;
+  focalY?: number;
   galleryPhotoUrls?: GalleryPhoto[];
   travelTips?: string | string[] | null;
   googlePhotosUrl?: string | null;
@@ -259,6 +262,7 @@ export default function TripDetailScreen() {
   const [commentName, setCommentName] = useState("");
   const [commentText, setCommentText] = useState("");
   const [liked, setLiked] = useState(false);
+  const [showCropEditor, setShowCropEditor] = useState(false);
 
   const { data: trip, isLoading, isError } = useQuery<TripDetail>({
     queryKey: ["trip", id],
@@ -383,6 +387,16 @@ export default function TripDetailScreen() {
             style={[styles.cover, { height: SH * 0.48 }]}
             resizeMode="cover"
           />
+          {__DEV__ && (
+            <Pressable
+              onPress={() => setShowCropEditor(true)}
+              style={styles.cropBtn}
+              hitSlop={8}
+            >
+              <Feather name="crop" size={12} color="#080808" />
+              <Text style={styles.cropBtnText}>SET CROP</Text>
+            </Pressable>
+          )}
           <View style={styles.coverOverlay}>
             {trip.tags.length > 0 && (
               <View style={styles.coverTags}>
@@ -678,6 +692,22 @@ export default function TripDetailScreen() {
           onClose={() => setLightboxIndex(null)}
         />
       )}
+      {__DEV__ && trip && (
+        <FocalPointEditor
+          visible={showCropEditor}
+          tripId={trip.id}
+          imageUrl={trip.coverImageUrl}
+          initialFocalX={trip.focalX ?? 0.5}
+          initialFocalY={trip.focalY ?? 0.5}
+          apiBase={BASE}
+          onSaved={(fx, fy) => {
+            qc.invalidateQueries({ queryKey: ["trip", id] });
+            qc.invalidateQueries({ queryKey: ["trips"] });
+            setShowCropEditor(false);
+          }}
+          onClose={() => setShowCropEditor(false)}
+        />
+      )}
     </View>
   );
 }
@@ -744,6 +774,25 @@ const styles = StyleSheet.create({
   retryText: { fontSize: 14, fontWeight: "600" as const },
 
   coverWrap: { position: "relative" },
+  cropBtn: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    backgroundColor: "#F0A015",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 4,
+    zIndex: 20,
+  },
+  cropBtnText: {
+    color: "#080808",
+    fontSize: 9,
+    fontWeight: "700" as const,
+    letterSpacing: 1.5,
+  },
   cover: { width: SW },
   coverOverlay: {
     position: "absolute",

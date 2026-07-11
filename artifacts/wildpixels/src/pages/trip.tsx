@@ -649,6 +649,7 @@ export default function Trip() {
             src={trip.coverImageUrl}
             alt={trip.title}
             className="w-full h-full object-cover"
+            style={{ objectPosition: `${((trip as any).focalX ?? 0.5) * 100}% ${((trip as any).focalY ?? 0.5) * 100}%` }}
           />
         </motion.div>
 

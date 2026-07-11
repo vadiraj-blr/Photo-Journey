@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, real } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -18,6 +18,8 @@ export const tripsTable = pgTable("trips", {
   galleryPhotoUrls: text("gallery_photo_urls").notNull().default("[]"),
   cachedGooglePhotoUrls: text("cached_google_photo_urls").notNull().default("[]"),
   travelTips: text("travel_tips"),
+  focalX: real("focal_x").default(0.5),
+  focalY: real("focal_y").default(0.5),
 });
 
 export const insertTripSchema = createInsertSchema(tripsTable).omit({ id: true });
