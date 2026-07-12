@@ -19,6 +19,12 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "title-desc", label: "Title Z–A" },
 ];
 
+function gpSrcSet(url: string): string | undefined {
+  if (!url || !url.includes("googleusercontent.com")) return undefined;
+  const base = url.replace(/=w\d+(-h\d+)?(-no)?$/, "");
+  return `${base}=w400 400w, ${base}=w800 800w, ${base}=w1200 1200w, ${base}=w1920 1920w`;
+}
+
 function tripDateValue(trip: { year: number; month: string }): number {
   const monthIdx = MONTH_INDEX[trip.month?.toLowerCase()?.trim()] ?? 0;
   return trip.year * 12 + monthIdx;
@@ -119,8 +125,12 @@ export default function Home() {
               <div className="absolute inset-0 bg-black/15 z-10" />
               <img
                 src={slideshowPhotos[slideshowIndex].replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w1920"}
-                alt="Hero"
+                srcSet={gpSrcSet(slideshowPhotos[slideshowIndex])}
+                sizes="100vw"
+                alt="India wildlife photography — Wildpixels by Vadiraj BK"
                 className="w-full h-full object-contain"
+                loading="eager"
+                fetchPriority="high"
               />
             </motion.div>
           </AnimatePresence>
@@ -134,8 +144,12 @@ export default function Home() {
             <div className="absolute inset-0 bg-black/15 z-10" />
             <img
               src={staticHeroUrl}
-              alt="Hero"
+              srcSet={gpSrcSet(staticHeroUrl)}
+              sizes="100vw"
+              alt="India wildlife photography — Wildpixels by Vadiraj BK"
               className="w-full h-full object-contain"
+              loading="eager"
+              fetchPriority="high"
             />
           </motion.div>
         ) : null}
@@ -203,30 +217,45 @@ export default function Home() {
             </select>
           </label>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
-          {displayedTrips.map((trip, idx) => (
-            <motion.div
-              key={trip.id}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8, delay: idx * 0.05 }}
-            >
-              <Link href={`/trips/${trip.id}`} className="group block cursor-pointer">
-                <div className="relative aspect-[4/3] sm:aspect-[4/5] overflow-hidden mb-6">
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 z-10" />
-                  <img
-                    src={trip.coverImageUrl || "/images/texture-1.png"}
-                    alt={trip.title}
-                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
-                  />
-                </div>
-                <h3 className="text-2xl font-serif font-semibold text-stone-900 mb-2">{trip.title}</h3>
-                <p className="text-stone-600 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+        {!allTrips ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="aspect-[4/3] sm:aspect-[4/5] bg-stone-200 mb-6" />
+                <div className="h-6 bg-stone-200 rounded mb-2 w-3/4" />
+                <div className="h-3 bg-stone-100 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-16">
+            {displayedTrips.map((trip, idx) => (
+              <motion.div
+                key={trip.id}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, delay: idx * 0.05 }}
+              >
+                <Link href={`/trips/${trip.id}`} className="group block cursor-pointer">
+                  <div className="relative aspect-[4/3] sm:aspect-[4/5] overflow-hidden mb-6">
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors duration-700 z-10" />
+                    <img
+                      src={trip.coverImageUrl || "/images/texture-1.png"}
+                      srcSet={gpSrcSet(trip.coverImageUrl)}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      alt={`${trip.title} — ${trip.location}, ${trip.country}`}
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
+                      loading="lazy"
+                    />
+                  </div>
+                  <h3 className="text-2xl font-serif font-semibold text-stone-900 mb-2">{trip.title}</h3>
+                  <p className="text-stone-600 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

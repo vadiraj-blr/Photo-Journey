@@ -8,6 +8,12 @@ interface GooglePhoto {
   url: string;
 }
 
+function gpSrcSet(url: string): string | undefined {
+  if (!url || !url.includes("googleusercontent.com")) return undefined;
+  const base = url.replace(/=w\d+(-h\d+)?(-no)?$/, "");
+  return `${base}=w400 400w, ${base}=w800 800w, ${base}=w1200 1200w, ${base}=w1920 1920w`;
+}
+
 interface Comment {
   id: number;
   name: string;
@@ -327,16 +333,21 @@ function Lightbox({
   photos,
   startIndex,
   onClose,
+  tripTitle,
+  tripLocation,
 }: {
   photos: { url: string }[];
   startIndex: number;
   onClose: () => void;
+  tripTitle?: string;
+  tripLocation?: string;
 }) {
   const [current, setCurrent] = useState(startIndex);
   const [dir, setDir] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState<"slow" | "medium" | "fast">("medium");
   const [imgLoaded, setImgLoaded] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   // Reset load state whenever the displayed photo changes
   useEffect(() => {
@@ -413,6 +424,13 @@ function Lightbox({
       <div
         className="flex-1 flex items-center justify-center relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={(e) => {
+          if (touchStartX.current === null) return;
+          const dx = e.changedTouches[0].clientX - touchStartX.current;
+          if (Math.abs(dx) > 50) { dx < 0 ? next() : prev(); }
+          touchStartX.current = null;
+        }}
       >
         {/* Slideshow controls — top center of image */}
         {photos.length > 1 && (
@@ -479,7 +497,7 @@ function Lightbox({
             exit="exit"
             transition={{ duration: 0.3, ease: "easeOut" }}
             src={fullUrl}
-            alt={`Photo ${current + 1}`}
+            alt={`${tripTitle ?? "Wildlife photo"}${tripLocation ? `, ${tripLocation}` : ""} — ${current + 1} of ${photos.length}`}
             className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
             draggable={false}
             onLoad={() => setImgLoaded(true)}
@@ -647,8 +665,12 @@ export default function Trip() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/20 z-10" />
           <img
             src={trip.coverImageUrl}
-            alt={trip.title}
+            srcSet={gpSrcSet(trip.coverImageUrl)}
+            sizes="100vw"
+            alt={`${trip.title} — ${trip.location}, ${trip.country}`}
             className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
             style={{ objectPosition: `${((trip as any).focalX ?? 0.5) * 100}% ${((trip as any).focalY ?? 0.5) * 100}%` }}
           />
         </motion.div>
@@ -756,9 +778,14 @@ export default function Trip() {
                   onClick={() => setLightboxIndex(i)}
                 >
                   <div className="relative group overflow-hidden">
-                    <img src={displayUrl} alt={`Photo ${i + 1}`}
+                    <img
+                      src={displayUrl}
+                      srcSet={gpSrcSet(item.url)}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                      alt={item.caption || `${trip.title} — photo ${i + 1}, ${trip.location}`}
                       className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
-                      loading="lazy" />
+                      loading="lazy"
+                    />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-500 flex items-center justify-center">
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2}>
@@ -786,8 +813,15 @@ export default function Trip() {
           </div>
 
           {gLoading ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="w-10 h-10 border-t-2 border-primary rounded-full animate-spin" />
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`break-inside-avoid mb-6 bg-stone-200 animate-pulse rounded ${
+                    i % 3 === 0 ? "aspect-[4/5]" : i % 3 === 1 ? "aspect-[4/3]" : "aspect-square"
+                  }`}
+                />
+              ))}
             </div>
           ) : googlePhotos.length > 0 ? (
             <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
@@ -803,7 +837,9 @@ export default function Trip() {
                 >
                   <img
                     src={photo.url}
-                    alt={`Photo ${i + 1}`}
+                    srcSet={gpSrcSet(photo.url)}
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    alt={`${trip.title} — photo ${i + 1}, ${trip.location}`}
                     className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
                     loading="lazy"
                   />
@@ -845,8 +881,9 @@ export default function Trip() {
               >
                 <img
                   src={photo.imageUrl}
-                  alt={photo.caption || "Expedition photo"}
+                  alt={photo.caption || `${trip.title} — ${trip.location}`}
                   className="w-full object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-500 flex items-center justify-center">
                   <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center">
@@ -873,6 +910,8 @@ export default function Trip() {
             photos={lightboxPhotos}
             startIndex={lightboxIndex}
             onClose={() => setLightboxIndex(null)}
+            tripTitle={trip.title}
+            tripLocation={`${trip.location}, ${trip.country}`}
           />
         )}
       </AnimatePresence>

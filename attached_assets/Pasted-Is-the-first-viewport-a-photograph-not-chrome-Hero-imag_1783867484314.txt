@@ -1,0 +1,40 @@
+Is the first viewport a photograph, not chrome? Hero image should occupy ≥70% of the initial view.
+Consistent grid: gallery thumbnails aligned to a strict column grid (masonry or uniform), equal gutters (16–24px), no orphan rows.
+Whitespace discipline: photos need breathing room; backgrounds should be near-white or near-black, never mid-gray or colored.
+One accent color maximum. Photography sites should be almost monochrome in their chrome.
+
+B. Typography
+
+Max two typefaces. Body 16–18px, line-height 1.5–1.7, line length 60–75 characters.
+Captions/EXIF info in a muted secondary style, never competing with images.
+No text overlaid on photos without a scrim/gradient ensuring 4.5:1 contrast.
+
+C. Image handling (the make-or-break section)
+
+Responsive images: srcset with 400/800/1600/2400w variants; serving a 4MB original to a phone is the #1 portfolio killer.
+Modern formats: AVIF/WebP with JPEG fallback.
+Lazy loading below the fold (loading="lazy") but eager for the hero.
+Aspect-ratio boxes or aspect-ratio CSS so the layout never shifts as images load (CLS = 0).
+Lightbox: keyboard navigable (←/→/Esc), swipe on mobile, preloads adjacent images, shows caption + location.
+Blur-up or dominant-color placeholders, not white flashes.
+
+D. Navigation & information architecture
+
+Journeys/collections reachable in ≤2 clicks from home.
+Persistent, minimal nav (4–5 items max: Journeys, Gallery, About, Contact).
+Breadcrumb or back affordance inside a journey; browser back button must work correctly (real routes, not just state).
+Active state clearly marked in nav.
+
+E. Interaction & feedback
+
+Hover states on every clickable element (subtle scale 1.02 or opacity shift on thumbnails).
+Visible focus rings for keyboard users (never outline: none without replacement).
+Touch targets ≥44×44px on mobile.
+Loading skeletons for gallery fetches, not spinners.
+
+F. Accessibility (WCAG 2.1 AA)
+
+Every photo has meaningful alt text ("Tiger crossing dirt road, Bandipur, dawn" — not "IMG_4032").
+Contrast 4.5:1 for text, 3:1 for UI controls.
+Full keyboard operability including the lightbox.
+prefers-reduced-motion respected on any animations.

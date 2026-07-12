@@ -94,9 +94,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <span className="font-serif text-3xl font-bold tracking-tight leading-none">Wildpixels</span>
         </Link>
         <div className="flex gap-8 tracking-widest uppercase text-xs font-semibold text-stone-800">
-          <Link href="/" className="hover:text-amber-600 transition-colors duration-500">Portfolio</Link>
-          <Link href="/about" className="hover:text-amber-600 transition-colors duration-500">About Vadiraj</Link>
-          {isAdmin && <Link href="/admin" className="hover:text-amber-600 transition-colors duration-500">Admin</Link>}
+          <Link
+            href="/"
+            className={`transition-colors duration-300 hover:text-amber-600 ${(location === "/" || location.startsWith("/trips/")) ? "text-amber-600 underline underline-offset-4 decoration-amber-500/50" : ""}`}
+          >
+            Portfolio
+          </Link>
+          <Link
+            href="/about"
+            className={`transition-colors duration-300 hover:text-amber-600 ${location === "/about" ? "text-amber-600 underline underline-offset-4 decoration-amber-500/50" : ""}`}
+          >
+            About Vadiraj
+          </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className={`transition-colors duration-300 hover:text-amber-600 ${location === "/admin" ? "text-amber-600 underline underline-offset-4 decoration-amber-500/50" : ""}`}
+            >
+              Admin
+            </Link>
+          )}
         </div>
       </nav>
 

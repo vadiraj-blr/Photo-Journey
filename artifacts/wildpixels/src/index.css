@@ -491,6 +491,30 @@
   }
 }
 
+/* ── Accessibility ──────────────────────────────────────────────── */
+
+/* Respect reduced-motion system preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visible focus ring — never outline:none without replacement */
+:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Suppress focus ring on mouse clicks only (not keyboard) */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 img {
   -webkit-user-drag: none;
   user-drag: none;
