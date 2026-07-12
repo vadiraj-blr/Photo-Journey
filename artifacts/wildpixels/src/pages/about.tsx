@@ -192,7 +192,7 @@ function ContactForm({ toEmail }: { toEmail: string }) {
 
 export default function About() {
   const { data: stats } = useGetTripStats();
-  const { data: settings } = useAboutSettings();
+  const { data: settings, isLoading: settingsLoading } = useAboutSettings();
   const { data: tripsRaw } = useListTrips();
   const { data: articlesRaw } = useFieldNotes();
   const trips = (tripsRaw as TripRow[] | undefined) ?? [];
@@ -200,7 +200,7 @@ export default function About() {
 
   const highlights: string[] = settings?.highlightPhotoUrls ?? [];
   const aboutTitle = settings?.aboutTitle ?? "The Lens.";
-  const portraitUrl = settings?.aboutPortraitUrl ?? "/images/about-portrait.png";
+  const portraitUrl = settingsLoading ? null : (settings?.aboutPortraitUrl ?? "/images/about-portrait.png");
   const photoHeight = settings?.aboutPhotoHeight ?? 480;
   const bioRaw = settings?.aboutBio ?? "";
   const contactEmail = settings?.contactEmail ?? "";
@@ -242,12 +242,16 @@ export default function About() {
         >
           <div className="relative w-full" style={{ height: `${photoHeight}px` }}>
             <div className="absolute -inset-4 border border-stone-300" />
-            <img
-              src={portraitUrl}
-              alt="Vadiraj in the wilderness"
-              className="w-full h-full object-cover object-center filter grayscale hover:grayscale-0 transition-all duration-1000"
-              style={{ objectPosition: 'center 35%' }}
-            />
+            {portraitUrl ? (
+              <img
+                src={portraitUrl}
+                alt="Vadiraj in the wilderness"
+                className="w-full h-full object-cover object-center filter grayscale hover:grayscale-0 transition-all duration-1000"
+                style={{ objectPosition: 'center 35%' }}
+              />
+            ) : (
+              <div className="w-full h-full bg-stone-200 animate-pulse" />
+            )}
           </div>
           <div className="border-t border-stone-200 pt-8 grid grid-cols-3 gap-8">
             <div className="space-y-2">
