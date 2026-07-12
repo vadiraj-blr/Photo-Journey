@@ -326,7 +326,7 @@ export default function About() {
                       <p className="text-[10px] font-mono uppercase tracking-widest text-stone-600">{formatDate(article.created_at)}</p>
                       <h3 className="text-xl font-serif font-semibold text-stone-900 group-hover:text-amber-700 transition-colors leading-snug">{article.title}</h3>
                       {article.excerpt && (
-                        <p className="text-sm text-stone-700 leading-relaxed line-clamp-3 flex-1">{article.excerpt}</p>
+                        <p className="text-sm text-stone-700 leading-relaxed flex-1">{article.excerpt}</p>
                       )}
                       <div className="pt-4 border-t border-stone-100 flex items-center gap-1.5 text-xs font-mono uppercase tracking-widest text-stone-500 group-hover:text-amber-600 transition-colors mt-auto">
                         Read article
