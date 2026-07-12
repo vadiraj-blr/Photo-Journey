@@ -403,15 +403,21 @@ function Lightbox({
     >
       {/* Top bar */}
       <div
-        className="flex items-center justify-between px-5 py-4 flex-shrink-0 z-10"
+        className="flex items-center justify-between px-5 py-3 flex-shrink-0 z-10 border-b border-white/8 bg-black/40"
         onClick={(e) => e.stopPropagation()}
       >
-        <span className="text-xs font-mono uppercase tracking-widest text-white/75">
-          {current + 1} / {photos.length}
-        </span>
+        <div className="flex flex-col gap-0.5 min-w-0">
+          {tripTitle && (
+            <span className="text-[11px] font-mono uppercase tracking-widest text-amber-400/90 truncate">{tripTitle}</span>
+          )}
+          {tripLocation && (
+            <span className="text-[10px] font-mono text-white/40 truncate">{tripLocation}</span>
+          )}
+          <span className="text-[10px] font-mono text-white/50">{current + 1} / {photos.length}</span>
+        </div>
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-white/85 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/8 border border-transparent hover:border-white/15"
+          className="flex items-center gap-2 text-white/85 hover:text-white text-sm transition-colors px-3 py-1.5 rounded-lg hover:bg-white/8 border border-transparent hover:border-white/15 flex-shrink-0 ml-4"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -516,27 +522,29 @@ function Lightbox({
         </button>
       </div>
 
-      {/* Thumbnail strip — floats at bottom, fades in on hover */}
-      <div
-        className="absolute bottom-0 left-0 right-0 z-20 flex justify-center px-4 pb-4 pt-12 gap-2 overflow-x-auto opacity-0 group-hover/lb:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/70 to-transparent pointer-events-none group-hover/lb:pointer-events-auto"
-        onClick={(e) => e.stopPropagation()}
-        style={{ scrollbarWidth: "none" }}
-      >
-        {photos.map((p, i) => {
-          const thumb = p.url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w80-h80-c";
-          return (
-            <button
-              key={i}
-              onClick={() => { setDir(i > current ? 1 : -1); setCurrent(i); }}
-              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
-                i === current ? "border-amber-500 opacity-100 scale-110 shadow-lg shadow-amber-500/30" : "border-transparent opacity-50 hover:opacity-90 hover:scale-105"
-              }`}
-            >
-              <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
-            </button>
-          );
-        })}
-      </div>
+      {/* Thumbnail strip — always visible at bottom */}
+      {photos.length > 1 && (
+        <div
+          className="flex-shrink-0 flex justify-center items-center px-4 py-3 gap-2 overflow-x-auto border-t border-white/8 bg-black/50"
+          onClick={(e) => e.stopPropagation()}
+          style={{ scrollbarWidth: "none" }}
+        >
+          {photos.map((p, i) => {
+            const thumb = p.url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w80-h80-c";
+            return (
+              <button
+                key={i}
+                onClick={() => { setDir(i > current ? 1 : -1); setCurrent(i); }}
+                className={`flex-shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all duration-200 ${
+                  i === current ? "border-amber-500 opacity-100 shadow-lg shadow-amber-500/30" : "border-transparent opacity-40 hover:opacity-80"
+                }`}
+              >
+                <img src={thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
+              </button>
+            );
+          })}
+        </div>
+      )}
     </motion.div>
   );
 }

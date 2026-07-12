@@ -249,8 +249,10 @@ export default function Home() {
                       loading="lazy"
                     />
                   </div>
-                  <h3 className="text-2xl font-serif font-semibold text-stone-900 mb-2">{trip.title}</h3>
-                  <p className="text-stone-600 uppercase tracking-widest text-xs">{trip.location}, {trip.country}</p>
+                  <div className="mt-4">
+                    <h3 className="text-2xl font-serif font-semibold text-stone-900 leading-snug">{trip.title}</h3>
+                    <p className="text-stone-500 uppercase tracking-widest text-[10px] mt-1">{trip.location}, {trip.country}</p>
+                  </div>
                 </Link>
               </motion.div>
             ))}
