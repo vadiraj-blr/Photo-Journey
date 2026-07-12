@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wildpixels</title>
+    <title>Wildpixels — India Wildlife Photography by Vadiraj BK</title>
     <meta name="description" content="20 expeditions. 19 locations. 1230 captures. Wildlife and nature photography across India's most extraordinary ecosystems — by Vadiraj BK." />
     <meta name="robots" content="index, follow" />
     <meta property="og:title" content="Wildpixels — India Wildlife Photography by Vadiraj BK" />
@@ -23,9 +23,113 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+      /* Shell styles — only used before React mounts */
+      #wld-shell {
+        min-height: 100vh;
+        background: #080808;
+        color: #e7e5e4;
+        font-family: 'DM Sans', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+      }
+      #wld-shell-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 32px;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 10;
+      }
+      #wld-shell-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #e7e5e4;
+        font-size: 15px;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+      }
+      #wld-shell-logo svg { opacity: 0.9; }
+      #wld-shell-links {
+        display: flex;
+        gap: 28px;
+      }
+      #wld-shell-links a {
+        color: #a8a29e;
+        text-decoration: none;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      #wld-shell-hero {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 120px 24px 80px;
+      }
+      #wld-shell-heading {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: clamp(3rem, 10vw, 8rem);
+        font-weight: 400;
+        line-height: 1.05;
+        color: #fafaf9;
+        margin: 0 0 28px;
+        letter-spacing: -0.02em;
+      }
+      #wld-shell-stats {
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #78716c;
+        display: flex;
+        gap: 28px;
+      }
+      #wld-shell-dot {
+        width: 3px; height: 3px;
+        background: #57534e;
+        border-radius: 50%;
+        align-self: center;
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
+  <body style="margin:0;padding:0;background:#080808;">
+    <div id="root">
+      <!-- Inline shell: visible instantly, replaced when React mounts -->
+      <div id="wld-shell">
+        <nav id="wld-shell-nav">
+          <a id="wld-shell-logo" href="/" aria-label="Wildpixels home">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <circle cx="12" cy="12" r="1"/>
+              <line x1="12" y1="2" x2="12" y2="6"/>
+              <line x1="12" y1="18" x2="12" y2="22"/>
+              <line x1="2" y1="12" x2="6" y2="12"/>
+              <line x1="18" y1="12" x2="22" y2="12"/>
+            </svg>
+            Wildpixels
+          </a>
+          <div id="wld-shell-links">
+            <a href="/portfolio">Portfolio</a>
+            <a href="/about">About Vadiraj</a>
+          </div>
+        </nav>
+        <main id="wld-shell-hero">
+          <h1 id="wld-shell-heading">Wild through my lens</h1>
+          <div id="wld-shell-stats">
+            <span>19 Locations</span>
+            <span id="wld-shell-dot"></span>
+            <span>1230 Captures</span>
+          </div>
+        </main>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
