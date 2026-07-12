@@ -9,12 +9,21 @@ export default function FeaturedTripSection() {
   if (isLoading) return null;
   if (!trip) return null;
 
-  const excerpt = trip.storySummary?.trim() || trip.story?.trim();
-  const displayExcerpt = excerpt
-    ? excerpt.length > 240
-      ? (excerpt.slice(0, 240).match(/^[\s\S]*[.!?]/)?.[0]?.trim() ?? excerpt.slice(0, 240).replace(/\s+\S*$/, "") + "…")
-      : excerpt
-    : null;
+  const displayExcerpt = (() => {
+    // storySummary is admin-curated — always show it in full
+    if (trip.storySummary?.trim()) return trip.storySummary.trim();
+    if (!trip.story?.trim()) return null;
+    // Walk sentence by sentence until we have at least one complete sentence ≥ 80 chars
+    const story = trip.story.trim();
+    const sentenceRe = /[^.!?]+[.!?]+/g;
+    let result = "";
+    let m: RegExpExecArray | null;
+    while ((m = sentenceRe.exec(story)) !== null) {
+      result += m[0];
+      if (result.length >= 80) break;
+    }
+    return result.trim() || story.slice(0, 220).replace(/\s+\S*$/, "") + "…";
+  })();
 
   return (
     <section className="w-full bg-stone-900 overflow-hidden">
