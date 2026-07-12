@@ -9,10 +9,10 @@ export default function FeaturedTripSection() {
   if (isLoading) return null;
   if (!trip) return null;
 
-  const excerpt = trip.storySummary?.trim() || trip.story?.slice(0, 220)?.trim();
+  const excerpt = trip.storySummary?.trim() || trip.story?.trim();
   const displayExcerpt = excerpt
-    ? excerpt.length > 220
-      ? excerpt.slice(0, 220).replace(/\s+\S*$/, "") + "…"
+    ? excerpt.length > 240
+      ? (excerpt.slice(0, 240).match(/^[\s\S]*[.!?]/)?.[0]?.trim() ?? excerpt.slice(0, 240).replace(/\s+\S*$/, "") + "…")
       : excerpt
     : null;
 
@@ -77,7 +77,7 @@ export default function FeaturedTripSection() {
             </h2>
 
             {displayExcerpt && (
-              <p className="text-stone-300 text-base leading-relaxed mb-8 max-w-lg">
+              <p className="text-stone-300 text-base leading-relaxed mb-8">
                 {displayExcerpt}
               </p>
             )}
