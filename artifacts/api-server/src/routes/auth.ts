@@ -38,7 +38,8 @@ setInterval(() => {
 router.post("/login", (req, res) => {
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
   if (isLoginRateLimited(ip)) {
-    return res.status(429).json({ error: "Too many login attempts. Please try again later." });
+    res.status(429).json({ error: "Too many login attempts. Please try again later." });
+    return;
   }
 
   const { email, password } = req.body as { email?: string; password?: string };
@@ -47,7 +48,8 @@ router.post("/login", (req, res) => {
   const adminPassword = process.env["ADMIN_PASSWORD"];
 
   if (!adminEmail || !adminPassword) {
-    return res.status(503).json({ error: "Admin credentials not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD secrets." });
+    res.status(503).json({ error: "Admin credentials not configured. Set ADMIN_EMAIL and ADMIN_PASSWORD secrets." });
+    return;
   }
 
   if (
@@ -56,7 +58,8 @@ router.post("/login", (req, res) => {
     email.trim().toLowerCase() !== adminEmail.trim().toLowerCase() ||
     password !== adminPassword
   ) {
-    return res.status(401).json({ error: "Invalid email or password." });
+    res.status(401).json({ error: "Invalid email or password." });
+    return;
   }
 
   res.cookie("admin_session", "authenticated", {
@@ -82,7 +85,8 @@ router.post("/logout", (_req, res) => {
 router.get("/me", (req, res) => {
   const session = req.signedCookies?.["admin_session"];
   if (session === "authenticated") {
-    return res.json({ authenticated: true });
+    res.json({ authenticated: true });
+    return;
   }
   res.status(401).json({ authenticated: false });
 });

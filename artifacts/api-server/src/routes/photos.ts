@@ -8,9 +8,9 @@ router.get("/", async (req, res) => {
   const tripIdParam = req.query.tripId;
   if (tripIdParam) {
     const tripId = parseInt(String(tripIdParam), 10);
-    if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
+    if (isNaN(tripId)) { res.status(400).json({ error: "Invalid tripId" }); return; }
     const photos = await db.select().from(photosTable).where(eq(photosTable.tripId, tripId));
-    return res.json(
+    res.json(
       photos.map((p) => ({
         id: p.id,
         tripId: p.tripId,
@@ -19,6 +19,7 @@ router.get("/", async (req, res) => {
         isHighlight: p.isHighlight,
       }))
     );
+    return;
   }
   const photos = await db.select().from(photosTable);
   res.json(

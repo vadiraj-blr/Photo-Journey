@@ -42,9 +42,9 @@ setInterval(() => {
 // ── Routes ─────────────────────────────────────────────────────────────────
 
 // GET /api/trips/:tripId/comments
-router.get("/comments", async (req, res) => {
+router.get<{ tripId: string }>("/comments", async (req, res) => {
   const tripId = parseInt(req.params.tripId, 10);
-  if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
+  if (isNaN(tripId)) { res.status(400).json({ error: "Invalid tripId" }); return; }
 
   const comments = await db
     .select()
@@ -61,9 +61,9 @@ router.get("/comments", async (req, res) => {
 });
 
 // POST /api/trips/:tripId/comments
-router.post("/comments", async (req, res) => {
+router.post<{ tripId: string }>("/comments", async (req, res) => {
   const tripId = parseInt(req.params.tripId, 10);
-  if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
+  if (isNaN(tripId)) { res.status(400).json({ error: "Invalid tripId" }); return; }
 
   // Rate limiting — use req.ip which Express normalises via trust proxy setting.
   // This means the Replit reverse-proxy hop is trusted and counted, but a
@@ -71,22 +71,25 @@ router.post("/comments", async (req, res) => {
   const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
 
   if (isRateLimited(ip)) {
-    return res.status(429).json({
+    res.status(429).json({
       error: "Too many comments — please wait a few minutes before posting again.",
       type: "rate_limited",
     });
+    return;
   }
 
   const { name, body } = req.body ?? {};
 
   const nameCheck = moderateName(String(name ?? ""));
   if (!nameCheck.ok) {
-    return res.status(422).json({ error: nameCheck.reason, type: nameCheck.type ?? "validation" });
+    res.status(422).json({ error: nameCheck.reason, type: nameCheck.type ?? "validation" });
+    return;
   }
 
   const bodyCheck = moderateText(String(body ?? ""));
   if (!bodyCheck.ok) {
-    return res.status(422).json({ error: bodyCheck.reason, type: bodyCheck.type ?? "validation" });
+    res.status(422).json({ error: bodyCheck.reason, type: bodyCheck.type ?? "validation" });
+    return;
   }
 
   const [created] = await db
@@ -103,9 +106,9 @@ router.post("/comments", async (req, res) => {
 });
 
 // GET /api/trips/:tripId/reactions
-router.get("/reactions", async (req, res) => {
+router.get<{ tripId: string }>("/reactions", async (req, res) => {
   const tripId = parseInt(req.params.tripId, 10);
-  if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
+  if (isNaN(tripId)) { res.status(400).json({ error: "Invalid tripId" }); return; }
 
   const [row] = await db
     .select()
@@ -116,13 +119,14 @@ router.get("/reactions", async (req, res) => {
 });
 
 // POST /api/trips/:tripId/reactions  { type: "like" | "dislike" | "unlike" | "undislike" }
-router.post("/reactions", async (req, res) => {
+router.post<{ tripId: string }>("/reactions", async (req, res) => {
   const tripId = parseInt(req.params.tripId, 10);
-  if (isNaN(tripId)) return res.status(400).json({ error: "Invalid tripId" });
+  if (isNaN(tripId)) { res.status(400).json({ error: "Invalid tripId" }); return; }
 
   const type = req.body?.type;
   if (!["like", "dislike", "unlike", "undislike"].includes(type)) {
-    return res.status(400).json({ error: "type must be like | dislike | unlike | undislike" });
+    res.status(400).json({ error: "type must be like | dislike | unlike | undislike" });
+    return;
   }
 
   const delta = type === "like"

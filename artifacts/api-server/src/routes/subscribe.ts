@@ -15,10 +15,12 @@ router.post("/", async (req, res) => {
     const { email } = req.body as Record<string, string>;
 
     if (!email?.trim()) {
-      return res.status(400).json({ error: "Email is required." });
+      res.status(400).json({ error: "Email is required." });
+      return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return res.status(400).json({ error: "Please enter a valid email address." });
+      res.status(400).json({ error: "Please enter a valid email address." });
+      return;
     }
 
     const token = generateToken();
@@ -42,7 +44,8 @@ router.get("/unsubscribe", async (req, res) => {
     const token = req.query.token as string | undefined;
 
     if (!token) {
-      return res.status(400).send(unsubscribePage("Invalid link", "This unsubscribe link is invalid or has already been used."));
+      res.status(400).send(unsubscribePage("Invalid link", "This unsubscribe link is invalid or has already been used."));
+      return;
     }
 
     const result = await db.execute(
@@ -50,7 +53,8 @@ router.get("/unsubscribe", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.send(unsubscribePage("Already unsubscribed", "This email address is no longer on our mailing list."));
+      res.send(unsubscribePage("Already unsubscribed", "This email address is no longer on our mailing list."));
+      return;
     }
 
     const { email } = result.rows[0] as { email: string };

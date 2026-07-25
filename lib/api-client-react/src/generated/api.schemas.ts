@@ -22,6 +22,10 @@ export interface Trip {
   photoCount: number;
   tags: string[];
   featured: boolean;
+  /** @nullable */
+  storySummary?: string | null;
+  /** @nullable */
+  travelTips?: string | null;
 }
 
 export interface Photo {
@@ -45,6 +49,10 @@ export interface TripDetail {
   photoCount: number;
   tags: string[];
   featured: boolean;
+  /** @nullable */
+  storySummary?: string | null;
+  /** @nullable */
+  travelTips?: string | null;
   photos: Photo[];
 }
 

@@ -166,6 +166,10 @@ components:
             type: string
         featured:
           type: boolean
+        storySummary:
+          type: ["string", "null"]
+        travelTips:
+          type: ["string", "null"]
 
     TripDetail:
       type: object
@@ -195,6 +199,10 @@ components:
             type: string
         featured:
           type: boolean
+        storySummary:
+          type: ["string", "null"]
+        travelTips:
+          type: ["string", "null"]
         photos:
           type: array
           items:

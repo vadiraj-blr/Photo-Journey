@@ -16,9 +16,12 @@ interface LandingSettings {
   aboutPortraitUrl?: string;
   aboutBio?: string;
   aboutAlbumUrl?: string;
+  aboutPhotoHeight?: number;
   contactEmail?: string;
   contactPhone?: string;
   contactLocation?: string;
+  contactInstagram?: string;
+  contactFacebook?: string;
 }
 
 function useLandingSettings() {

@@ -148,7 +148,7 @@ router.get("/", async (_req, res) => {
 router.get("/hero-photos", async (_req, res) => {
   try {
     const settings = await getSettings();
-    if (!settings.heroAlbumUrl) return res.json({ photos: [] });
+    if (!settings.heroAlbumUrl) { res.json({ photos: [] }); return; }
     const photos = await fetchPhotosFromUrl(settings.heroAlbumUrl);
     res.set("Cache-Control", "public, max-age=300");
     res.json({ photos });
@@ -161,7 +161,7 @@ router.get("/hero-photos", async (_req, res) => {
 router.get("/highlight-photos", async (_req, res) => {
   try {
     const settings = await getSettings();
-    if (!settings.highlightAlbumUrl) return res.json({ photos: [] });
+    if (!settings.highlightAlbumUrl) { res.json({ photos: [] }); return; }
     const photos = await fetchPhotosFromUrl(settings.highlightAlbumUrl);
     res.set("Cache-Control", "public, max-age=300");
     res.json({ photos });
@@ -174,12 +174,13 @@ router.get("/highlight-photos", async (_req, res) => {
 router.get("/album-photos", async (req, res) => {
   try {
     const raw = (req.query.url as string)?.trim();
-    if (!raw) return res.json({ photos: [] });
+    if (!raw) { res.json({ photos: [] }); return; }
     let validated: URL;
     try {
       validated = validateAlbumUrl(raw);
     } catch (err) {
-      return res.status(400).json({ error: (err as Error).message });
+      res.status(400).json({ error: (err as Error).message });
+      return;
     }
     const photos = await fetchPhotosFromUrl(validated.toString());
     res.set("Cache-Control", "public, max-age=300");

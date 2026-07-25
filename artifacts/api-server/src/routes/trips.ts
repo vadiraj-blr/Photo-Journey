@@ -79,11 +79,11 @@ router.get("/stats", async (_req, res) => {
 
 router.get("/:id/google-photos", async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, id));
-  if (!trip) return res.status(404).json({ error: "Not found" });
-  if (!trip.googlePhotosUrl) return res.json({ photos: [] });
+  if (!trip) { res.status(404).json({ error: "Not found" }); return; }
+  if (!trip.googlePhotosUrl) { res.json({ photos: [] }); return; }
 
   const forceRefresh = req.query.refresh === "true";
   if (forceRefresh) {
@@ -115,7 +115,8 @@ router.get("/:id/google-photos", async (req, res) => {
     if (!resp.ok) {
       const cached = getCached();
       console.warn(`Google Photos returned ${resp.status} for trip ${id}; serving ${cached.length} cached photos`);
-      return res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
+      res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
+      return;
     }
 
     const html = await resp.text();
@@ -144,16 +145,17 @@ router.get("/:id/google-photos", async (req, res) => {
   } catch (err) {
     console.error("Google Photos fetch error:", err);
     const cached = getCached();
-    return res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
+    res.json({ photos: cached, albumUrl: trip.googlePhotosUrl, fromCache: true });
+    return;
   }
 });
 
 router.get("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const [trip] = await db.select().from(tripsTable).where(eq(tripsTable.id, id));
-  if (!trip) return res.status(404).json({ error: "Not found" });
+  if (!trip) { res.status(404).json({ error: "Not found" }); return; }
 
   const photos = await db.select().from(photosTable).where(eq(photosTable.tripId, id));
 
@@ -173,7 +175,8 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   const { title, location, country, month, year, story, storySummary, coverImageUrl, tags, featured, googlePhotosUrl } = req.body;
   if (!title || !location || !country || !month || !year) {
-    return res.status(400).json({ error: "title, location, country, month and year are required" });
+    res.status(400).json({ error: "title, location, country, month and year are required" });
+    return;
   }
   // Enforce single-featured: clear all others before inserting a featured trip
   if (featured) {
@@ -217,16 +220,16 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
   await db.delete(photosTable).where(eq(photosTable.tripId, id));
   const [deleted] = await db.delete(tripsTable).where(eq(tripsTable.id, id)).returning();
-  if (!deleted) return res.status(404).json({ error: "Not found" });
+  if (!deleted) { res.status(404).json({ error: "Not found" }); return; }
   res.json({ success: true });
 });
 
 router.patch("/:id", async (req, res) => {
   const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+  if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
 
   const { sql } = await import("drizzle-orm");
 
@@ -275,7 +278,7 @@ router.patch("/:id", async (req, res) => {
 
   // Re-fetch with storySummary
   const [updated] = await db.select().from(tripsTable).where(eq(tripsTable.id, id));
-  if (!updated) return res.status(404).json({ error: "Not found" });
+  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
 
   const summaryResult = await db.execute(sql`SELECT story_summary FROM trips WHERE id = ${id}`);
   const storySummary = (summaryResult.rows[0] as Record<string, unknown>)?.story_summary as string | null ?? null;

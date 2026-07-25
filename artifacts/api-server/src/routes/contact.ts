@@ -90,19 +90,23 @@ router.post("/", async (req, res) => {
   try {
     const ip = req.ip ?? req.socket.remoteAddress ?? "unknown";
     if (isRateLimited(ip)) {
-      return res.status(429).json({ error: "Too many submissions. Please wait before trying again." });
+      res.status(429).json({ error: "Too many submissions. Please wait before trying again." });
+      return;
     }
 
     const { name, email, subject, message } = req.body as Record<string, string>;
 
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      return res.status(400).json({ error: "Name, email, and message are required." });
+      res.status(400).json({ error: "Name, email, and message are required." });
+      return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      return res.status(400).json({ error: "Please enter a valid email address." });
+      res.status(400).json({ error: "Please enter a valid email address." });
+      return;
     }
     if (message.trim().length > 2000) {
-      return res.status(400).json({ error: "Message is too long (max 2000 chars)." });
+      res.status(400).json({ error: "Message is too long (max 2000 chars)." });
+      return;
     }
 
     // Save to DB

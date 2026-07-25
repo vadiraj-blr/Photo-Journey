@@ -31,7 +31,9 @@ export const ListTripsResponseItem = zod.object({
   "coverImageUrl": zod.string(),
   "photoCount": zod.number(),
   "tags": zod.array(zod.string()),
-  "featured": zod.boolean()
+  "featured": zod.boolean(),
+  "storySummary": zod.string().nullish(),
+  "travelTips": zod.string().nullish()
 })
 export const ListTripsResponse = zod.array(ListTripsResponseItem)
 
@@ -50,7 +52,9 @@ export const GetFeaturedTripsResponseItem = zod.object({
   "coverImageUrl": zod.string(),
   "photoCount": zod.number(),
   "tags": zod.array(zod.string()),
-  "featured": zod.boolean()
+  "featured": zod.boolean(),
+  "storySummary": zod.string().nullish(),
+  "travelTips": zod.string().nullish()
 })
 export const GetFeaturedTripsResponse = zod.array(GetFeaturedTripsResponseItem)
 
@@ -84,6 +88,8 @@ export const GetTripResponse = zod.object({
   "photoCount": zod.number(),
   "tags": zod.array(zod.string()),
   "featured": zod.boolean(),
+  "storySummary": zod.string().nullish(),
+  "travelTips": zod.string().nullish(),
   "photos": zod.array(zod.object({
   "id": zod.number(),
   "tripId": zod.number(),

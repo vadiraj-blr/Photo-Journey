@@ -48,8 +48,8 @@ router.get("/:slug", async (req, res) => {
       sql`SELECT id, title, slug, excerpt, body, cover_image_url, published, created_at, updated_at FROM articles WHERE slug = ${req.params.slug}`
     );
     const row = result.rows[0] as Record<string, unknown> | undefined;
-    if (!row) return res.status(404).json({ error: "Not found" });
-    if (!admin && !row.published) return res.status(404).json({ error: "Not found" });
+    if (!row) { res.status(404).json({ error: "Not found" }); return; }
+    if (!admin && !row.published) { res.status(404).json({ error: "Not found" }); return; }
     res.json(row);
   } catch (err) {
     console.error(err);
@@ -62,7 +62,8 @@ router.post("/", async (req, res) => {
   try {
     const { title, excerpt, body, coverImageUrl, published } = req.body as Record<string, unknown>;
     if (!title || typeof title !== "string" || !title.trim()) {
-      return res.status(400).json({ error: "Title is required." });
+      res.status(400).json({ error: "Title is required." });
+      return;
     }
     const rawSlug = toSlug(title.trim());
     const existing = await db.execute(
@@ -102,7 +103,7 @@ router.post("/", async (req, res) => {
 router.patch("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
     const body = req.body as Record<string, unknown>;
 
     // Fetch current state before update (for publish-flip detection)
@@ -158,7 +159,7 @@ router.patch("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    if (isNaN(id)) { res.status(400).json({ error: "Invalid id" }); return; }
     await db.execute(sql`DELETE FROM articles WHERE id = ${id}`);
     res.json({ ok: true });
   } catch (err) {

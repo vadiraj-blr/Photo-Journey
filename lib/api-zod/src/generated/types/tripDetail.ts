@@ -19,5 +19,9 @@ export interface TripDetail {
   photoCount: number;
   tags: string[];
   featured: boolean;
+  /** @nullable */
+  storySummary?: string | null;
+  /** @nullable */
+  travelTips?: string | null;
   photos: Photo[];
 }

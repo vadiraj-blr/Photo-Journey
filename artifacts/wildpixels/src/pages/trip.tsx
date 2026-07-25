@@ -1,7 +1,7 @@
 import { useParams } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useGetTrip, getGetTripQueryKey, useListPhotos, getListPhotosQueryKey, getListTripsQueryKey } from "@workspace/api-client-react";
+import { useGetTrip, getGetTripQueryKey, useListPhotos, getListPhotosQueryKey, getListTripsQueryKey, type TripDetail } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface GooglePhoto {
@@ -590,11 +590,11 @@ export default function Trip() {
 
   // Use already-cached list data as instant placeholder so the hero shows
   // immediately without any spinner when navigating from the trip grid.
-  const placeholderData = () => {
+  const placeholderData = (): TripDetail | undefined => {
     const cached = queryClient.getQueryData<{ id: number; [k: string]: unknown }[]>(
       getListTripsQueryKey()
     );
-    return cached?.find((t) => t.id === tripId) as typeof trip | undefined;
+    return cached?.find((t) => t.id === tripId) as unknown as TripDetail | undefined;
   };
 
   const { data: trip, isLoading: isTripLoading } = useGetTrip(tripId, {
