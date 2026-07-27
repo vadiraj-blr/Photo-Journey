@@ -1469,8 +1469,9 @@ function ArticlesPanel() {
                   className={inputCls}
                   value={form.cover_image_url}
                   onChange={(e) => setForm((f) => ({ ...f, cover_image_url: e.target.value }))}
-                  placeholder="https://..."
+                  placeholder="https://lh3.googleusercontent.com/..."
                 />
+                <span className="text-[10px] text-white/20">In Google Photos: open the photo → right-click the image → "Copy image address". Must start with lh3.googleusercontent.com</span>
               </div>
             </div>
 
