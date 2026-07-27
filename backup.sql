@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict gMlhpltd1D1NrwGOzmtfvPyQFCF9Kto3lHVBpatGrneXn1AOHgauChznCnoOmCJ
+\restrict r6YsqIoG1rlYhmnIgdnboJH7xWlv6Ry3v5inkxdCkuVABPRBctQNAf5iucfdOeg
 
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.10
@@ -17,6 +17,400 @@ SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: articles; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.articles (
+    id integer NOT NULL,
+    title text NOT NULL,
+    slug text NOT NULL,
+    excerpt text DEFAULT ''::text NOT NULL,
+    body text DEFAULT ''::text NOT NULL,
+    cover_image_url text DEFAULT ''::text NOT NULL,
+    published boolean DEFAULT false NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: articles_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.articles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: articles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.articles_id_seq OWNED BY public.articles.id;
+
+
+--
+-- Name: contact_submissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.contact_submissions (
+    id integer NOT NULL,
+    name text NOT NULL,
+    email text NOT NULL,
+    subject text DEFAULT ''::text NOT NULL,
+    message text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: contact_submissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.contact_submissions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: contact_submissions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.contact_submissions_id_seq OWNED BY public.contact_submissions.id;
+
+
+--
+-- Name: landing_settings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.landing_settings (
+    id integer NOT NULL,
+    hero_image_url text DEFAULT ''::text NOT NULL,
+    hero_image_source_trip_id integer,
+    trips_on_homepage integer DEFAULT 0 NOT NULL,
+    hero_tagline text DEFAULT 'Enter the Wild.'::text NOT NULL,
+    hero_album_url text,
+    highlight_photo_urls text DEFAULT '[]'::text,
+    highlight_album_url text,
+    about_title text DEFAULT 'The Lens.'::text NOT NULL,
+    about_portrait_url text DEFAULT '/images/about-portrait.png'::text NOT NULL,
+    about_bio text DEFAULT ''::text NOT NULL,
+    about_album_url text DEFAULT ''::text NOT NULL,
+    contact_email text DEFAULT ''::text NOT NULL,
+    contact_phone text DEFAULT ''::text NOT NULL,
+    contact_location text DEFAULT ''::text NOT NULL,
+    about_photo_height integer DEFAULT 480,
+    contact_instagram text DEFAULT ''::text,
+    contact_facebook text DEFAULT ''::text
+);
+
+
+--
+-- Name: landing_settings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.landing_settings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: landing_settings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.landing_settings_id_seq OWNED BY public.landing_settings.id;
+
+
+--
+-- Name: page_views; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.page_views (
+    id integer NOT NULL,
+    trip_id integer,
+    path text NOT NULL,
+    seconds_on_page numeric DEFAULT 0 NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    source text DEFAULT 'web'::text NOT NULL
+);
+
+
+--
+-- Name: page_views_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.page_views_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: page_views_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.page_views_id_seq OWNED BY public.page_views.id;
+
+
+--
+-- Name: photos; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.photos (
+    id integer NOT NULL,
+    trip_id integer NOT NULL,
+    image_url text NOT NULL,
+    caption text,
+    is_highlight boolean DEFAULT false NOT NULL
+);
+
+
+--
+-- Name: photos_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.photos_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: photos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.photos_id_seq OWNED BY public.photos.id;
+
+
+--
+-- Name: subscribers; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.subscribers (
+    id integer NOT NULL,
+    email text NOT NULL,
+    subscribed_at timestamp with time zone DEFAULT now() NOT NULL,
+    unsubscribe_token text NOT NULL
+);
+
+
+--
+-- Name: subscribers_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.subscribers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: subscribers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.subscribers_id_seq OWNED BY public.subscribers.id;
+
+
+--
+-- Name: trip_comments; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trip_comments (
+    id integer NOT NULL,
+    trip_id integer NOT NULL,
+    name text NOT NULL,
+    body text NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: trip_comments_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trip_comments_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trip_comments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trip_comments_id_seq OWNED BY public.trip_comments.id;
+
+
+--
+-- Name: trip_reactions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trip_reactions (
+    id integer NOT NULL,
+    trip_id integer NOT NULL,
+    likes integer DEFAULT 0 NOT NULL,
+    dislikes integer DEFAULT 0 NOT NULL
+);
+
+
+--
+-- Name: trip_reactions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trip_reactions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trip_reactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trip_reactions_id_seq OWNED BY public.trip_reactions.id;
+
+
+--
+-- Name: trips; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.trips (
+    id integer NOT NULL,
+    title text NOT NULL,
+    location text NOT NULL,
+    country text NOT NULL,
+    month text NOT NULL,
+    year integer NOT NULL,
+    story text,
+    cover_image_url text NOT NULL,
+    photo_count integer DEFAULT 0 NOT NULL,
+    tags text DEFAULT '[]'::text NOT NULL,
+    featured boolean DEFAULT false NOT NULL,
+    google_photos_url text,
+    gallery_photo_urls text DEFAULT '[]'::text NOT NULL,
+    travel_tips text,
+    cached_google_photo_urls text DEFAULT '[]'::text NOT NULL,
+    story_summary text,
+    focal_x real DEFAULT 0.5,
+    focal_y real DEFAULT 0.5
+);
+
+
+--
+-- Name: trips_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.trips_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: trips_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.trips_id_seq OWNED BY public.trips.id;
+
+
+--
+-- Name: articles id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.articles ALTER COLUMN id SET DEFAULT nextval('public.articles_id_seq'::regclass);
+
+
+--
+-- Name: contact_submissions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contact_submissions ALTER COLUMN id SET DEFAULT nextval('public.contact_submissions_id_seq'::regclass);
+
+
+--
+-- Name: landing_settings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.landing_settings ALTER COLUMN id SET DEFAULT nextval('public.landing_settings_id_seq'::regclass);
+
+
+--
+-- Name: page_views id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.page_views ALTER COLUMN id SET DEFAULT nextval('public.page_views_id_seq'::regclass);
+
+
+--
+-- Name: photos id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.photos ALTER COLUMN id SET DEFAULT nextval('public.photos_id_seq'::regclass);
+
+
+--
+-- Name: subscribers id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscribers ALTER COLUMN id SET DEFAULT nextval('public.subscribers_id_seq'::regclass);
+
+
+--
+-- Name: trip_comments id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_comments ALTER COLUMN id SET DEFAULT nextval('public.trip_comments_id_seq'::regclass);
+
+
+--
+-- Name: trip_reactions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_reactions ALTER COLUMN id SET DEFAULT nextval('public.trip_reactions_id_seq'::regclass);
+
+
+--
+-- Name: trips id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trips ALTER COLUMN id SET DEFAULT nextval('public.trips_id_seq'::regclass);
+
 
 --
 -- Data for Name: articles; Type: TABLE DATA; Schema: public; Owner: -
@@ -105,6 +499,11 @@ COPY public.page_views (id, trip_id, path, seconds_on_page, created_at, source) 
 53	\N	home	0	2026-07-25 08:21:42.607644+00	mobile
 54	\N	home	0	2026-07-25 09:19:52.921592+00	mobile
 55	\N	home	0	2026-07-25 09:22:04.127986+00	mobile
+56	\N	home	0	2026-07-25 12:59:59.370226+00	mobile
+57	\N	home	0	2026-07-26 05:32:01.411786+00	mobile
+58	\N	home	0	2026-07-27 05:16:15.340414+00	mobile
+59	\N	home	0	2026-07-27 05:25:04.298376+00	mobile
+60	\N	home	0	2026-07-27 12:26:56.936571+00	mobile
 \.
 
 
@@ -172,6 +571,33 @@ COPY public.subscribers (id, email, subscribed_at, unsubscribe_token) FROM stdin
 
 
 --
+-- Data for Name: trip_comments; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.trip_comments (id, trip_id, name, body, created_at) FROM stdin;
+1	8	Sinchana	Good photos	2026-06-21 14:55:00.002395+00
+2	1	Ratelimiter	Test comment number 1, long enough to pass moderation	2026-06-22 14:17:38.633805+00
+3	1	Ratelimiter	Test comment number 2, long enough to pass moderation	2026-06-22 14:17:39.003685+00
+4	1	Ratelimiter	Test comment number 3, long enough to pass moderation	2026-06-22 14:17:39.162519+00
+5	1	Ratelimiter	Test comment number 4, long enough to pass moderation	2026-06-22 14:17:39.22467+00
+6	1	Ratelimiter	Test comment number 5, long enough to pass moderation	2026-06-22 14:17:39.284667+00
+7	1	Spammer	Test comment number 1, long enough to pass moderation	2026-06-22 14:20:33.923728+00
+8	1	Spammer	Test comment number 2, long enough to pass moderation	2026-06-22 14:20:34.025832+00
+9	1	Spammer	Test comment number 3, long enough to pass moderation	2026-06-22 14:20:34.127024+00
+10	1	Spammer	Test comment number 4, long enough to pass moderation	2026-06-22 14:20:34.199953+00
+11	1	Spammer	Test comment number 5, long enough to pass moderation	2026-06-22 14:20:34.272554+00
+\.
+
+
+--
+-- Data for Name: trip_reactions; Type: TABLE DATA; Schema: public; Owner: -
+--
+
+COPY public.trip_reactions (id, trip_id, likes, dislikes) FROM stdin;
+\.
+
+
+--
 -- Data for Name: trips; Type: TABLE DATA; Schema: public; Owner: -
 --
 
@@ -200,33 +626,6 @@ COPY public.trips (id, title, location, country, month, year, story, cover_image
 
 
 --
--- Data for Name: trip_comments; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.trip_comments (id, trip_id, name, body, created_at) FROM stdin;
-1	8	Sinchana	Good photos	2026-06-21 14:55:00.002395+00
-2	1	Ratelimiter	Test comment number 1, long enough to pass moderation	2026-06-22 14:17:38.633805+00
-3	1	Ratelimiter	Test comment number 2, long enough to pass moderation	2026-06-22 14:17:39.003685+00
-4	1	Ratelimiter	Test comment number 3, long enough to pass moderation	2026-06-22 14:17:39.162519+00
-5	1	Ratelimiter	Test comment number 4, long enough to pass moderation	2026-06-22 14:17:39.22467+00
-6	1	Ratelimiter	Test comment number 5, long enough to pass moderation	2026-06-22 14:17:39.284667+00
-7	1	Spammer	Test comment number 1, long enough to pass moderation	2026-06-22 14:20:33.923728+00
-8	1	Spammer	Test comment number 2, long enough to pass moderation	2026-06-22 14:20:34.025832+00
-9	1	Spammer	Test comment number 3, long enough to pass moderation	2026-06-22 14:20:34.127024+00
-10	1	Spammer	Test comment number 4, long enough to pass moderation	2026-06-22 14:20:34.199953+00
-11	1	Spammer	Test comment number 5, long enough to pass moderation	2026-06-22 14:20:34.272554+00
-\.
-
-
---
--- Data for Name: trip_reactions; Type: TABLE DATA; Schema: public; Owner: -
---
-
-COPY public.trip_reactions (id, trip_id, likes, dislikes) FROM stdin;
-\.
-
-
---
 -- Name: articles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
@@ -251,7 +650,7 @@ SELECT pg_catalog.setval('public.landing_settings_id_seq', 1, false);
 -- Name: page_views_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.page_views_id_seq', 55, true);
+SELECT pg_catalog.setval('public.page_views_id_seq', 60, true);
 
 
 --
@@ -290,8 +689,128 @@ SELECT pg_catalog.setval('public.trips_id_seq', 22, true);
 
 
 --
+-- Name: articles articles_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.articles
+    ADD CONSTRAINT articles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: articles articles_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.articles
+    ADD CONSTRAINT articles_slug_key UNIQUE (slug);
+
+
+--
+-- Name: contact_submissions contact_submissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.contact_submissions
+    ADD CONSTRAINT contact_submissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: landing_settings landing_settings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.landing_settings
+    ADD CONSTRAINT landing_settings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: page_views page_views_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.page_views
+    ADD CONSTRAINT page_views_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: photos photos_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.photos
+    ADD CONSTRAINT photos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: subscribers subscribers_email_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscribers
+    ADD CONSTRAINT subscribers_email_key UNIQUE (email);
+
+
+--
+-- Name: subscribers subscribers_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscribers
+    ADD CONSTRAINT subscribers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: subscribers subscribers_unsubscribe_token_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.subscribers
+    ADD CONSTRAINT subscribers_unsubscribe_token_key UNIQUE (unsubscribe_token);
+
+
+--
+-- Name: trip_comments trip_comments_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_comments
+    ADD CONSTRAINT trip_comments_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trip_reactions trip_reactions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_reactions
+    ADD CONSTRAINT trip_reactions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trip_reactions trip_reactions_trip_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_reactions
+    ADD CONSTRAINT trip_reactions_trip_id_key UNIQUE (trip_id);
+
+
+--
+-- Name: trips trips_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trips
+    ADD CONSTRAINT trips_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: trip_comments trip_comments_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_comments
+    ADD CONSTRAINT trip_comments_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.trips(id) ON DELETE CASCADE;
+
+
+--
+-- Name: trip_reactions trip_reactions_trip_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.trip_reactions
+    ADD CONSTRAINT trip_reactions_trip_id_fkey FOREIGN KEY (trip_id) REFERENCES public.trips(id) ON DELETE CASCADE;
+
+
+--
 -- PostgreSQL database dump complete
 --
 
-\unrestrict gMlhpltd1D1NrwGOzmtfvPyQFCF9Kto3lHVBpatGrneXn1AOHgauChznCnoOmCJ
+\unrestrict r6YsqIoG1rlYhmnIgdnboJH7xWlv6Ry3v5inkxdCkuVABPRBctQNAf5iucfdOeg
 
