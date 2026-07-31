@@ -488,37 +488,6 @@ function Lightbox({
           </svg>
         </button>
 
-        {/* Blurred thumbnail placeholder while full-res loads */}
-        {!imgLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <img
-              src={photo.url.replace(/=w\d+(-h\d+)?(-no)?$/, "") + "=w400"}
-              alt=""
-              aria-hidden
-              className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg opacity-30 blur-sm scale-95"
-            />
-          </div>
-        )}
-
-        {/* Loading indicator */}
-        <AnimatePresence>
-          {!imgLoaded && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none z-10"
-            >
-              <div className="w-8 h-8 rounded-full border-2 border-white/20 border-t-amber-400 animate-spin" />
-              <span className="text-[11px] font-mono uppercase tracking-widest text-white/40">
-                Loading high-resolution image…
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Image */}
         <AnimatePresence mode="wait" custom={dir}>
           <motion.img
@@ -535,7 +504,7 @@ function Lightbox({
             transition={{ duration: 0.3, ease: "easeOut" }}
             src={fullUrl}
             alt={`${tripTitle ?? "Wildlife photo"}${tripLocation ? `, ${tripLocation}` : ""} — ${current + 1} of ${photos.length}`}
-            className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl relative z-20"
+            className="max-h-[calc(100dvh-80px)] max-w-[calc(100vw-80px)] sm:max-w-[calc(100vw-100px)] object-contain rounded-lg shadow-2xl"
             draggable={false}
             onLoad={() => setImgLoaded(true)}
           />
@@ -965,6 +934,13 @@ export default function Trip() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Gallery footnote */}
+      {(showPinnedGallery || showAllGooglePhotos || showDbPhotos) && (
+        <p className="text-center text-[11px] font-mono text-stone-400 pb-16 -mt-20">
+          Images are high resolution and may take a moment to load on slower connections.
+        </p>
       )}
 
       {/* Lightbox */}
