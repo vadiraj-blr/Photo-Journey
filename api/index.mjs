@@ -1,6 +1,4 @@
-// Vercel serverless entry — wraps the Express app.
-// All /api/* requests are rewritten here (see vercel.json); Express receives
-// the original URL, so its existing app.use("/api", router) mounting works.
-import app from "../artifacts/api-server/src/app";
-
-export default app;
+// Vercel serverless entry — imports the pre-bundled Express app.
+   // All /api/* requests are rewritten here (see vercel.json).
+   import app from "../artifacts/api-server/dist/app.mjs";
+   export default app;
