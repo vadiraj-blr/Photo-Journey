@@ -291,6 +291,40 @@ interface TripRow {
   galleryPhotoUrls?: { url: string; caption: string }[];
 }
 
+function CoverImagePreview({ url }: { url: string }) {
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+
+  useEffect(() => {
+    setStatus("loading");
+  }, [url]);
+
+  return (
+    <div className="mt-1">
+      {status !== "error" && (
+        <div className="relative w-full aspect-video max-h-40 rounded-lg overflow-hidden border border-white/10 bg-white/5">
+          <img
+            src={url}
+            alt="Cover preview"
+            className={`w-full h-full object-cover transition-opacity duration-200 ${status === "ok" ? "opacity-100" : "opacity-0"}`}
+            onLoad={() => setStatus("ok")}
+            onError={() => setStatus("error")}
+          />
+          {status === "loading" && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-white/30 text-xs font-mono">Loading preview…</span>
+            </div>
+          )}
+        </div>
+      )}
+      {status === "error" && (
+        <p className="text-red-400 text-[11px] bg-red-400/10 rounded-lg px-3 py-2">
+          ⚠ Image could not be loaded — check the URL
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1">
@@ -1472,6 +1506,9 @@ function ArticlesPanel() {
                   placeholder="https://lh3.googleusercontent.com/..."
                 />
                 <span className="text-[10px] text-white/20">In Google Photos: open the photo → right-click the image → "Copy image address". Must start with lh3.googleusercontent.com</span>
+                {form.cover_image_url.trim() && (
+                  <CoverImagePreview url={form.cover_image_url.trim()} />
+                )}
               </div>
             </div>
 
