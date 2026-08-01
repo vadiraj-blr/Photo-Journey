@@ -144,3 +144,10 @@ uri = "file://.agents/docs/wildpixels-build-journey.html"
 type = "unspecified"
 title = "Wildpixels — Build Journey"
 description = "A full document covering all 8 build phases, every feature built, the tech stack, and project stats."
+
+[[outputs]]
+id = "X5tIL7kioXqpBZnnGifST"
+uri = "file://screenshots/build-journey-1.jpg"
+type = "image"
+title = "Wildpixels — Build Journey"
+description = "Full project document covering all 8 build phases, features, tech stack, and stats."
