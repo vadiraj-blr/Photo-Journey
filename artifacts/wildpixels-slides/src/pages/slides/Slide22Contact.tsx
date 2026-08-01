@@ -39,7 +39,7 @@ export default function Slide22Contact() {
         </div>
         <div style={{ marginTop: "4.5vh", display: "flex", alignItems: "center", gap: "3vw" }}>
           <div style={{ backgroundColor: "#C4862A", padding: "1.5vh 2.5vw" }}>
-            <span style={{ fontSize: "0.9vw", fontWeight: 600, color: "#080808", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase" }}>wildpixels.co</span>
+            <span style={{ fontSize: "0.9vw", fontWeight: 600, color: "#080808", fontFamily: "'DM Mono', monospace", letterSpacing: "0.12em", textTransform: "uppercase" }}>thewildpixels.com</span>
           </div>
           <div style={{ fontSize: "0.85vw", color: "#555550", fontFamily: "'DM Mono', monospace" }}>India's Wild Heart · Documented</div>
         </div>

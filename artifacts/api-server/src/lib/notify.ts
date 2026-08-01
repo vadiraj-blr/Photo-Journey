@@ -13,7 +13,7 @@ export interface NotifyPayload {
 
 async function getSiteUrl(): Promise<string> {
   const domain = process.env["REPLIT_DEV_DOMAIN"];
-  return domain ? `https://${domain}` : "https://wildpixels.replit.app";
+  return domain ? `https://${domain}` : "https://thewildpixels.com";
 }
 
 function buildEmailHtml(type: NotifyType, payload: NotifyPayload, unsubscribeUrl: string, siteUrl: string): string {

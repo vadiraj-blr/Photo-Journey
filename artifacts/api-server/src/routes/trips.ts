@@ -7,7 +7,7 @@ const router = Router();
 
 async function getSiteUrl(): Promise<string> {
   const domain = process.env["REPLIT_DEV_DOMAIN"];
-  return domain ? `https://${domain}` : "https://wildpixels.replit.app";
+  return domain ? `https://${domain}` : "https://thewildpixels.com";
 }
 
 function parseTrip(trip: typeof tripsTable.$inferSelect) {

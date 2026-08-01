@@ -50,7 +50,7 @@ export function Scene6() {
         >
           <span className="hover:text-[#F5F3EF] transition-colors">Instagram @vadiraj.bk</span>
           <span className="text-[#C4862A]">·</span>
-          <span className="hover:text-[#F5F3EF] transition-colors">wildpixels.co</span>
+          <span className="hover:text-[#F5F3EF] transition-colors">thewildpixels.com</span>
           <span className="text-[#C4862A]">·</span>
           <span className="hover:text-[#F5F3EF] transition-colors">vadiraj.bk@gmail.com</span>
         </motion.div>
