@@ -151,3 +151,9 @@ uri = "file://screenshots/build-journey-1.jpg"
 type = "image"
 title = "Wildpixels — Build Journey"
 description = "Full project document covering all 8 build phases, features, tech stack, and stats."
+
+[[outputs]]
+id = "fdJ82QBXaNKHrTjYPWKlC"
+uri = "file://.local/outputs/Wildpixels---Portfolio-Deck.pdf"
+type = "pdf"
+title = "Wildpixels – Portfolio Deck.pdf"

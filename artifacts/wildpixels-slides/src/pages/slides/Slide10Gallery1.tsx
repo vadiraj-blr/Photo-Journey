@@ -2,7 +2,7 @@ const KAZIRANGA_PHOTOS = [
   "https://lh3.googleusercontent.com/pw/AP1GczPitj0m4zmw5QSVMHp2iU7w1LwCfmsOz4qolp0GqwQJka0KnhODhvXhsZ8keQPd6qLcy3ELe3gAxJMtEJRHUvO8RSfqJo21xM6XfstltDLVg9zn7dpt=w1920",
   "https://lh3.googleusercontent.com/pw/AP1GczPcuDzMvxX__qXg307tUxWEYSqAHqegUWiJ7YPVa9vuuDLI4K8THVgn16RPJSwJElCpPD-bw0RaS6Typ8Yn0_8E56-0K30jINqhn-2YwfUy2I9DbExH=w1920",
   "https://lh3.googleusercontent.com/pw/AP1GczMnY51ZZadHVlWWckORq9UwtumNHWox5WYQXU_5_XlFuUSU-h5fV8CimBfmlHtVpmwfD0L59I8sJWOlbpf0NV9flho-GJ5Snj8c5sfav-Jg6pWFPbip=w1920",
-  "https://lh3.googleusercontent.com/pw/AP1GczMU3513EfyfgwBWPoRqMQXsyCGEeyTlDSal9HjJXqO5alFIS3zdj67dnbAPuzt0BI-iKdzqMbfSGRkmmJ2z_Skl-fPhJBML7xWjqfI2G_WVeFegAlFdgQUYk=w1920",
+  "https://lh3.googleusercontent.com/pw/AP1GczOLYowST2soOmh0YEsQDumlHVMFDhptWzlTe6lh27y0qPqHBQLv9m20KyjSEq7JXlWbT_LR4z1PV7141BUce5ZEIVNruopYacYT7NOMGmnaxE3t6I-U=w1920",
   "https://lh3.googleusercontent.com/pw/AP1GczNUGp8bPpFcLTzHjfrgky_wpY4IdPCb3NA4QxXeejRrohznhVR_hLrWVKJInX6MIuFiistpMk-1GV0UITvRKzXehXKIkH-3_-iPHd_UbzSmuLLjuuIX=w1920",
   "https://lh3.googleusercontent.com/pw/AP1GczPqo4s0seDcFiPexTLf91iP-YlW7bgtwMYr1iFr4AjdP-IYIhSFo-hiVtcXQ3NPqVBZoQOdP5b7MmeJ2U0hIT4uSySsAc8=w1920",
 ];
