@@ -621,6 +621,7 @@ function TripFormFields({
               placeholder="Paste an image URL, or pick one from the gallery below"
               onChange={(e) => set("coverImageUrl", e.target.value)}
             />
+            {form.coverImageUrl && <CoverImagePreview url={form.coverImageUrl} />}
           </div>
         </div>
 
