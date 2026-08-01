@@ -137,3 +137,10 @@ id = "QuhoSfYpxKIwOj9K1W6Wr"
 uri = "file://.local/outputs/Wildpixels---Portfolio.pptx"
 type = "slides"
 title = "Wildpixels – Portfolio (PPTX)"
+
+[[outputs]]
+id = "ujLTLsj3I1dkD1-hJAWDu"
+uri = "file://.agents/docs/wildpixels-build-journey.html"
+type = "unspecified"
+title = "Wildpixels — Build Journey"
+description = "A full document covering all 8 build phases, every feature built, the tech stack, and project stats."
