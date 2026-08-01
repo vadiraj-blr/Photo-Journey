@@ -291,11 +291,16 @@ interface TripRow {
   galleryPhotoUrls?: { url: string; caption: string }[];
 }
 
-function CoverImagePreview({ url }: { url: string }) {
+function CoverImagePreview({ url, onStatusChange }: { url: string; onStatusChange?: (status: "loading" | "ok" | "error") => void }) {
   const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
 
+  const updateStatus = (s: "loading" | "ok" | "error") => {
+    setStatus(s);
+    onStatusChange?.(s);
+  };
+
   useEffect(() => {
-    setStatus("loading");
+    updateStatus("loading");
   }, [url]);
 
   return (
@@ -306,8 +311,8 @@ function CoverImagePreview({ url }: { url: string }) {
             src={url}
             alt="Cover preview"
             className={`w-full h-full object-cover transition-opacity duration-200 ${status === "ok" ? "opacity-100" : "opacity-0"}`}
-            onLoad={() => setStatus("ok")}
-            onError={() => setStatus("error")}
+            onLoad={() => updateStatus("ok")}
+            onError={() => updateStatus("error")}
           />
           {status === "loading" && (
             <div className="absolute inset-0 flex items-center justify-center">
@@ -539,6 +544,7 @@ function TripFormFields({
   set,
   setGallery,
   tripId,
+  onCoverImageStatus,
 }: {
   form: {
     title: string; location: string; country: string; month: string;
@@ -548,6 +554,7 @@ function TripFormFields({
   set: (field: string, value: string | boolean) => void;
   setGallery: (items: { url: string; caption: string }[]) => void;
   tripId?: number;
+  onCoverImageStatus?: (status: "loading" | "ok" | "error") => void;
 }) {
   return (
     <>
@@ -621,7 +628,7 @@ function TripFormFields({
               placeholder="Paste an image URL, or pick one from the gallery below"
               onChange={(e) => set("coverImageUrl", e.target.value)}
             />
-            {form.coverImageUrl && <CoverImagePreview url={form.coverImageUrl} />}
+            {form.coverImageUrl && <CoverImagePreview url={form.coverImageUrl} onStatusChange={onCoverImageStatus} />}
           </div>
         </div>
 
@@ -747,9 +754,12 @@ function AddTripModal({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [coverImageStatus, setCoverImageStatus] = useState<"loading" | "ok" | "error" | null>(null);
 
-  const set = (field: string, value: string | boolean) =>
+  const set = (field: string, value: string | boolean) => {
+    if (field === "coverImageUrl") setCoverImageStatus(null);
     setForm((f) => ({ ...f, [field]: value }));
+  };
   const setGallery = (items: { url: string; caption: string }[]) => setForm((f) => ({ ...f, galleryPhotoUrls: items }));
 
   const handleCreate = async () => {
@@ -804,8 +814,18 @@ function AddTripModal({
           <button onClick={onClose} className="text-white/40 hover:text-white transition-colors text-2xl leading-none" aria-label="Close">×</button>
         </div>
         <div className="p-6 flex flex-col gap-5">
-          <TripFormFields form={form} set={set} setGallery={setGallery} />
+          <TripFormFields form={form} set={set} setGallery={setGallery} onCoverImageStatus={setCoverImageStatus} />
           {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+          {!form.coverImageUrl.trim() && (
+            <p className="text-amber-400 text-sm bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+              ⚠ No cover image set. The trip card and hero banner will appear broken on the site. Add a cover image URL before saving.
+            </p>
+          )}
+          {form.coverImageUrl && coverImageStatus === "error" && (
+            <p className="text-amber-400 text-sm bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+              ⚠ The cover image URL couldn't be loaded. The trip will save, but the hero image will appear broken on the trip page. Double-check the URL before continuing.
+            </p>
+          )}
           <div className="flex gap-3 pt-1">
             <button
               onClick={onClose}
@@ -859,9 +879,12 @@ function EditModal({
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [coverImageStatus, setCoverImageStatus] = useState<"loading" | "ok" | "error" | null>(null);
 
-  const set = (field: string, value: string | boolean) =>
+  const set = (field: string, value: string | boolean) => {
+    if (field === "coverImageUrl") setCoverImageStatus(null);
     setForm((f) => ({ ...f, [field]: value }));
+  };
   const setGallery = (items: { url: string; caption: string }[]) => setForm((f) => ({ ...f, galleryPhotoUrls: items }));
 
   const handleSave = async () => {
@@ -933,9 +956,20 @@ function EditModal({
         </div>
 
         <div className="p-6 flex flex-col gap-5">
-          <TripFormFields form={form} set={set} setGallery={setGallery} tripId={trip.id} />
+          <TripFormFields form={form} set={set} setGallery={setGallery} tripId={trip.id} onCoverImageStatus={setCoverImageStatus} />
 
           {error && <p className="text-red-400 text-sm bg-red-400/10 rounded-lg px-3 py-2">{error}</p>}
+
+          {!form.coverImageUrl.trim() && (
+            <p className="text-amber-400 text-sm bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+              ⚠ No cover image set. The trip card and hero banner will appear broken on the site. Add a cover image URL before saving.
+            </p>
+          )}
+          {form.coverImageUrl && coverImageStatus === "error" && (
+            <p className="text-amber-400 text-sm bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+              ⚠ The cover image URL couldn't be loaded. The trip will save, but the hero image will appear broken on the trip page. Double-check the URL before continuing.
+            </p>
+          )}
 
           <div className="flex gap-3 pt-1">
             <button
