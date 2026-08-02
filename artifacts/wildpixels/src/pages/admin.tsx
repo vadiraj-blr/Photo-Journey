@@ -2126,6 +2126,9 @@ export default function Admin() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-white truncate">{trip.title}</span>
+                    {!trip.coverImageUrl && (
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-red-400 bg-red-400/10 border border-red-400/20 px-2 py-0.5 rounded-full flex-shrink-0">No cover</span>
+                    )}
                     {trip.featured && (
                       <span className="text-[10px] font-mono uppercase tracking-wider text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-full flex-shrink-0">Featured</span>
                     )}
