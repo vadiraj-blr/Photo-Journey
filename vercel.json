@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "installCommand": "pnpm install",
-  "buildCommand": "BASE_PATH=/ pnpm --filter @workspace/wildpixels run build && pnpm --filter @workspace/api-server run build",
+"buildCommand": "BASE_PATH=/ pnpm --filter @workspace/wildpixels run build && pnpm --filter @workspace/api-server run build && node scripts/prerender-seo.mjs",
   "outputDirectory": "artifacts/wildpixels/dist/public",
   "rewrites": [
     {
